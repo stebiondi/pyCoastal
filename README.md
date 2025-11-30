@@ -1,3 +1,5 @@
+![Banner](https://github.com/BodduSriPavan-111/pyCoastal/blob/sripavan/media/banner.png)
+
 # pyCoastal
 
 A Python module for Coastal Engineering calculations, and to play around with numerics.
