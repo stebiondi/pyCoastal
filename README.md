@@ -1,4 +1,3 @@
-# pyCoastal
 
 <p align="center">
   <img src="media/pyCoastal_logo.png"  width="600">
