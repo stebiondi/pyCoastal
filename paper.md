@@ -97,7 +97,7 @@ $$
 A_i = \sqrt{2\,S(f_i)\,\Delta f}.
 $$
 
-![Irregular wave field output of the example](wave2D_irregular_final.png)
+![Irregular wave field output of the example](/media/wave2D_irregular_final.png)
 
 **Figure 1:** Irregular wave field produced in the example.  
 The left panel shows a top view of the wave field with waves entering from the southern boundary.  
