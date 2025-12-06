@@ -100,9 +100,7 @@ $$
 ![Irregular wave field output of the example](/media/wave2D_irregular_final.png)
 
 **Figure 1:** Irregular wave field produced in the example.  
-The left panel shows a top view of the wave field with waves entering from the southern boundary.  
-Side boundaries use free slip, and the northern boundary absorbs outgoing waves.  
-The right panel shows the surface elevation over time at selected observation points.
+The left panel shows a top view of the wave field with waves entering from the southern boundary. Side boundaries use free slip, and the northern boundary absorbs outgoing waves. The right panel shows the surface elevation over time at selected observation points.
 
 To test it, run this example:
 
