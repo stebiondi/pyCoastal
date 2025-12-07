@@ -128,7 +128,7 @@ And obtain as result a design of the equilibrium profile (see Figure 2), as well
 
 ![Equilibrium shoreline](/media/equilibrium_shoreline.png)
 
-**Figure 2:** Equilibrium shoreline after beach protection with two parallel breakwaters separated by a gap $G_b$ and distant from shore $Y_i$. the blue dashed line represents the initial condition (flat shore, for example after a nourishment) and the thin red line the equilibrium shoreline. Wave are supposed to be perpendicular to shore, and coming from the upper part of the plot.
+**Figure 2:** Equilibrium shoreline after beach protection with two parallel breakwaters separated by a gap $G_b$ = 80 m and distant from shore $Y_i$ = 60 m. the blue dashed line represents the initial condition (flat shore, for example after a nourishment) and the thin red line the equilibrium shoreline. Wave are supposed to be perpendicular to shore, and coming from the upper part of the plot.
 
 # Conclusion Future directions
 In this work, the Python module for coastal processes `pyCoastal` was presented. The module is a simple and modular Python framework for building numerical models of coastal hydrodynamics and transport. Its design emphasizes clarity, flexibility and ease of use, allowing users to prototype simulations, explore physical processes and support instructional needs with minimal overhead. Future development will include wave energy dissipation and breaking models, more complete nearshore hydrodynamics, and sediment transport processes. Additional coastal-engineering formulations and analysis tools will also be integrated, further extending the range of research and educational applications that pyCoastal can support.
