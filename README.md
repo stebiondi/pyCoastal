@@ -1,4 +1,7 @@
-# pyCoastal
+
+<p align="center">
+  <img src="media/pyCoastal_logo.png"  width="400">
+</p>
 
 A Python module for Coastal Engineering calculations, and to play around with numerics.
 
