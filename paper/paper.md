@@ -109,9 +109,9 @@ To test it, run this example:
 python examples/wave2D_irregular.py
 ```
 
-# Equilibrium shoreline after beach protection
+# Equilibrium shoreline behind detached breakwaters
 
-This example is more practical and computes the equilibrium profile of a beach subject to protection of parallel breakwaters at distance $Y_i$ from shore and assigned their length $L_b$ and Gap width $G_b$. The concepts follow the derivation of [@Hsu1989] and empirical coefficients of [@Tsai2023]. The user can  specify the inputs in the config file:
+This example computes the equilibrium profile of a beach subject to protection of parallel breakwaters at distance $Y_i$ from shore and assigned their length $L_b$ and Gap width $G_b$. The calculation of the euquilibrium profile follows the derivation of [@Hsu1989] and empirical coefficients of [@Tsai2023]. The user can  specify the inputs in the config file:
 
 ```yaml
 geometry:
@@ -125,7 +125,7 @@ numerics:
   n_points: 400         # samples per arc
   sag_side_factor: 0.5  # lateral arc sag factor (relative to Ye)
 ```
-And obtain as result a design of the equilibrium profile (see Figure 2), as well as the accretion volume behind the breakwaters and the shoreline retreat in the protected area.
+And obtain as result a design of the equilibrium profile (see Figure 2), as well as the accretion volume behind the breakwaters and the shoreline retreat in the protected area. The results can be used as practical application for a first design of a beach pretected behind detached breakwaters.
 
 ![**Figure 2:** Equilibrium shoreline after beach protection with two parallel breakwaters separated by a gap $G_b$ = 80 m and distant from shore $Y_i$ = 60 m. the blue dashed line represents the initial condition (flat shore, for example after a nourishment) and the thin red line the equilibrium shoreline. Wave are supposed to be perpendicular to shore, and coming from the upper part of the plot.](media/equilibrium_shoreline.png)
 
@@ -137,4 +137,3 @@ In this work, the Python module for coastal processes `pyCoastal` was presented.
 I thank professors Alberto Canestrelli (UF) and Donald Slinn (UF) for the teachings in the numerical modeling and Hydrodynamics field.
 
 # References
-see paper.bib
