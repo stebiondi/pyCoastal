@@ -98,7 +98,7 @@ A_i = \sqrt{2\,S(f_i)\,\Delta f}.
 $$
 
 ![**Figure 1:** Irregular wave field produced in the example.  
-The left panel shows a top view of the wave field with waves entering from the southern boundary. Side boundaries use free slip, and the northern boundary absorbs outgoing waves. The right panel shows the surface elevation over time at selected observation points.](/media/wave2D_irregular_final.png)
+The left panel shows a top view of the wave field with waves entering from the southern boundary. Side boundaries use free slip, and the northern boundary absorbs outgoing waves. The right panel shows the surface elevation over time at selected observation points.](media/wave2D_irregular_final.png)
 
 **Figure 1:** Irregular wave field produced in the example.  
 The left panel shows a top view of the wave field with waves entering from the southern boundary. Side boundaries use free slip, and the northern boundary absorbs outgoing waves. The right panel shows the surface elevation over time at selected observation points.
@@ -127,7 +127,7 @@ numerics:
 ```
 And obtain as result a design of the equilibrium profile (see Figure 2), as well as the accretion volume behind the breakwaters and the shoreline retreat in the protected area.
 
-![**Figure 2:** Equilibrium shoreline after beach protection with two parallel breakwaters separated by a gap $G_b$ = 80 m and distant from shore $Y_i$ = 60 m. the blue dashed line represents the initial condition (flat shore, for example after a nourishment) and the thin red line the equilibrium shoreline. Wave are supposed to be perpendicular to shore, and coming from the upper part of the plot.](/media/equilibrium_shoreline.png)
+![**Figure 2:** Equilibrium shoreline after beach protection with two parallel breakwaters separated by a gap $G_b$ = 80 m and distant from shore $Y_i$ = 60 m. the blue dashed line represents the initial condition (flat shore, for example after a nourishment) and the thin red line the equilibrium shoreline. Wave are supposed to be perpendicular to shore, and coming from the upper part of the plot.](media/equilibrium_shoreline.png)
 
 
 # Conclusion Future directions
