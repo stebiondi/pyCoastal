@@ -110,7 +110,7 @@ python examples/wave2D_irregular.py
 
 # Equilibrium shoreline after beach protection
 
-This example is more practical and computes the equilibrium profile of a beach subject to protection of parallel breakwaters at distance $Y_i$ from shore and assigned their length $L_b$ and Gap width %G_b$. The concepts follow the derivation of [@Hsu1989] and empirical coefficients of [@Tsai2023]. The user can  specify the inputs in the config file:
+This example is more practical and computes the equilibrium profile of a beach subject to protection of parallel breakwaters at distance $Y_i$ from shore and assigned their length $L_b$ and Gap width $G_b$. The concepts follow the derivation of [@Hsu1989] and empirical coefficients of [@Tsai2023]. The user can  specify the inputs in the config file:
 
 ```yaml
 geometry:
