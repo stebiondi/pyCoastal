@@ -20,6 +20,23 @@ from .wave import (
 from .morphodynamics import (
     bruuns_rule,
     exner_change,
+    linear_slope,
+    circle_through_points,
+    two_point_arc,
+    build_tombolo_arcs,
+    accretion_metrics,
+)
+from .shoreline import (
+    OneLineParams,
+    make_grid,
+    breakwaters_geometry,
+    kd_diffraction_field,
+    field_or_scalar_to_array,
+    compute_flux_Qls,
+    rhs_y_t,
+    suggest_dt,
+    apply_bcs,
+    run_one_line_model,
 )
 from .structural import (
     hudson_dn50,
@@ -52,6 +69,22 @@ __all__ = [
     # morphodynamics.py
     "bruuns_rule",
     "exner_change",
+    "linear_slope",
+    "circle_through_points",
+    "two_point_arc",
+    "build_tombolo_arcs",
+    "accretion_metrics",
+    # shoreline.py
+    "OneLineParams",
+    "make_grid",
+    "breakwaters_geometry",
+    "kd_diffraction_field",
+    "field_or_scalar_to_array",
+    "compute_flux_Qls",
+    "rhs_y_t",
+    "suggest_dt",
+    "apply_bcs",
+    "run_one_line_model",
     # structural.py
     "hudson_dn50",
     "vandermeer_dn50",

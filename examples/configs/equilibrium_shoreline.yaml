@@ -1,0 +1,10 @@
+geometry:
+  Lshore: 600.0   # domain length (m)
+  Gb: 80.0        # gap between breakwaters (m)
+  Lb1: 80.0       # left breakwater length (m)
+  Lb2: 80.0       # right breakwater length (m)
+  Yi: 60.0       # breakwater offshore distance (m)
+
+numerics:
+  n_points: 400         # samples per arc
+  sag_side_factor: 0.5  # lateral arc sag factor (relative to Ye)
