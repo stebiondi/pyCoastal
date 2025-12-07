@@ -107,7 +107,7 @@ To test it, run this example:
 ```bash
 python examples/wave2D_irregular.py
 ```
-This example provides a simple application of `pyCoastal`. However, the ability to manipulate spectra, generate time series and visualize wave propagation is fundamental in coastal engineering, and hands-on experimentation is essential for learning. To make the tool more representative of real situations, users can generate or import custom bathymetry and apply it to the computational domain.
+This example provides a simple application of `pyCoastal`. The ability to manipulate spectra, generate time series and visualize wave propagation is fundamental in coastal engineering, and hands-on experimentation is essential for learning. To make the tool more representative of real situations, users can generate or import custom bathymetry and apply it to the computational domain.
 
 # Conclusion Future directions
 In this work, the Python module for coastal processes `pyCoastal` was presented. The module is a simple and modular Python framework for building numerical models of coastal hydrodynamics and transport. Its design emphasizes clarity, flexibility and ease of use, allowing users to prototype simulations, explore physical processes and support instructional needs with minimal overhead. Future development will include wave energy dissipation and breaking models, more complete nearshore hydrodynamics, and sediment transport processes. Additional coastal-engineering formulations and analysis tools will also be integrated, further extending the range of research and educational applications that pyCoastal can support.
