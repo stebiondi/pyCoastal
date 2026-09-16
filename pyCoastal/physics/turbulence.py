@@ -10,12 +10,17 @@ class SmagorinskyModel:
         self.Cs = Cs
         self.Δ  = filter_width
 
-    def eddy_viscosity(self, u: np.ndarray, v: np.ndarray):
-        # Strain‐rate magnitude |S| = sqrt(2 S_ij S_ij)
-        du_dx = np.gradient(u, axis=1)
-        dv_dy = np.gradient(v, axis=0)
-        du_dy = np.gradient(u, axis=0)
-        dv_dx = np.gradient(v, axis=1)
+    def eddy_viscosity(self, u: np.ndarray, v: np.ndarray, grid=None):
+        """Strain-rate magnitude |S| = sqrt(2 S_ij S_ij).
+
+        x is axis 0 and y is axis 1. Pass ``grid`` so the velocity
+        gradients use the real cell spacing.
+        """
+        dx, dy = grid.spacing if grid is not None else (1.0, 1.0)
+        du_dx = np.gradient(u, dx, axis=0)
+        dv_dy = np.gradient(v, dy, axis=1)
+        du_dy = np.gradient(u, dy, axis=1)
+        dv_dx = np.gradient(v, dx, axis=0)
 
         Sxx = du_dx
         Syy = dv_dy
