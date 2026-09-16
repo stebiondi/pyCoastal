@@ -4,18 +4,53 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyCoastal"
-version = "0.1.0"
+version = "0.1.2"
 description = "A Python toolbox for coastal engineering"
 authors = [
-  { name="Stefano Biondi", email="stefano@example.com" }
+  { name = "Stefano Biondi", email = "stefano.biondi@ufl.edu" }
 ]
 license = { text = "MIT" }
 readme = "README.md"
-requires-python = ">=3.7"
-dependencies = ["numpy", "PyYAML", "vtk", "matplotlib"]
+requires-python = ">=3.9"
+keywords = ["coastal engineering", "waves", "sediment transport", "morphodynamics", "shoreline"]
+
+dependencies = [
+  "numpy>=1.21",
+  "PyYAML>=5.4",
+]
 
 classifiers = [
-  "Programming Language :: Python :: 3",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
   "License :: OSI Approved :: MIT License",
-  "Operating System :: OS Independent"
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
 ]
+
+[project.optional-dependencies]
+# Sparse direct/iterative solvers in pyCoastal.physics.poisson
+sparse = ["scipy>=1.7"]
+# VTK output in pyCoastal.io.write_vtk
+vtk = ["vtk>=9.0"]
+# Plotting used by the example scripts
+plots = ["matplotlib>=3.4"]
+dev = ["pytest>=7.0", "scipy>=1.7", "matplotlib>=3.4"]
+docs = ["sphinx>=4.0", "sphinx-rtd-theme"]
+
+[project.urls]
+Homepage = "https://github.com/stebiondi/pyCoastal"
+Repository = "https://github.com/stebiondi/pyCoastal"
+Documentation = "https://pycoastal.readthedocs.io"
+Issues = "https://github.com/stebiondi/pyCoastal/issues"
+
+[tool.setuptools.packages.find]
+include = ["pyCoastal*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
