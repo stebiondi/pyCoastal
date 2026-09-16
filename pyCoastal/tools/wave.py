@@ -2,26 +2,49 @@
 
 import numpy as np
 
-def dispersion(T: float, h: float, g: float = 9.81) -> float:
+def dispersion(T: float, h: float, g: float = 9.81, tol: float = 1e-12) -> float:
     """
-    Calculate the wavelength (L) via the dispersion relationship for water waves.
+    Solve the linear dispersion relation for the wavelength L.
+
+    Solves omega^2 = g k tanh(k h) by Newton-Raphson, starting from the
+    explicit Fenton & McKee (1990) approximation. This converges in a handful
+    of iterations across the full range from deep water to the shallow-water
+    limit.
 
     Args:
         T (float): Wave period (s)
         h (float): Water depth (m)
-        g (float, optional): Gravity acceleration (m/s²). Default: 9.81.
+        g (float, optional): Gravity acceleration (m/s^2). Default: 9.81.
+        tol (float, optional): Relative convergence tolerance on k.
 
     Returns:
         float: Wavelength L (m)
+
+    Raises:
+        ValueError: If T or h is not strictly positive.
     """
-    L0 = g * T**2 / (2 * np.pi)  # deep-water wavelength guess
-    L = L0
+    if T <= 0:
+        raise ValueError(f"Wave period must be positive, got {T}")
+    if h <= 0:
+        raise ValueError(f"Water depth must be positive, got {h}")
+
+    omega = 2 * np.pi / T
+    k0 = omega**2 / g                      # deep-water wave number
+
+    # Fenton & McKee (1990) explicit starting estimate.
+    k = k0 / np.tanh((k0 * h) ** 0.75) ** (2.0 / 3.0)
+
     for _ in range(100):
-        L_new = L0 * np.tanh(2 * np.pi * h / L)
-        if abs(L_new - L) < 1e-3:
+        tanh_kh = np.tanh(k * h)
+        f = g * k * tanh_kh - omega**2
+        # d/dk [g k tanh(kh)] = g tanh(kh) + g k h sech^2(kh)
+        df = g * tanh_kh + g * k * h * (1.0 - tanh_kh**2)
+        dk = f / df
+        k -= dk
+        if abs(dk) < tol * abs(k):
             break
-        L = L_new
-    return L
+
+    return 2 * np.pi / k
 
 def wave_number(T: float, h: float) -> float:
     """

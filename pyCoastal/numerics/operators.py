@@ -27,11 +27,11 @@ def laplacian(field: np.ndarray, grid) -> np.ndarray:
     return lap_x + lap_y
 
 def gradient(field, grid):
-    """Centered gradient ∇f → (fx, fy) on cell centers."""
-    dx, dy = grid.spacing
-    fx = (np.roll(field, -1, axis=1) - np.roll(field, +1, axis=1)) / (2*dx)
-    fy = (np.roll(field, -1, axis=0) - np.roll(field, +1, axis=0)) / (2*dy)
-    return fx, fy
+    """Centered gradient ∇f → (fx, fy) on cell centers.
+
+    x is axis 0 and y is axis 1, matching UniformGrid and grad_x/grad_y.
+    """
+    return grad_x(field, grid), grad_y(field, grid)
 
 
 def grad_x(field, grid):
@@ -62,8 +62,8 @@ def upwind_y(field, v, grid):
 def divergence(ux, uy, grid):
     """Centered divergence ∇·u on cell centers."""
     dx, dy = grid.spacing
-    dux_dx = (np.roll(ux, -1, axis=1) - np.roll(ux, +1, axis=1)) / (2*dx)
-    duy_dy = (np.roll(uy, -1, axis=0) - np.roll(uy, +1, axis=0)) / (2*dy)
+    dux_dx = (np.roll(ux, -1, axis=0) - np.roll(ux, +1, axis=0)) / (2*dx)
+    duy_dy = (np.roll(uy, -1, axis=1) - np.roll(uy, +1, axis=1)) / (2*dy)
     return dux_dx + duy_dy
 
 
@@ -96,8 +96,8 @@ def advect(u, v, field, grid, scheme="upwind"):
     return u*fx + v*fy
 
 def smooth3(field, grid):
-    """Simple 3×3 box filter."""
-    return 0.25*field + 0.125*(
+    """Simple 5-point smoothing filter (weights sum to one)."""
+    return 0.5*field + 0.125*(
         np.roll(field,  1, axis=0) +
         np.roll(field, -1, axis=0) +
         np.roll(field,  1, axis=1) +
