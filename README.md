@@ -158,6 +158,41 @@ meets the limit, not the mean, which would be exceeded about half the time.
 
 Worked example: `examples/breakwater_design.py`
 
+### Storm surge and flooding
+
+A water-level budget assembled from its components, then flood mapping that
+respects hydraulic connectivity.
+
+```python
+import numpy as np
+from pyCoastal.applications.surge import (
+    StormConditions, total_water_level, bathtub_flood, isolated_low_ground,
+)
+
+storm = StormConditions(wind_speed=45, central_pressure=94000, tide=0.6,
+                        Hm0=7.0, Tp=13.0, fetch=120e3)
+
+# Integrate wind setup across a real shelf rather than a representative depth
+shelf = np.linspace(60.0, 8.0, 200)
+levels = total_water_level(storm, shelf_depths=shelf, dx=120e3 / 199)
+levels["still_water_level"]     # drives inundation extent
+levels["total_water_level"]     # adds R2% runup, for the shoreline wave hazard
+
+sea = np.zeros_like(terrain, dtype=bool); sea[0, :] = True
+flooded = bathtub_flood(terrain, levels["still_water_level"], seed=sea)
+stranded = isolated_low_ground(terrain, levels["still_water_level"], seed=sea)
+```
+
+Connectivity matters: a plain elevation threshold floods every low cell,
+including basins the sea cannot reach. In the worked example a single breach
+in the barrier is the difference between **5.4 km2** and **18.8 km2** flooded.
+
+<p align="center">
+  <img src="media/storm_surge_flooding.png" alt="Storm surge flood mapping" width="900">
+</p>
+
+Worked example: `examples/storm_surge_flooding.py`
+
 
 ### 📚 Citation
 
