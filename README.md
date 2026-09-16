@@ -68,6 +68,43 @@ fill, which the test suite uses to verify the solver.
 
 Worked example: `examples/nourishment_design.py`
 
+### Port layout
+
+Phase-resolved wave propagation into a harbour. Breakwaters are rasterized as
+structures with a settable absorption, waves enter from a soft source, and the
+open boundaries are sponge layers.
+
+```python
+import numpy as np
+from pyCoastal.applications.port import IncidentWave, harbour_layout, simulate_port
+
+layout = harbour_layout(gap=130, arm_length=300, back_wall=True, absorption=0.35)
+wave = IncidentWave(height=1.5, period=9.0, direction=np.deg2rad(0))
+
+result = simulate_port(layout, wave, sponge_sides=("west", "north", "south"))
+
+result.disturbance_coefficient          # Kd = H / H_incident over the whole basin
+result.probe((1120, 450))               # Kd at one point
+result.berth_report({"quay": (1120, 450)})
+result.operable_fraction({"quay": (1120, 450)}, limit=0.5)
+```
+
+The celerity comes from the linear dispersion relation at the run period, so
+the wavelength is correct in intermediate water rather than the shallow-water
+approximation. Against a semi-infinite breakwater the solver gives a deep quiet
+shadow, Kd near 0.5 on the geometric shadow boundary, and Fresnel fringes in
+the illuminated field.
+
+<p align="center">
+  <img src="media/port_diffraction.gif" alt="Wave diffraction into a harbour" width="700">
+</p>
+
+<p align="center">
+  <img src="media/port_disturbance.png" alt="Harbour disturbance coefficient" width="700">
+</p>
+
+Worked example: `examples/port_diffraction.py`
+
 
 ### 📚 Citation
 

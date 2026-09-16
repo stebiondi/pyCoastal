@@ -20,6 +20,16 @@ from .nourishment import (
     renourishment_schedule,
 )
 
+from .port import (
+    Breakwater,
+    IncidentWave,
+    PortLayout,
+    PortResult,
+    harbour_layout,
+    measure_reflection,
+    simulate_port,
+)
+
 __all__ = [
     "KCERC_DEFAULT",
     "NourishmentDesign",
@@ -31,4 +41,12 @@ __all__ = [
     "initial_planform",
     "simulate_nourishment",
     "renourishment_schedule",
+    # port
+    "Breakwater",
+    "IncidentWave",
+    "PortLayout",
+    "PortResult",
+    "harbour_layout",
+    "measure_reflection",
+    "simulate_port",
 ]
