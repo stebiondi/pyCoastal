@@ -20,19 +20,19 @@ def rhs(state, t, grid, bc_mgr, ν=1e-3):
     v = state["v"]
     dx, dy = grid.spacing
 
-    # --- convection, centered differences ---
-    ux = (np.roll(u, -1, axis=1) - np.roll(u, +1, axis=1)) / (2*dx)
-    uy = (np.roll(u, -1, axis=0) - np.roll(u, +1, axis=0)) / (2*dy)
-    vx = (np.roll(v, -1, axis=1) - np.roll(v, +1, axis=1)) / (2*dx)
-    vy = (np.roll(v, -1, axis=0) - np.roll(v, +1, axis=0)) / (2*dy)
+    # --- convection, centered differences (x is axis 0, y is axis 1) ---
+    ux = (np.roll(u, -1, axis=0) - np.roll(u, +1, axis=0)) / (2*dx)
+    uy = (np.roll(u, -1, axis=1) - np.roll(u, +1, axis=1)) / (2*dy)
+    vx = (np.roll(v, -1, axis=0) - np.roll(v, +1, axis=0)) / (2*dx)
+    vy = (np.roll(v, -1, axis=1) - np.roll(v, +1, axis=1)) / (2*dy)
     conv_u = u*ux + v*uy
     conv_v = u*vx + v*vy
 
     # --- viscous Laplacian ---
-    u_xx = (np.roll(u,-1,1) - 2*u + np.roll(u,1,1)) / dx**2
-    u_yy = (np.roll(u,-1,0) - 2*u + np.roll(u,1,0)) / dy**2
-    v_xx = (np.roll(v,-1,1) - 2*v + np.roll(v,1,1)) / dx**2
-    v_yy = (np.roll(v,-1,0) - 2*v + np.roll(v,1,0)) / dy**2
+    u_xx = (np.roll(u,-1,0) - 2*u + np.roll(u,1,0)) / dx**2
+    u_yy = (np.roll(u,-1,1) - 2*u + np.roll(u,1,1)) / dy**2
+    v_xx = (np.roll(v,-1,0) - 2*v + np.roll(v,1,0)) / dx**2
+    v_yy = (np.roll(v,-1,1) - 2*v + np.roll(v,1,1)) / dy**2
     diff_u = ν*(u_xx + u_yy)
     diff_v = ν*(v_xx + v_yy)
 

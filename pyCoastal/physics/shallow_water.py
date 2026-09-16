@@ -31,13 +31,18 @@ class ShallowWater2D:
 
         return (Fh, Gh), (Fhu, Ghu), (Fhv, Ghv)
 
-    def source_bed_slope(self, h: np.ndarray, zb: np.ndarray):
+    def source_bed_slope(self, h: np.ndarray, zb: np.ndarray, grid=None):
         """
         Return bed‐slope source terms Sx, Sy for momentum:
           Sx = - g h ∂zb/∂x,  Sy = - g h ∂zb/∂y
+
+        x is axis 0 and y is axis 1. Pass ``grid`` (a UniformGrid) so the
+        derivatives use the real cell spacing; without it the spacing is
+        taken as unity, which is only correct on a unit mesh.
         """
-        dzdx = np.gradient(zb, axis=1)
-        dzdy = np.gradient(zb, axis=0)
+        dx, dy = grid.spacing if grid is not None else (1.0, 1.0)
+        dzdx = np.gradient(zb, dx, axis=0)
+        dzdy = np.gradient(zb, dy, axis=1)
         Sx = - self.g * h * dzdx
         Sy = - self.g * h * dzdy
         return Sx, Sy
