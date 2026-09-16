@@ -41,6 +41,17 @@ from .structures import (
     rock_armour_vandermeer,
 )
 
+from .surge import (
+    StormConditions,
+    barometric_setup,
+    bathtub_flood,
+    inundation_limit,
+    isolated_low_ground,
+    total_water_level,
+    wind_setup,
+    wind_setup_profile,
+)
+
 __all__ = [
     "KCERC_DEFAULT",
     "NourishmentDesign",
@@ -69,4 +80,13 @@ __all__ = [
     "required_crest_freeboard",
     "rock_armour_hudson",
     "rock_armour_vandermeer",
+    # surge
+    "StormConditions",
+    "barometric_setup",
+    "bathtub_flood",
+    "inundation_limit",
+    "isolated_low_ground",
+    "total_water_level",
+    "wind_setup",
+    "wind_setup_profile",
 ]
