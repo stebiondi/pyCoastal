@@ -103,7 +103,24 @@ the illuminated field.
   <img src="media/port_disturbance.png" alt="Harbour disturbance coefficient" width="700">
 </p>
 
-Worked example: `examples/port_diffraction.py`
+Five built-in layouts (`LAYOUTS`): two straight arms, overlapping arms with a
+dog-leg entrance, a hooked main breakwater, a detached screen off the gap, and
+an outer harbour protecting an inner marina basin.
+
+<p align="center">
+  <img src="media/port_layouts.png" alt="Harbour layout comparison" width="900">
+</p>
+
+Wave direction is modelled by turning the harbour into the waves with
+`rotate_layout` and driving it shore-normal. `IncidentWave.direction` also
+works, but a phased source line only lights a parallelogram of the domain, so
+`simulate_port` warns when a structure falls outside it.
+
+Give structures an `absorption`: left fully reflecting, a detached screen forms
+a pocket with the arms that rings, and basin agitation goes **up**. Armoured, the
+same screen cuts mean basin Kd from 0.20 to 0.04.
+
+Worked examples: `examples/port_diffraction.py`, `examples/port_layout_comparison.py`
 
 
 ### 📚 Citation

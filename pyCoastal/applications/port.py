@@ -33,6 +33,7 @@ plane with x on axis 0, z is elevation.
 from __future__ import annotations
 
 import math
+import warnings
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -235,6 +236,326 @@ def harbour_layout(
         )
 
     return PortLayout(Lx=Lx, Ly=Ly, dx=dx, depth=depth, breakwaters=structures)
+
+
+def _quay(Lx: float, Ly: float, dx: float, absorption: float) -> Breakwater:
+    """Shore-parallel wall closing the basin at the landward edge."""
+    quay_x = Lx - 2.0 * dx
+    return Breakwater(
+        points=[(quay_x, 0.0), (quay_x, Ly)],
+        width=2.0 * dx,
+        absorption=absorption,
+        name="quay",
+    )
+
+
+def offset_entrance_layout(
+    Lx: float = 1400.0,
+    Ly: float = 900.0,
+    dx: float = 4.0,
+    depth: float = 10.0,
+    gap: float = 130.0,
+    overlap: float = 140.0,
+    separation: float = 180.0,
+    arm_length: float = 300.0,
+    width: float = 24.0,
+    back_wall: bool = True,
+    absorption: float = 0.0,
+) -> PortLayout:
+    """Overlapping arms, so no straight path leads into the basin.
+
+    The two arms sit at different x and overlap in y, turning the entrance
+    into a dog-leg. Waves have to diffract twice to reach the basin, which is
+    the usual way to quieten a harbour without narrowing the navigable
+    opening.
+
+    Parameters
+    ----------
+    overlap : float
+        Alongshore distance over which the two arms shadow each other [m].
+    separation : float
+        Distance between the two arms in x [m], setting the length of the
+        entrance channel.
+    """
+    y_mid = 0.5 * Ly
+    half_gap = 0.5 * gap
+    x_outer = 0.62 * Lx
+    x_inner = x_outer + separation
+
+    structures = [
+        Breakwater(
+            points=[
+                (x_outer, y_mid - half_gap - arm_length),
+                (x_outer, y_mid - half_gap + overlap),
+            ],
+            width=width,
+            absorption=absorption,
+            name="outer arm",
+        ),
+        Breakwater(
+            points=[
+                (x_inner, y_mid + half_gap - overlap),
+                (x_inner, y_mid + half_gap + arm_length),
+            ],
+            width=width,
+            absorption=absorption,
+            name="inner arm",
+        ),
+    ]
+    if back_wall:
+        structures.append(_quay(Lx, Ly, dx, absorption))
+
+    return PortLayout(Lx=Lx, Ly=Ly, dx=dx, depth=depth, breakwaters=structures)
+
+
+def hooked_breakwater_layout(
+    Lx: float = 1400.0,
+    Ly: float = 900.0,
+    dx: float = 4.0,
+    depth: float = 10.0,
+    gap: float = 150.0,
+    hook_length: float = 220.0,
+    arm_length: float = 340.0,
+    width: float = 24.0,
+    back_wall: bool = True,
+    absorption: float = 0.0,
+) -> PortLayout:
+    """A long main breakwater with a shore-parallel hook, plus a lee arm.
+
+    The hook turns back across the approach so the entrance faces along the
+    coast rather than into the incoming waves. Common where the design wave
+    arrives consistently from one sector.
+
+    Parameters
+    ----------
+    hook_length : float
+        Length of the returning limb at the head of the main arm [m].
+    """
+    y_mid = 0.5 * Ly
+    half_gap = 0.5 * gap
+    x_main = 0.62 * Lx
+
+    structures = [
+        Breakwater(
+            points=[
+                (x_main, y_mid - half_gap - arm_length),
+                (x_main, y_mid - half_gap),
+                (x_main + hook_length, y_mid - half_gap),
+            ],
+            width=width,
+            absorption=absorption,
+            name="main arm with hook",
+        ),
+        Breakwater(
+            points=[
+                (x_main + hook_length + gap, y_mid + half_gap),
+                (x_main + hook_length + gap, y_mid + half_gap + 0.6 * arm_length),
+            ],
+            width=width,
+            absorption=absorption,
+            name="lee arm",
+        ),
+    ]
+    if back_wall:
+        structures.append(_quay(Lx, Ly, dx, absorption))
+
+    return PortLayout(Lx=Lx, Ly=Ly, dx=dx, depth=depth, breakwaters=structures)
+
+
+def detached_breakwater_layout(
+    Lx: float = 1400.0,
+    Ly: float = 900.0,
+    dx: float = 4.0,
+    depth: float = 10.0,
+    gap: float = 150.0,
+    screen_length: float = 300.0,
+    standoff: float = 200.0,
+    arm_length: float = 280.0,
+    width: float = 24.0,
+    back_wall: bool = True,
+    absorption: float = 0.0,
+) -> PortLayout:
+    """Two arms with a detached screen standing off the entrance.
+
+    The screen intercepts waves heading straight for the gap while leaving
+    navigable water either side of it. Used where an entrance cannot be
+    narrowed or offset.
+
+    Give the screen some ``absorption``. Left fully reflecting it forms a
+    pocket with the arms that rings, and basin agitation goes up rather than
+    down. For a 150 m gap with 280 m arms at T = 9 s, mean basin Kd went from
+    0.35 to 0.51 with a reflecting screen, and from 0.20 to 0.04 once the
+    structures were armoured. The effect worsens as ``standoff`` grows.
+
+    Parameters
+    ----------
+    screen_length : float
+        Alongshore length of the detached breakwater [m].
+    standoff : float
+        Distance seaward of the arms at which the screen sits [m].
+    """
+    y_mid = 0.5 * Ly
+    half_gap = 0.5 * gap
+    x_arms = 0.70 * Lx
+
+    structures = [
+        Breakwater(
+            points=[(x_arms, y_mid - half_gap - arm_length), (x_arms, y_mid - half_gap)],
+            width=width,
+            absorption=absorption,
+            name="south arm",
+        ),
+        Breakwater(
+            points=[(x_arms, y_mid + half_gap), (x_arms, y_mid + half_gap + arm_length)],
+            width=width,
+            absorption=absorption,
+            name="north arm",
+        ),
+        Breakwater(
+            points=[
+                (x_arms - standoff, y_mid - 0.5 * screen_length),
+                (x_arms - standoff, y_mid + 0.5 * screen_length),
+            ],
+            width=width,
+            absorption=absorption,
+            name="detached screen",
+        ),
+    ]
+    if back_wall:
+        structures.append(_quay(Lx, Ly, dx, absorption))
+
+    return PortLayout(Lx=Lx, Ly=Ly, dx=dx, depth=depth, breakwaters=structures)
+
+
+def marina_layout(
+    Lx: float = 1400.0,
+    Ly: float = 900.0,
+    dx: float = 4.0,
+    depth: float = 10.0,
+    outer_gap: float = 160.0,
+    inner_gap: float = 90.0,
+    inner_offset: float = 220.0,
+    basin_separation: float = 240.0,
+    arm_length: float = 300.0,
+    width: float = 24.0,
+    back_wall: bool = True,
+    absorption: float = 0.0,
+) -> PortLayout:
+    """An outer harbour protecting an inner basin through a second opening.
+
+    The inner entrance is offset alongshore from the outer one, so energy
+    entering the outer harbour does not run straight into the marina. This is
+    the arrangement that keeps small-craft berths workable.
+
+    Parameters
+    ----------
+    inner_offset : float
+        Alongshore offset between the outer and inner entrances [m].
+    basin_separation : float
+        Distance in x between the outer arms and the inner basin wall [m].
+    """
+    y_mid = 0.5 * Ly
+    x_outer = 0.58 * Lx
+    x_inner = x_outer + basin_separation
+    half_outer = 0.5 * outer_gap
+    half_inner = 0.5 * inner_gap
+    y_inner = y_mid + inner_offset
+
+    structures = [
+        Breakwater(
+            points=[(x_outer, y_mid - half_outer - arm_length), (x_outer, y_mid - half_outer)],
+            width=width,
+            absorption=absorption,
+            name="outer south arm",
+        ),
+        Breakwater(
+            points=[(x_outer, y_mid + half_outer), (x_outer, y_mid + half_outer + arm_length)],
+            width=width,
+            absorption=absorption,
+            name="outer north arm",
+        ),
+        Breakwater(
+            points=[(x_inner, 0.0), (x_inner, y_inner - half_inner)],
+            width=width,
+            absorption=absorption,
+            name="basin wall south",
+        ),
+        Breakwater(
+            points=[(x_inner, y_inner + half_inner), (x_inner, Ly)],
+            width=width,
+            absorption=absorption,
+            name="basin wall north",
+        ),
+    ]
+    if back_wall:
+        structures.append(_quay(Lx, Ly, dx, absorption))
+
+    return PortLayout(Lx=Lx, Ly=Ly, dx=dx, depth=depth, breakwaters=structures)
+
+
+def rotate_layout(
+    layout: PortLayout, degrees: float, about: tuple[float, float] | None = None
+) -> PortLayout:
+    """Rotate every structure in a layout by ``degrees`` (counter-clockwise).
+
+    Only the relative angle between the waves and the harbour matters, so
+    rotating the layout and driving it shore-normal is equivalent to leaving
+    it fixed and sending an oblique wave, without the lit-parallelogram limit
+    of an oblique source. This is the accurate way to study wave direction.
+
+    Structures are rotated about ``about``, defaulting to the domain centre.
+    Points may leave the domain; that is fine, since anything outside is
+    simply not rasterized.
+    """
+    if about is None:
+        about = (0.5 * layout.Lx, 0.5 * layout.Ly)
+
+    angle = math.radians(degrees)
+    cos_a, sin_a = math.cos(angle), math.sin(angle)
+    cx, cy = about
+
+    def spin(point):
+        px, py = point[0] - cx, point[1] - cy
+        return (cx + px * cos_a - py * sin_a, cy + px * sin_a + py * cos_a)
+
+    rotated = [
+        Breakwater(
+            points=[spin(p) for p in bw.points],
+            width=bw.width,
+            absorption=bw.absorption,
+            name=bw.name,
+        )
+        for bw in layout.breakwaters
+    ]
+    return PortLayout(
+        Lx=layout.Lx, Ly=layout.Ly, dx=layout.dx, depth=layout.depth,
+        breakwaters=rotated,
+    )
+
+
+def illuminated_mask(
+    layout: PortLayout, wave: IncidentWave, source_x: float
+) -> np.ndarray:
+    """Cells that the oblique source line actually reaches.
+
+    A source at ``x = source_x`` spanning the full domain height launches rays
+    at the wave angle, so the field at (x, y) originates from
+    ``y - (x - source_x) tan(theta)``. Where that lies outside the source line
+    the cell never receives the incident wave.
+    """
+    X, Y = layout.meshgrid()
+    origin = Y - (X - source_x) * math.tan(wave.direction)
+    return (X < source_x) | ((origin >= 0.0) & (origin <= layout.Ly))
+
+
+#: Every built-in layout, keyed by a short name.
+LAYOUTS = {
+    "two_arm": harbour_layout,
+    "offset_entrance": offset_entrance_layout,
+    "hooked": hooked_breakwater_layout,
+    "detached_screen": detached_breakwater_layout,
+    "marina": marina_layout,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -580,17 +901,43 @@ def simulate_port(
         profile = np.clip((collar - clearance) / collar, 0.0, 1.0) ** 2
         damping = np.maximum(damping, bw.absorption * sponge_strength * profile)
 
-    # Soft source: a narrow Gaussian strip in x, phased along y so the wave
-    # leaves at the requested angle. Being additive, it lets reflected waves
-    # pass back through into the west sponge instead of trapping them.
+    # Soft source: a narrow Gaussian strip at x = source_x, phased along y so
+    # the wave leaves at the requested angle. Being additive, it lets
+    # reflected waves pass back through into the west sponge instead of
+    # trapping them.
+    #
+    # Under oblique incidence the strip only lights a parallelogram: rays
+    # leave it at the wave angle, so the wedge downwave of the strip's end
+    # never receives the incident wave. ``illuminated_mask`` marks the lit
+    # region and ``simulate_port`` warns when a structure sits outside it.
+    # An L-shaped second strip does not fix this, because a truncated line
+    # source diffracts at its end and the two strips interfere rather than
+    # tile. Either keep the structures inside the lit region, or rotate the
+    # layout with ``rotate_layout`` and drive it shore-normal.
     x, y = layout.coordinates()
     X, Y = layout.meshgrid()
-    source_profile = np.exp(-(((X - source_x) / (0.25 * wavelength)) ** 2))
-    ky = wave.omega / c * math.sin(wave.direction)
-    source_phase = ky * Y
+    strip = 0.25 * wavelength
+
+    source_profile = np.exp(-(((X - source_x) / strip) ** 2))
+    source_phase = (wave.omega / c) * math.sin(wave.direction) * Y
 
     if reference_point is None:
         reference_point = (source_x + 1.5 * wavelength, 0.5 * layout.Ly)
+
+    # Warn rather than silently score a structure against a wave it never got.
+    if abs(wave.direction) > 1e-6 and land.any():
+        lit = illuminated_mask(layout, wave, source_x)
+        if not lit[land].all():
+            shaded = int((~lit[land]).sum())
+            warnings.warn(
+                f"{shaded} structure cells lie outside the region the oblique "
+                f"source illuminates, so results there understate the wave. "
+                f"Either move the structures within "
+                f"y > (x - {source_x:.0f}) * tan(theta), enlarge Ly, or use "
+                f"rotate_layout() and drive the harbour shore-normal.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
     common = dict(
         layout=layout,
