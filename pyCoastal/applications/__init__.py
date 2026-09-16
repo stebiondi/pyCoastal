@@ -30,6 +30,17 @@ from .port import (
     simulate_port,
 )
 
+from .structures import (
+    DesignConditions,
+    BreakwaterDesign,
+    design_rubble_mound,
+    overtopping_sloped,
+    overtopping_vertical,
+    required_crest_freeboard,
+    rock_armour_hudson,
+    rock_armour_vandermeer,
+)
+
 __all__ = [
     "KCERC_DEFAULT",
     "NourishmentDesign",
@@ -49,4 +60,13 @@ __all__ = [
     "harbour_layout",
     "measure_reflection",
     "simulate_port",
+    # structures
+    "DesignConditions",
+    "BreakwaterDesign",
+    "design_rubble_mound",
+    "overtopping_sloped",
+    "overtopping_vertical",
+    "required_crest_freeboard",
+    "rock_armour_hudson",
+    "rock_armour_vandermeer",
 ]

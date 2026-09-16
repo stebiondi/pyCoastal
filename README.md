@@ -122,6 +122,42 @@ same screen cuts mean basin Kd from 0.20 to 0.04.
 
 Worked examples: `examples/port_diffraction.py`, `examples/port_layout_comparison.py`
 
+### Breakwater and seawall design
+
+Armour sizing and wave overtopping, with every relation traced to its source:
+Van der Meer (1988) and Hudson (SPM 1984) for stability, EurOtop (2018) for
+overtopping and tolerable discharge limits.
+
+```python
+from pyCoastal.applications.structures import DesignConditions, design_rubble_mound
+
+conditions = DesignConditions.from_peak_period(
+    Hm0=4.0, Tp=11.0, depth=12.0, storm_duration=6 * 3600,
+)
+design = design_rubble_mound(conditions, cot_alpha=2.0, tolerable_use="trained_staff")
+print(design.summary())
+```
+
+```
+Design condition   Hm0 = 4.00 m, Tm-1,0 = 10.00 s, depth = 12.0 m
+Storm              6.0 h, N = 2160 waves
+Slope              1 : 2
+Armour             rock_two_layer_permeable, Dn50 = 1.59 m, M50 = 10.7 t (plunging)
+Layer              3.18 m thick, 0.50 stones/m2
+Crest freeboard    Rc = 5.69 m (Rc/Hm0 = 1.42)
+Overtopping        mean 0.333 l/s/m, upper bound 1 l/s/m
+Governing limit    1 l/s/m, Trained staff, well shod and protected, wide walkway
+```
+
+The crest is set so the **upper** bound of EurOtop's factor-of-three scatter
+meets the limit, not the mean, which would be exceeded about half the time.
+
+<p align="center">
+  <img src="media/breakwater_design.png" alt="Breakwater design curves" width="900">
+</p>
+
+Worked example: `examples/breakwater_design.py`
+
 
 ### 📚 Citation
 

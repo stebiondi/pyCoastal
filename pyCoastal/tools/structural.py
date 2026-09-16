@@ -10,23 +10,58 @@ def hudson_dn50(Hs: float, Delta: float, theta: float, Kd: float = 3.0) -> float
     """
     return Hs / (Delta * ((Kd * 1/math.tan(theta))**(1/3)) / 1.27)
 
-def vandermeer_dn50(Hs: float, Delta: float, P: float, N: int, alpha: float, xi_m: float = None, safety: float = 1.0) -> float:
+def vandermeer_dn50(
+    Hs: float,
+    Delta: float,
+    P: float,
+    N: int,
+    alpha: float,
+    xi_m: float,
+    damage: float = 2.0,
+    safety: float = 1.0,
+) -> float:
     """
-    Estimate nominal diameter Dn50 for armor using Van der Meer formula.
-    Uses deep-water and shallow-water expressions.
+    Nominal armour diameter Dn50 from Van der Meer (1988).
+
+    plunging (xi_m < xi_cr)
+        Hs / (Delta Dn50) = 6.2 P^0.18 (S / sqrt(N))^0.2 xi_m^-0.5
+    surging (xi_m >= xi_cr)
+        Hs / (Delta Dn50) = 1.0 P^-0.13 (S / sqrt(N))^0.2 sqrt(cot a) xi_m^P
+
+    Args:
+        Hs: significant wave height at the toe (m)
+        Delta: relative buoyant density, rho_s/rho_w - 1
+        P: notional permeability (0.1 impermeable to 0.6 very permeable)
+        N: number of waves in the design storm, saturating near 7500
+        alpha: slope angle (rad)
+        xi_m: surf similarity parameter. Required: it depends on the wave
+            period, which this function has no other way to know.
+        damage: damage level S = A_e / Dn50^2. 2 is start of damage.
+        safety: divides the stability coefficients, so >1 gives larger stone.
+
+    Returns:
+        float: nominal diameter Dn50 (m)
+
+    Note:
+        For a full design, including the crest level and overtopping checks,
+        use ``pyCoastal.applications.structures``.
     """
-    # empirical coefficients
-    cp, cs = 6.2 / safety, 0.87 / safety
-    # deep-water condition: xi_m < xi_cr
-    xi_cr = ((cp/cs) * (P**0.31) * math.sqrt(math.tan(alpha)))**(1/(P + 0.5))
-    if xi_m is None:
-        xi_m = surf_similarity(alpha, Hs, 1)  # using T=1s for test
+    if damage <= 0:
+        raise ValueError(f"Damage level S must be positive, got {damage}")
+    if N <= 0:
+        raise ValueError(f"Wave count must be positive, got {N}")
+
+    cp, cs = 6.2 / safety, 1.0 / safety
+    xi_cr = ((cp / cs) * (P**0.31) * math.sqrt(math.tan(alpha))) ** (1 / (P + 0.5))
+    damage_term = (damage / math.sqrt(min(N, 7500))) ** 0.2
+
     if xi_m < xi_cr:
-        # plunging
-        denom = cp * (P**0.18) * ((Hs / math.sqrt(N))**0.2) * (xi_m**-0.5)
+        denom = cp * (P**0.18) * damage_term * (xi_m**-0.5)
     else:
-        # surging
-        denom = cs * (P**-0.13) * ((Hs / math.sqrt(N))**0.2) * math.sqrt(1/math.tan(alpha)) * (xi_m**P)
+        denom = (
+            cs * (P**-0.13) * damage_term
+            * math.sqrt(1 / math.tan(alpha)) * (xi_m**P)
+        )
     return Hs / (Delta * denom)
     
 def hunt_runup(beta: float, H: float, L: float) -> float:
