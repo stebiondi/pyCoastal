@@ -78,3 +78,28 @@ def test_vandermeer_dn50_is_positive_and_grows_with_wave_height():
     small = sr.vandermeer_dn50(Hs=1.0, **kw)
     large = sr.vandermeer_dn50(Hs=4.0, **kw)
     assert 0 < small < large
+
+
+def test_vandermeer_uses_the_damage_level_not_the_wave_height():
+    """S is the eroded-area damage number, and must enter as (S/sqrt(N))^0.2."""
+    kw = dict(Hs=3.0, Delta=1.585, P=0.4, N=3000, alpha=math.atan(0.5), xi_m=2.2)
+    expected = 3.0 / (1.585 * 6.2 * 0.4**0.18 * (2.0 / math.sqrt(3000)) ** 0.2 * 2.2**-0.5)
+    assert sr.vandermeer_dn50(**kw, damage=2.0) == pytest.approx(expected)
+
+
+def test_vandermeer_allowing_more_damage_permits_smaller_stone():
+    kw = dict(Hs=3.0, Delta=1.585, P=0.4, N=3000, alpha=math.atan(0.5), xi_m=2.2)
+    assert sr.vandermeer_dn50(**kw, damage=8.0) < sr.vandermeer_dn50(**kw, damage=2.0)
+
+
+def test_vandermeer_requires_the_breaker_parameter():
+    """It used to default to a leftover T = 1 s, undersizing stone 2.7 times."""
+    with pytest.raises(TypeError):
+        sr.vandermeer_dn50(Hs=3.0, Delta=1.585, P=0.4, N=3000, alpha=math.atan(0.5))
+
+
+def test_vandermeer_wave_count_saturates():
+    kw = dict(Hs=3.0, Delta=1.585, P=0.4, alpha=math.atan(0.5), xi_m=2.2)
+    assert sr.vandermeer_dn50(N=7500, **kw) == pytest.approx(
+        sr.vandermeer_dn50(N=50000, **kw)
+    )
