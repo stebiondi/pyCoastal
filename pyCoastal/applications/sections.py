@@ -44,6 +44,12 @@ __all__ = [
     "rubble_mound_section",
     "rubble_mound_sheet",
     "mound_layer_volumes",
+    "vessel_outline",
+    "draw_channel",
+    "channel_notes",
+    "channel_section",
+    "channel_sheet",
+    "draw_channel_detail",
 ]
 
 
@@ -677,3 +683,350 @@ def rubble_mound_sheet(
     )
     sheet.set_scale_from(view)
     return sheet
+
+
+# ---------------------------------------------------------------------------
+# Navigation channel
+# ---------------------------------------------------------------------------
+
+
+def vessel_outline(beam: float, draught: float, freeboard: float,
+                   bilge: float = 0.18, centre: float = 0.0) -> np.ndarray:
+    """Midship section of a hull, as a closed polygon.
+
+    A box with chamfered bilges and a little flare. Enough to read as a ship
+    at the scale a channel section is drawn at, and deliberately not more:
+    the hull form is not what the drawing is about.
+    """
+    if beam <= 0 or draught <= 0:
+        raise ValueError("Beam and draught must be positive")
+    r = bilge * beam
+    half = 0.5 * beam
+    return np.array([
+        [centre - half - 0.03 * beam, freeboard],
+        [centre - half, 0.0],
+        [centre - half, -draught + r],
+        [centre - half + r, -draught],
+        [centre + half - r, -draught],
+        [centre + half, -draught + r],
+        [centre + half, 0.0],
+        [centre + half + 0.03 * beam, freeboard],
+    ])
+
+
+def draw_channel(dwg: Section, design, margin: float = 60.0,
+                 show_vessel: bool = True, annotate: bool = True,
+                 show_depth_chain: bool = True,
+                 seabed_extent: float | None = None) -> tuple[tuple, tuple]:
+    """Put a designed navigation channel into an open :class:`Section`.
+
+    Draws the dredged prism, the existing bed, the design vessel at her
+    static draught, and the underkeel clearance stack as a dimension chain,
+    so every allowance can be read off the paper.
+    """
+    d = design
+    wl = d.design_water_level
+    bed = d.existing_bed if d.existing_bed is not None else d.dredge_level + 2.0
+    half = 0.5 * d.width
+    rise = max(bed - d.dredge_level, 0.0)
+    toe = half + d.side_slope * rise
+    extent = seabed_extent if seabed_extent is not None else toe + margin
+
+    # Ground, with the dredged prism cut out of it.
+    dwg.material(
+        [[-extent, bed - 30.0], [extent, bed - 30.0], [extent, bed],
+         [toe, bed], [half, d.dredge_level], [-half, d.dredge_level],
+         [-toe, bed], [-extent, bed]],
+        "subgrade", label="In-situ material", zorder=1.5,
+    )
+    dwg.water(-extent, extent, wl,
+              bed=[[-extent, bed], [-toe, bed], [-half, d.dredge_level],
+                   [half, d.dredge_level], [toe, bed], [extent, bed]],
+              zorder=1.2)
+
+    # The design dredge level, drawn heavy: it is the line the contract is
+    # let on and the line the survey is checked against.
+    dwg.line([[-toe, bed], [-half, d.dredge_level], [half, d.dredge_level],
+              [toe, bed]], weight="heavy", zorder=4.0)
+
+    if show_vessel:
+        lanes = d.width_result["lanes"]
+        beam = d.vessel.beam
+        offsets = (0.0,) if lanes == 1 else (-0.25 * d.width, 0.25 * d.width)
+        for i, centre in enumerate(offsets):
+            hull = vessel_outline(beam, d.vessel.draught, 0.18 * beam,
+                                  centre=centre)
+            hull[:, 1] += wl
+            dwg.material(
+                hull, "pavement",
+                label=f"Design vessel, {d.vessel.name}" if i == 0 else None,
+                zorder=5.0,
+            )
+
+    if not annotate:
+        return ((-extent, extent),
+                (d.dredge_level - 6.0, wl + 0.35 * d.vessel.beam))
+
+    # -- the depth chain ---------------------------------------------------
+    # Each allowance gets its own dimension, stacked down from the keel, so
+    # the dredge level is visibly the sum of its parts rather than a round
+    # number someone chose.
+    span = extent - half
+    ladder_x = half + 0.26 * span
+    level = wl - d.vessel.draught
+    if show_depth_chain:
+        dwg.dim_v(wl, level, half + 0.07 * span,
+                  f"draught {d.vessel.draught:.2f}",
+                  extend_from=(0.0, 0.0), side="left")
+
+    # Two staggered columns: the allowances are thin bands, and stacking
+    # their labels in one column would overlap them into mush.
+    live = ([(n, v) for n, v in d.clearance["components"].items() if v > 0]
+            if show_depth_chain else [])
+    for i, (name, value) in enumerate(live):
+        column = ladder_x + (i % 2) * 0.22 * span
+        dwg.line([[-half, level], [column, level]], weight="thin",
+                 style=(0, (5, 4)), zorder=3.5)
+        dwg.dim_v(level, level - value, column, f"{name} {value:.2f}")
+        level -= value
+
+    dwg.level(-0.96 * extent, wl, f"Design water level {wl:+.2f} m CD",
+              side="right", symbol="water")
+    dwg.level(0.0, d.dredge_level, f"Dredge level {d.dredge_level:+.2f} m CD",
+              side="left", run=-0.35 * half)
+    if d.existing_bed is not None:
+        dwg.level(-0.82 * extent, bed, f"Existing bed {bed:+.2f} m CD",
+                  side="right")
+
+    # -- widths ------------------------------------------------------------
+    dwg.dim_h(-half, half, d.dredge_level - 2.2, f"bed width {d.width:.0f}",
+              extend_from=(d.dredge_level, d.dredge_level))
+    if rise > 0:
+        dwg.dim_h(-toe, toe, bed + 0.30 * d.vessel.beam,
+                  f"top width {d.top_width:.0f}", extend_from=(bed, bed))
+        dwg.slope((toe, bed), d.side_slope, rise=0.8 * rise, direction="left",
+                  label=f"1 : {d.side_slope:g}")
+
+    dwg.note((0.0, wl - d.vessel.draught - d.squat["squat"]),
+             f"Squat {d.squat['squat']:.2f} m at {d.speed:.0f} kn\n"
+             f"(ICORELS, Fnh = {d.squat['froude']:.2f})",
+             offset=(0, -50), ha="center")
+
+    return (-extent, extent), (level - 3.0, wl + 0.45 * d.vessel.beam)
+
+
+def channel_notes(design) -> list[str]:
+    """Specification notes generated from a channel design."""
+    d = design
+    v = d.vessel
+    notes = [
+        f"Design vessel: {v.name}, {v.length:.0f} m x {v.beam:.1f} m x "
+        f"{v.draught:.1f} m draught, Cb = {v.block_coefficient:.2f}, "
+        f"{v.displacement:,.0f} t displacement.",
+        f"Design speed {d.speed:.1f} knots through the water, giving "
+        f"{d.squat['squat']:.2f} m of bow squat by ICORELS at a depth Froude "
+        f"number of {d.squat['froude']:.2f}.",
+        f"Wave response allowance {d.waves['allowance']:.2f} m, taken as "
+        f"{d.waves['factor']:.2f} of the significant wave height in the "
+        "channel. Confirm by a motion study before construction.",
+        f"Dredge level {d.dredge_level:+.2f} m CD, being the design water "
+        f"level {d.design_water_level:+.2f} m CD less the "
+        f"{d.required_depth:.2f} m depth chain shown.",
+        f"Channel width {d.width:.0f} m at the bed, "
+        f"{d.width_result['lanes']}-way, built up by the PIANC concept design "
+        "method. Confirm by manoeuvring simulation.",
+        f"Side slopes 1:{d.side_slope:g}, to be confirmed against the "
+        "geotechnical investigation and the dredging method.",
+        "Dredging and survey tolerances are included in the depth chain and "
+        "are not to be taken again by the contractor.",
+        "Levels in metres to chart datum. Dimensions in metres.",
+    ]
+    if d.width_result["assumed"]:
+        notes.append(
+            "Width components not specified were taken at their most benign "
+            "class: " + "; ".join(d.width_result["assumed"]) + "."
+        )
+    notes += [f"WARNING: {w}" for w in d.warnings]
+    return notes
+
+
+def channel_section(
+    design,
+    title: str = "Navigation channel, typical cross-section",
+    figsize: tuple[float, float] = (14.5, 8.0),
+    margin: float = 60.0,
+    exaggeration: float = 8.0,
+    ax=None,
+) -> Section:
+    """A standalone figure of a designed navigation channel.
+
+    Drawn with vertical exaggeration by default. A channel several hundred
+    metres wide and twenty deep is unreadable at a true scale, which is why
+    dredging drawings have always been exaggerated; the factor is stated on
+    the drawing rather than left for the reader to infer.
+    """
+    d = design
+    exaggerated = abs(exaggeration - 1.0) > 1e-9
+    dwg = Section(
+        title,
+        subtitle=(
+            f"{d.vessel.name} at {d.speed:.0f} knots, design water level "
+            f"{d.design_water_level:+.2f} m CD. "
+            "Levels in metres to chart datum. Dimensions in metres."
+            + (f"  VERTICAL EXAGGERATION {exaggeration:g}:1" if exaggerated else "")
+        ),
+        figsize=figsize,
+        exaggeration=exaggeration,
+        ax=ax,
+    )
+    xlim, zlim = draw_channel(dwg, d, margin=margin)
+    dwg.key(loc="upper left")
+    rows = [
+        ("Vessel", f"{d.vessel.length:.0f} x {d.vessel.beam:.1f} m"),
+        ("Draught", f"{d.vessel.draught:.2f} m"),
+        ("Speed", f"{d.speed:.1f} kn"),
+        ("Squat", f"{d.squat['squat']:.2f} m"),
+        ("Wave response", f"{d.waves['allowance']:.2f} m"),
+        ("", ""),
+        ("Required depth", f"{d.required_depth:.2f} m"),
+        ("Dredge level", f"{d.dredge_level:+.2f} m CD"),
+        ("Bed width", f"{d.width:.0f} m"),
+    ]
+    if d.existing_bed is not None:
+        rows += [
+            ("", ""),
+            ("Dredge depth", f"{d.existing_bed - d.dredge_level:.2f} m"),
+            ("Volume", f"{d.dredge_volume(1000.0) / 1e3:,.0f} k m3/km"),
+        ]
+    dwg.table(rows, title="Design basis")
+    dwg.finish(xlim=xlim, zlim=zlim)
+    return dwg
+
+
+def channel_sheet(
+    design,
+    project: str = "Port approach works",
+    title: str = "Navigation channel typical section",
+    size: str = "A3",
+    margin: float = 60.0,
+    exaggeration: float = 8.0,
+    file: str = "channel_sheet.py",
+    **titleblock,
+) -> Sheet:
+    """A full drawing sheet of a designed navigation channel.
+
+    Vertically exaggerated by default, with the factor stated beside the
+    detail title and in the notes.
+    """
+    d = design
+    sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
+
+    # View A: the whole channel, exaggerated so it is readable at all.
+    view = sheet.viewport(rect=(0.0, 0.46, 0.70, 0.54),
+                          exaggeration=exaggeration)
+    xlim, zlim = draw_channel(view, d, margin=margin, show_depth_chain=False)
+    view.fit_scale(xlim, zlim, paper=size)
+    view.detail_bubble("A", "Channel cross-section", view.scale_text,
+                       loc=(0.02, 0.06))
+    view.scale_bar(100.0, loc=(0.60, 0.06))
+    view.key(loc="upper left")
+
+    # View B: the keel and the allowances, at a true scale, where the
+    # underkeel clearance can be read as a real thickness.
+    detail = sheet.viewport(rect=(0.0, 0.0, 0.70, 0.44))
+    dxlim, dzlim = draw_channel_detail(detail, d)
+    detail.fit_scale(dxlim, dzlim, paper=size)
+    detail.detail_bubble("B", "Underkeel clearance detail",
+                         detail.scale_text, loc=(0.02, 0.06))
+    detail.key(loc="upper right", ncol=2)
+
+    notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
+    notes.ax.set_xlim(0, 1)
+    notes.ax.set_ylim(0, 1)
+    notes.ax.set_aspect("auto")
+    extra = channel_notes(d)
+    if view.exaggeration_note:
+        extra = [view.exaggeration_note.capitalize()
+                 + ". Slopes are not true angles on this drawing."] + extra
+    notes.notes_block(extra, title="NOTES", width=40, loc=(0.0, 1.0),
+                      fontsize=6.2)
+    rows = [(name.upper(), f"{value:.2f} m")
+            for name, value in d.clearance["components"].items() if value > 0]
+    notes.table(
+        [("STATIC DRAUGHT", f"{d.vessel.draught:.2f} m")] + rows
+        + [("REQUIRED DEPTH", f"{d.required_depth:.2f} m")],
+        title="DEPTH CHAIN", loc=(0.0, 0.0), align="left", fontsize=6.4,
+    )
+    sheet.set_scale_from(view)
+    return sheet
+
+
+def draw_channel_detail(dwg: Section, design, width_in_beams: float = 0.35,
+                        hull_shown: float = 1.3,
+                        annotate: bool = True) -> tuple[tuple, tuple]:
+    """True-scale detail of the keel, the allowances and the dredge level.
+
+    The overall channel section has to be exaggerated to be readable, which
+    stretches the vessel into a tower and makes every slope a lie. This is
+    the companion view a drawing set always carries: the part that matters,
+    at a true scale, cropped to the keel, where the underkeel clearance can
+    be read as a real thickness rather than as a band on a distorted
+    picture.
+    """
+    d = design
+    wl = d.design_water_level
+    beam = d.vessel.beam
+    half = 0.5 * width_in_beams * beam
+    keel = wl - d.vessel.draught
+    # Only a slice of the hull: the bands are the subject, and a full
+    # draught of steel above them would swamp the view.
+    hull_top = keel + hull_shown
+
+    dwg.water(-half, half, hull_top, bed=d.dredge_level - 2.0, zorder=1.0)
+
+    # Only the flat of bottom: this is a detail, and the rest of the hull is
+    # on view A.
+    dwg.material(
+        [[-half * 0.92, keel], [half * 0.92, keel],
+         [half * 0.92, hull_top], [-half * 0.92, hull_top]],
+        "pavement", label="Design vessel, flat of bottom", zorder=5.0,
+    )
+
+    # Each allowance as a band, so the stack is a picture and not only a
+    # column of numbers. The key names them; leaders would cross.
+    # Hatched materials only. A band of drawn stones would read as rock
+    # placed on the bed, and these are allowances, not materials.
+    shades = ("core", "granular", "sand", "blinding", "rock_fill",
+              "concrete", "reinforced", "subgrade")
+    level = keel
+    for i, (name, value) in enumerate(d.clearance["components"].items()):
+        if value <= 0:
+            continue
+        dwg.material(
+            [[-half, level - value], [half, level - value],
+             [half, level], [-half, level]],
+            shades[i % len(shades)],
+            label=f"{name} {value:.2f} m", zorder=2.0,
+        )
+        if annotate:
+            # Alternate the column so consecutive thin bands do not stack
+            # their labels on top of each other.
+            column = half * (0.55 if i % 2 else 0.82)
+            dwg.dim_v(level, level - value, column, f"{value:.2f}")
+        level -= value
+
+    dwg.material(
+        [[-half, level - 2.0], [half, level - 2.0], [half, level],
+         [-half, level]],
+        "subgrade", zorder=1.8,
+    )
+    dwg.line([[-half, level], [half, level]], weight="heavy", zorder=4.0)
+
+    if annotate:
+        dwg.level(-half * 0.80, keel, f"Keel {keel:+.2f} m CD", side="right")
+        dwg.level(-half * 0.80, level, f"Dredge level {level:+.2f} m CD",
+                  side="right")
+        dwg.dim_v(keel, level, -half * 0.92,
+                  f"gross UKC {d.clearance['gross']:.2f}", side="left")
+
+    return (-half, half), (level - 1.2, hull_top + 0.2)

@@ -191,12 +191,20 @@ class Section:
         Draw into an existing axes, for a multi-panel comparison sheet. A
         new figure is made if this is None.
 
+    exaggeration : float
+        Vertical exaggeration. One is a true section, where a 1:2 slope
+        looks like a 1:2 slope. Anything else distorts every angle on the
+        drawing, and :meth:`fit_scale` then reports separate horizontal and
+        vertical scales and sets ``exaggeration_note`` so the distortion is
+        stated rather than hidden.
+
     Notes
     -----
-    The axes are set to equal aspect and the vertical axis is not
-    exaggerated. A section with a true 1:2 slope that looks steeper than
-    1:2 on the paper is a drawing error, not a styling choice; if you need
-    exaggeration, say so on the drawing.
+    A section drawn at a true scale is the default, and the right choice
+    whenever the structure is not far wider than it is tall. A navigation
+    channel six hundred metres wide and twenty deep is the case where it is
+    not: at true scale it is an unreadable sliver, and dredging drawings
+    have always been exaggerated. Exaggerate deliberately, and say so.
     """
 
     def __init__(
@@ -208,6 +216,7 @@ class Section:
         caps: bool = False,
         dim_style: str = "arrow",
         frame: bool = True,
+        exaggeration: float = 1.0,
     ) -> None:
         import matplotlib.pyplot as plt
 
@@ -228,16 +237,26 @@ class Section:
         #: 45 degree slash.
         self.dim_style = dim_style
         self.frame = frame
+        if exaggeration <= 0:
+            raise ValueError(
+                f"Exaggeration must be positive, got {exaggeration}"
+            )
+        #: Vertical exaggeration. One is a true section. Anything else must
+        #: be stated on the drawing, which :meth:`fit_scale` does for you.
+        self.exaggeration = float(exaggeration)
         #: Filled in by :meth:`fit_scale`.
         self.scale: float | None = None
+        self.vertical_scale: float | None = None
         self.scale_text: str = ""
+        #: Set by :meth:`fit_scale` when the section is exaggerated.
+        self.exaggeration_note: str = ""
         #: Paper size, set when the view belongs to a :class:`Sheet`.
         self.paper: str = ""
         self._used: dict[str, Material] = {}
         self._dxf: list[tuple] = []
         self._rng = np.random.default_rng(12345)
 
-        self.ax.set_aspect("equal", adjustable="datalim")
+        self.ax.set_aspect(self.exaggeration, adjustable="datalim")
         if frame:
             for side in ("top", "right"):
                 self.ax.spines[side].set_visible(False)
@@ -542,11 +561,14 @@ class Section:
             fontsize=TEXT["title"] - 1.0, fontweight="bold", color=INK,
             zorder=11, annotation_clip=False,
         )
+        caption = f"SCALE {scale}" if scale else ""
+        if self.exaggeration_note:
+            caption = (caption + "   " if caption else "") + self.exaggeration_note
         self.ax.annotate(
-            (f"SCALE {scale}" if scale else ""), xy=(x, y),
-            xycoords=self.ax.transAxes, xytext=(16, -9),
+            caption, xy=(x, y), xycoords=self.ax.transAxes, xytext=(16, -9),
             textcoords="offset points", ha="left", va="top",
             fontsize=TEXT["dim"] - 0.5, color=INK, zorder=11,
+            fontweight="bold" if self.exaggeration_note else "normal",
             annotation_clip=False,
         )
         # The rule under the title, drawn to the width of the title text.
@@ -709,20 +731,36 @@ class Section:
         if need_w <= 0 or need_h <= 0:
             raise ValueError("Extents must be positive")
 
-        # Metres of drawing per metre of paper.
-        required = max(need_w / (w_in * 0.0254), need_h / (h_in * 0.0254))
+        # Metres of drawing per metre of paper. An exaggerated section takes
+        # more paper vertically for the same depth, so the vertical extent
+        # is scaled up before the two are compared.
+        e = self.exaggeration
+        required = max(need_w / (w_in * 0.0254),
+                       need_h * e / (h_in * 0.0254))
         chosen = next((c for c in candidates if c >= required), None)
         if chosen is None:
             chosen = required        # nothing standard is large enough
 
         span_x = w_in * 0.0254 * chosen
-        span_z = h_in * 0.0254 * chosen
+        span_z = h_in * 0.0254 * chosen / e
         cx = 0.5 * (xlim[0] + xlim[1])
         cz = 0.5 * (zlim[0] + zlim[1])
         self.ax.set_xlim(cx - 0.5 * span_x, cx + 0.5 * span_x)
         self.ax.set_ylim(cz - 0.5 * span_z, cz + 0.5 * span_z)
+
         self.scale = float(chosen)
-        self.scale_text = f"1:{chosen:g}" + (f" @ {paper}" if paper else "")
+        self.vertical_scale = float(chosen) / e
+        on = f" @ {paper}" if paper else ""
+        if abs(e - 1.0) < 1e-9:
+            self.scale_text = f"1:{chosen:g}{on}"
+            self.exaggeration_note = ""
+        else:
+            self.scale_text = (
+                f"H 1:{chosen:g}  V 1:{self.vertical_scale:g}{on}"
+            )
+            self.exaggeration_note = (
+                f"VERTICAL EXAGGERATION {e:g} : 1"
+            )
         return self.scale
 
     def finish(self, xlim=None, zlim=None, grid: bool = True) -> "Section":

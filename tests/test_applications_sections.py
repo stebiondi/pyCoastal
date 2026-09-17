@@ -15,6 +15,7 @@ from pyCoastal.applications.sections import (  # noqa: E402
     draw_seawall,
     mound_layer_volumes,
     rubble_mound_section,
+    draw_channel,
     rubble_mound_sheet,
     seawall_notes,
     seawall_section,
@@ -220,3 +221,100 @@ def test_steeper_landward_slope_uses_less_material(mound):
         dwg2, mound, 0.0, -14.0, cot_land=3.0, annotate=False
     )
     assert x1_steep < x1_flat
+
+
+# ---------------------------------------------------------------------------
+# Navigation channel drawing
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def waterway():
+    from pyCoastal.applications.channel import Vessel, design_channel
+
+    ship = Vessel(name="Test ship", length=300.0, beam=45.0, draught=14.0,
+                  block_coefficient=0.70)
+    return design_channel(ship, speed=8.0, design_water_level=1.2, Hs=1.5,
+                          Tp=9.0, existing_bed=-11.0, two_way=True)
+
+
+def test_vessel_outline_is_closed_and_the_right_size():
+    from pyCoastal.applications.sections import vessel_outline
+
+    hull = vessel_outline(beam=40.0, draught=12.0, freeboard=6.0)
+    assert hull[:, 1].min() == pytest.approx(-12.0)
+    assert hull[:, 1].max() == pytest.approx(6.0)
+    # The waterline beam is the moulded beam; only the flare is wider.
+    at_waterline = hull[np.isclose(hull[:, 1], 0.0)][:, 0]
+    assert at_waterline.max() - at_waterline.min() == pytest.approx(40.0)
+
+
+def test_vessel_outline_rejects_nonsense():
+    from pyCoastal.applications.sections import vessel_outline
+
+    with pytest.raises(ValueError):
+        vessel_outline(beam=0.0, draught=5.0, freeboard=2.0)
+
+
+def test_draw_channel_covers_the_dredged_prism(waterway):
+    dwg = Section()
+    (x0, x1), (z0, z1) = draw_channel(dwg, waterway)
+    assert x0 < -0.5 * waterway.width
+    assert x1 > 0.5 * waterway.width
+    assert z0 < waterway.dredge_level
+    assert z1 > waterway.design_water_level
+
+
+def test_draw_channel_can_omit_the_depth_chain(waterway):
+    with_chain = Section()
+    draw_channel(with_chain, waterway, show_depth_chain=True)
+    without = Section()
+    draw_channel(without, waterway, show_depth_chain=False)
+    assert len(without.ax.texts) < len(with_chain.ax.texts)
+
+
+def test_channel_detail_is_cropped_to_the_keel(waterway):
+    from pyCoastal.applications.sections import draw_channel_detail
+
+    dwg = Section()
+    (x0, x1), (z0, z1) = draw_channel_detail(dwg, waterway)
+    assert x1 - x0 < waterway.vessel.beam
+    assert z0 < waterway.dredge_level
+    # The view stops just above the keel, not at the waterline.
+    assert z1 < waterway.design_water_level
+
+
+def test_channel_section_is_exaggerated_and_says_so(waterway):
+    from pyCoastal.applications.sections import channel_section
+
+    dwg = channel_section(waterway, exaggeration=8.0)
+    assert dwg.exaggeration == 8.0
+    assert "EXAGGERATION" in dwg.subtitle.upper()
+
+
+def test_channel_section_can_be_drawn_true(waterway):
+    from pyCoastal.applications.sections import channel_section
+
+    dwg = channel_section(waterway, exaggeration=1.0)
+    assert "EXAGGERATION" not in dwg.subtitle.upper()
+
+
+def test_channel_sheet_carries_both_views(waterway):
+    from pyCoastal.applications.sections import channel_sheet
+
+    sheet = channel_sheet(waterway, size="A3")
+    assert len(sheet.views) == 3          # section, detail, notes column
+    overall, detail = sheet.views[0], sheet.views[1]
+    assert overall.exaggeration > 1.0
+    assert detail.exaggeration == 1.0
+    assert overall.exaggeration_note
+    assert not detail.exaggeration_note
+
+
+def test_channel_notes_name_the_governing_numbers(waterway):
+    from pyCoastal.applications.sections import channel_notes
+
+    text = " ".join(channel_notes(waterway))
+    assert f"{waterway.dredge_level:+.2f}" in text
+    assert "PIANC" in text
+    assert "ICORELS" in text
