@@ -203,7 +203,11 @@ View.prototype.level = function (g, x, z, label, side) {
   el("path", { d: "M" + (px - 5) + "," + (py - 7) + " L" + (px + 5) + "," + (py - 7) +
                   " L" + px + "," + py + " Z",
                fill: solid ? INK : "#ffffff", stroke: INK, "stroke-width": 0.9 }, g);
-  var t = this.text(g, px + 8, py - 8, label, { size: 9, weight: 600 });
+  // "left" puts the text on the left of the marker, which is how a callout
+  // near the right-hand edge of the sheet stays on the sheet.
+  var left = side === "left";
+  var t = this.text(g, px + (left ? -8 : 8), py - 8, label,
+                    { size: 9, weight: 600, anchor: left ? "end" : "start" });
   this.backdrop(g, t);
 };
 
@@ -487,62 +491,142 @@ function moundProfile(xSea, xLand, crest, cotSea, cotLand) {
   };
 }
 
-function drawBreakwater(host, d, swl, bed, w, h) {
+function drawBreakwater(host, d, swl, seabedLevel, w, h) {
   var svg = newSheet(host, w, h);
-  var crest = swl + d.crest_freeboard;
+  var foundation = d._foundation;
+  var crown = d._crown;
+  var blanket = foundation ? foundation.bedding_thickness : 0;
+  var base = seabedLevel + blanket;
+
   var cotSea = d.cot_alpha;
   var cotLand = Math.max(cotSea - 0.5, 1.5);
   var tArmour = d.layer.thickness;
   var DnUnder = d.Dn50 / Math.pow(10, 1 / 3);
-  var crestWidth = Math.max(3 * d.Dn50, 4);
+  var needed = crown ? crown.total_width + 1.0 : 0;
+  var crestWidth = Math.max(3 * d.Dn50, 4, needed);
 
+  var crest = swl + d.crest_freeboard;
   var outer = moundProfile(-0.5 * crestWidth, 0.5 * crestWidth, crest, cotSea, cotLand);
   var under = outer.offset(tArmour);
   var core = under.offset(2 * DnUnder);
 
-  var toeX = outer.points(bed)[0][0];
+  var seaToe = outer.points(base)[0][0];
+  var landToe = outer.points(base)[3][0];
+  var extension = foundation ? foundation.bedding_extension : 0;
   var margin = 12;
-  var x0 = toeX - margin;
-  var x1 = outer.points(bed)[3][0] + margin;
-  var z0 = bed - 3, z1 = crest + 4;
+  var x0 = seaToe - extension - margin;
+  var x1 = landToe + extension + margin;
+  var z0 = seabedLevel - 4;
+  var z1 = (crown ? crown.parapet_top : crest) + 3;
 
   var body = el("g", null, svg);
   var view = new View({ x: 44, y: 16, w: w - 64, h: h - 66 }, [x0, x1], [z0, z1]);
   clipTo(svg, body, view.box);
   var keys = [];
 
-  keys.push(view.poly(body, [[x0, z0 - 5], [x1, z0 - 5], [x1, bed], [x0, bed]], "subgrade"));
-  keys.push(view.poly(body, [[x0, bed], [x1, bed], [x1, swl], [x0, swl]], "water"));
-  keys.push(view.poly(body, core.points(bed), "core", "Quarry run core"));
-  keys.push(view.poly(body, under.points(bed).concat(core.points(bed).slice().reverse()),
-                      "underlayer", "Underlayer, Dn50 = " + DnUnder.toFixed(2) + " m"));
-  keys.push(view.poly(body, outer.points(bed).concat(under.points(bed).slice().reverse()),
+  keys.push(view.poly(body, [[x0, z0 - 6], [x1, z0 - 6], [x1, seabedLevel],
+                             [x0, seabedLevel]], "subgrade"));
+  keys.push(view.poly(body, [[x0, seabedLevel], [x1, seabedLevel],
+                             [x1, swl], [x0, swl]], "water"));
+
+  if (foundation) {
+    var b0 = seaToe - extension, b1 = landToe + extension;
+    keys.push(view.poly(body, [
+      [b0 - 1.5 * blanket, seabedLevel], [b0, base], [b1, base],
+      [b1 + 1.5 * blanket, seabedLevel]
+    ], "sand", "Bedding blanket, " + foundation.bedding.name.toLowerCase() +
+       ", " + blanket.toFixed(2) + " m"));
+    view.line(body, [[b0 - 1.5 * blanket, seabedLevel],
+                     [b1 + 1.5 * blanket, seabedLevel]],
+              { stroke: "#8a2f24", width: 2, dash: "7 3" });
+  }
+
+  keys.push(view.poly(body, core.points(base), "core", "Quarry run core"));
+  keys.push(view.poly(body, under.points(base).concat(core.points(base).slice().reverse()),
+                      "underlayer", "Filter layer, Dn50 = " + DnUnder.toFixed(2) + " m"));
+  keys.push(view.poly(body, outer.points(base).concat(under.points(base).slice().reverse()),
                       "armour", "Armour, Dn50 = " + d.Dn50.toFixed(2) + " m ("
                         + (d.M50 / 1000).toFixed(1) + " t)"));
+  stoneTexture(body, view, outer, under, base, d.Dn50);
 
-  var toeW = Math.max(3 * d.Dn50, 3), toeT = 2 * d.Dn50;
-  keys.push(view.poly(body, [[toeX - toeW - 1.5 * toeT, bed], [toeX - toeW, bed + toeT],
-                             [toeX + 0.5, bed + toeT], [toeX + 0.5, bed]], "toe", "Toe berm"));
+  if (foundation) {
+    var tw = foundation.toe_width, tt = foundation.toe_thickness;
+    [[-1, seaToe], [1, landToe]].forEach(function (pair) {
+      var sign = pair[0], toeX = pair[1];
+      keys.push(view.poly(body, [
+        [toeX + sign * (tw + 1.5 * tt), base], [toeX + sign * tw, base + tt],
+        [toeX - sign * 0.5, base + tt], [toeX - sign * 0.5, base]
+      ], "toe", "Toe berm, Dn50 = " + foundation.toe_Dn50.toFixed(2) + " m ("
+         + (foundation.toe_M50 / 1000).toFixed(1) + " t), both toes"));
+    });
+  }
 
-  // Individual stones on the armour face, at the computed Dn50. This is the
-  // detail that makes a mound read as rubble rather than as a shaded wedge.
-  stoneTexture(body, view, outer, under, bed, d.Dn50);
+  if (crown) {
+    var px0 = outer.xSea, px1 = px0 + crown.parapet_width;
+    var dx1 = px1 + crown.deck_width;
+    keys.push(view.poly(body, [
+      [px0, crown.base_level], [dx1, crown.base_level],
+      [dx1, crown.deck_level], [px1, crown.deck_level],
+      [px1, crown.parapet_top], [px0, crown.parapet_top]
+    ], "concrete", "Crown block, mass concrete"));
+    if (dx1 < outer.xLand) {
+      keys.push(view.poly(body, [
+        [dx1, crown.base_level], [outer.xLand, crown.base_level],
+        [outer.xLand, crest], [dx1, crest]
+      ], "granular", "Sand and gravel infill"));
+    }
+  }
 
   view.level(body, x0 + 2, swl, "SWL " + fmt(swl) + " m CD", "water");
-  view.level(body, 0, crest, "Crest " + fmt(crest) + " m CD");
-  view.dimH(body, outer.xSea, outer.xLand, crest + 1.6, crestWidth.toFixed(1),
+  if (crown) {
+    view.level(body, outer.xSea, crown.parapet_top,
+               "Parapet " + fmt(crown.parapet_top), "left");
+    view.level(body, outer.xSea + crown.total_width, crown.deck_level,
+               "Deck " + fmt(crown.deck_level));
+  } else {
+    view.level(body, 0, crest, "Crest " + fmt(crest) + " m CD");
+  }
+  /* The blanket top is already given by its thickness dimension and the
+     seabed level, so it does not get a third callout fighting for the same
+     corner. */
+  view.level(body, x1 - 0.3 * margin, seabedLevel,
+             "Seabed " + fmt(seabedLevel) + " m CD", "left");
+
+  view.dimH(body, outer.xSea, outer.xLand,
+            (crown ? crown.parapet_top : crest) + 2.4, crestWidth.toFixed(1),
             [crest, crest]);
-  view.dimV(body, swl, crest, x1 - 0.30 * margin,
+  view.dimV(body, swl, crest, landToe + 0.35 * extension,
             "Rc = " + d.crest_freeboard.toFixed(2),
-            [outer.xLand, x1 - 0.30 * margin]);
+            [outer.xLand, landToe + 0.35 * extension]);
+
+  if (foundation) {
+    var chain = seabedLevel - 2.2;
+    view.dimH(body, seaToe - extension, seaToe, chain, extension.toFixed(1),
+              [base, base]);
+    view.dimH(body, seaToe, landToe, chain, (landToe - seaToe).toFixed(1),
+              [base, base]);
+    view.dimH(body, landToe, landToe + extension, chain, extension.toFixed(1),
+              [base, base]);
+    view.dimV(body, seabedLevel, base, seaToe - extension - 1.5,
+              blanket.toFixed(2));
+    view.pad(body, view.X(0.5 * (seaToe + landToe)),
+             view.Y(seabedLevel) + 26,
+             "Geotextile, " +
+             ((landToe - seaToe) + 2 * extension + 3 * blanket).toFixed(0) +
+             " m wide", "middle");
+    view.pad(body, view.X(seaToe - extension) - 6,
+             view.Y(base) - 34,
+             "toe scour " + foundation.scour.depth.toFixed(2) + " m", "end");
+  }
+
   var mid = 0.5 * (swl + crest);
   view.slope(body, outer.xSea - cotSea * (crest - mid), mid, cotSea,
-             0.22 * (crest - bed), "left", "1 : " + cotSea);
+             0.22 * (crest - base), "left", "1 : " + cotSea);
   view.slope(body, outer.xLand + cotLand * (crest - mid), mid, cotLand,
-             0.22 * (crest - bed), "right", "1 : " + cotLand);
+             0.22 * (crest - base), "right", "1 : " + cotLand);
 
   legend(svg, keys, 52, 24);
-  scaleBar(svg, view, 20, w - 190, h - 24);
+  scaleBar(svg, view, 20, w - 230, h - 26);
   sheetFrame(svg, w, h, {
     bubble: "A", title: "Breakwater typical section",
     scale: "1:" + Math.round(view.scaleDenominator / 5) * 5 + " on screen"

@@ -144,7 +144,9 @@ var MODULES = {
       });
       d._swl = 0.0;
       d._bed = -v.depth;
-      d._scour = P.breakwaterToeScour(d, v.depth, v.bed);
+      d._foundation = P.moundFoundation(d, v.depth, { bed: v.bed });
+      d._crown = P.crownWall(d, 0.0);
+      d._scour = d._foundation.scour;
       d._bedMaterial = P.sediment(v.bed);
       return d;
     },
@@ -167,8 +169,12 @@ var MODULES = {
           target: d._scour.mobility.regime || "screening",
           ok: d._scour.depth < d.Dn50,
           warn: d._scour.depth >= d.Dn50 },
-        { name: "Apron width", value: d._scour.apron_width.toFixed(1) + " m",
-          target: "past the hole", ok: true, neutral: true }
+        { name: "Blanket reach", value: d._foundation.bedding_extension.toFixed(1) + " m",
+          target: "past each toe",
+          ok: d._foundation.bedding_extension >= 2 * d._scour.depth },
+        { name: "Toe berm stone",
+          value: (d._foundation.toe_M50 / 1000).toFixed(1) + " t",
+          target: "filter grade", ok: true, neutral: true }
       ];
     },
     report: function (d) {
@@ -192,7 +198,20 @@ var MODULES = {
         ["  reflection Kr", d._scour.reflection.toFixed(2)],
         ["  toe scour", d._scour.depth.toFixed(2) + " m"],
         ["  at a vertical wall", d._scour.unlimited_depth.toFixed(2) + " m"],
-        ["  apron width", d._scour.apron_width.toFixed(1) + " m"]
+        ["  apron width", d._scour.apron_width.toFixed(1) + " m"],
+        [null, null],
+        ["Bedding blanket", d._foundation.bedding.name],
+        ["  thickness", d._foundation.bedding_thickness.toFixed(2) + " m"],
+        ["  reach past toe", d._foundation.bedding_extension.toFixed(1) + " m"],
+        ["Toe berm Dn50", d._foundation.toe_Dn50.toFixed(2) + " m"],
+        ["  M50", (d._foundation.toe_M50 / 1000).toFixed(1) + " t"],
+        ["  width x thickness", d._foundation.toe_width.toFixed(1) + " x "
+          + d._foundation.toe_thickness.toFixed(2) + " m"],
+        [null, null],
+        ["Crown parapet", fmt(d._crown.parapet_top) + " m CD"],
+        ["Crown deck", fmt(d._crown.deck_level) + " m CD"],
+        ["Crown founded at", fmt(d._crown.base_level) + " m CD"],
+        ["Crown concrete", d._crown.concrete_m3_per_m.toFixed(1) + " m3/m"]
       ];
     }
   },
@@ -925,8 +944,13 @@ function citation(paperId) {
 function runCase(spec) {
   var args = spec.args ? spec.args.slice() : [];
   if (spec.conditions) {
-    args.unshift(P.conditionsFromPeak(spec.conditions[0], spec.conditions[1],
-                                      spec.conditions[2], spec.conditions[3]));
+    var c = P.conditionsFromPeak(spec.conditions[0], spec.conditions[1],
+                                 spec.conditions[2], spec.conditions[3]);
+    if (spec.design_first) {
+      args[0] = P.designRubbleMound(c, args[0]);
+    } else {
+      args.unshift(c);
+    }
   }
   if (spec.vessel) {
     args.unshift(P.makeVessel(spec.vessel[0], spec.vessel[1], spec.vessel[2],

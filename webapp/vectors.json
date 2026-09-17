@@ -1,6 +1,6 @@
 {
  "generated_from": "pyCoastal",
- "count": 99,
+ "count": 105,
  "cases": [
   {
    "name": "dispersion T=8.0 h=5.0",
@@ -1730,6 +1730,180 @@
     "depth": 0.0,
     "unlimited_depth": 0.7027777955195567,
     "applies": false
+   }
+  },
+  {
+   "name": "mound foundation cot=1.5 fine_sand",
+   "call": {
+    "fn": "moundFoundation",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     10.0,
+     {
+      "bed": "fine_sand"
+     }
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "toe_Dn50": 0.9974668361958925,
+    "toe_M50": 2629.9123191862377,
+    "toe_width": 2.9924005085876777,
+    "toe_thickness": 1.994933672391785,
+    "bedding_thickness": 1.4962002542938388,
+    "bedding_extension": 3.223465731085172
+   }
+  },
+  {
+   "name": "crown wall cot=1.5",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     0.0
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "base_level": 3.319158988395227,
+    "deck_level": 7.61711329650879,
+    "parapet_top": 9.24311329650879,
+    "total_width": 9.5,
+    "concrete_m3_per_m": 44.082565927078846
+   }
+  },
+  {
+   "name": "mound foundation cot=2.0 medium_sand",
+   "call": {
+    "fn": "moundFoundation",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     10.0,
+     {
+      "bed": "medium_sand"
+     }
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "toe_Dn50": 0.8638316195781344,
+    "toe_M50": 1708.1781586056984,
+    "toe_width": 2.71,
+    "toe_thickness": 1.7276632391562687,
+    "bedding_thickness": 1.2957474293672016,
+    "bedding_extension": 3.0
+   }
+  },
+  {
+   "name": "crown wall cot=2.0",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     0.0
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "base_level": 4.2958783798945195,
+    "deck_level": 8.018015995025635,
+    "parapet_top": 9.644015995025635,
+    "total_width": 9.5,
+    "concrete_m3_per_m": 38.6123073437456
+   }
+  },
+  {
+   "name": "mound foundation cot=3.0 coarse_gravel",
+   "call": {
+    "fn": "moundFoundation",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 3.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     10.0,
+     {
+      "bed": "coarse_gravel"
+     }
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "toe_Dn50": 0.7053155638828069,
+    "toe_M50": 929.8144174113148,
+    "toe_width": 2.71,
+    "toe_thickness": 1.4106311277656138,
+    "bedding_thickness": 1.0579733458242104,
+    "bedding_extension": 3.0
+   }
+  },
+  {
+   "name": "crown wall cot=3.0",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 3.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     0.0
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "base_level": 3.3971790428852864,
+    "deck_level": 6.4362916793823235,
+    "parapet_top": 8.062291679382323,
+    "total_width": 9.5,
+    "concrete_m3_per_m": 32.12357004672185
    }
   },
   {

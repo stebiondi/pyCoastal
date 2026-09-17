@@ -485,80 +485,194 @@ def _mound_geometry(design, still_water_level, seabed_level, cot_land,
 def draw_rubble_mound(dwg: Section, design, still_water_level: float,
                       seabed_level: float, cot_land: float | None = None,
                       crest_width: float | None = None, margin: float = 12.0,
-                      annotate: bool = True) -> tuple[tuple, tuple]:
-    """Put a designed rubble mound into an open :class:`Section`."""
+                      annotate: bool = True, foundation: dict | None = None,
+                      crown: dict | None = None, bed="medium_sand",
+                      show_foundation: bool = True) -> tuple[tuple, tuple]:
+    """Put a designed rubble mound into an open :class:`Section`.
+
+    Draws the section the way a drawing office draws it: the mound on a
+    levelling blanket on a geotextile, a toe berm of filter stone at each
+    foot, and a stepped concrete crown block with its sand and gravel
+    infill. The blanket runs past both toes far enough that the scour hole
+    forms in the apron rather than under the structure.
+
+    Parameters
+    ----------
+    foundation : dict, optional
+        Output of :func:`~pyCoastal.applications.structures.mound_foundation`.
+        Computed from ``bed`` when not given.
+    crown : dict, optional
+        Output of :func:`~pyCoastal.applications.structures.crown_wall`.
+        Computed when not given. Pass ``False`` to leave it off.
+    """
+    from .structures import crown_wall, mound_foundation
+
     d = design
-    bed, swl = seabed_level, still_water_level
+    swl = still_water_level
+    depth = swl - seabed_level
+
+    if show_foundation and foundation is None:
+        foundation = mound_foundation(d, max(depth, 0.5), bed=bed)
+    if crown is None and crown is not False:
+        crown = crown_wall(d, swl)
+
+    # The mound stands on the blanket, not on the seabed.
+    blanket = foundation["bedding_thickness"] if foundation else 0.0
+    base = seabed_level + blanket
+
+    if crest_width is None:
+        needed = crown["total_width"] + 1.0 if crown else 0.0
+        crest_width = max(3.0 * d.Dn50, 4.0, needed)
+
     outer, under, core, crest, cot_land, Dn_under, crest_width = _mound_geometry(
-        d, swl, bed, cot_land, crest_width
+        d, swl, base, cot_land, crest_width
     )
 
-    toe_x = outer.points(bed)[0, 0]
-    x0 = toe_x - margin
-    x1 = outer.points(bed)[-1, 0] + margin
+    sea_toe = outer.points(base)[0, 0]
+    land_toe = outer.points(base)[-1, 0]
+    extension = foundation["bedding_extension"] if foundation else 0.0
+    x0 = sea_toe - extension - margin
+    x1 = land_toe + extension + margin
+    top = (crown["parapet_top"] if crown else crest) + 3.0
+    z0 = seabed_level - 4.0
 
-    dwg.material([[x0, bed - 10.0], [x1, bed - 10.0], [x1, bed], [x0, bed]],
-                 "subgrade", zorder=1.5)
-    dwg.water(x0, x1, swl, bed=bed, zorder=1.8)
+    dwg.material([[x0, z0 - 6.0], [x1, z0 - 6.0], [x1, seabed_level],
+                  [x0, seabed_level]], "subgrade", zorder=1.5)
+    dwg.water(x0, x1, swl, bed=seabed_level, zorder=1.8)
 
-    dwg.material(core.points(bed), "core",
+    # -- the blanket the whole thing stands on ----------------------------
+    if foundation:
+        blanket_x0 = sea_toe - extension
+        blanket_x1 = land_toe + extension
+        dwg.material(
+            [[blanket_x0 - 1.5 * blanket, seabed_level],
+             [blanket_x0, base], [blanket_x1, base],
+             [blanket_x1 + 1.5 * blanket, seabed_level]],
+            "sand",
+            label=f"Bedding blanket, {foundation['bedding'].name.lower()}, "
+                  f"{blanket:.2f} m",
+            zorder=2.0,
+        )
+        # The geotextile is a line on a drawing, not a layer.
+        dwg.line([[blanket_x0 - 1.5 * blanket, seabed_level],
+                  [blanket_x1 + 1.5 * blanket, seabed_level]],
+                 weight="heavy", style=(0, (7, 3)), color="#8a2f24", zorder=3.6)
+
+    dwg.material(core.points(base), "core",
                  label="Quarry run core, 1 to 500 kg", zorder=2.2)
-    dwg.material(under.band(core, bed), "underlayer",
-                 label=f"Underlayer, Dn50 = {Dn_under:.2f} m "
+    dwg.material(under.band(core, base), "underlayer",
+                 label=f"Filter layer, Dn50 = {Dn_under:.2f} m "
                        f"({2650 * Dn_under ** 3 / 1000:.1f} t)", zorder=2.4)
-    dwg.material(outer.band(under, bed), "armour",
-                 label=f"Primary armour, Dn50 = {d.Dn50:.2f} m "
-                       f"({d.M50 / 1000:.1f} t), "
+    dwg.material(outer.band(under, base), "armour",
+                 label=f"Armour, Dn50 = {d.Dn50:.2f} m ({d.M50 / 1000:.1f} t), "
                        f"{d.layer['thickness']:.2f} m thick", zorder=2.6)
 
-    toe_w = max(3.0 * d.Dn50, 3.0)
-    toe_t = 2.0 * d.Dn50
-    dwg.material(
-        [[toe_x - toe_w - 1.5 * toe_t, bed], [toe_x - toe_w, bed + toe_t],
-         [toe_x + 0.5, bed + toe_t], [toe_x + 0.5, bed]],
-        "toe", label="Toe berm", zorder=2.8,
-    )
+    # -- a toe berm at each foot, in filter stone -------------------------
+    if foundation:
+        tw = foundation["toe_width"]
+        tt = foundation["toe_thickness"]
+        for sign, toe_x in ((-1.0, sea_toe), (1.0, land_toe)):
+            dwg.material(
+                [[toe_x + sign * (tw + 1.5 * tt), base],
+                 [toe_x + sign * tw, base + tt],
+                 [toe_x - sign * 0.5, base + tt],
+                 [toe_x - sign * 0.5, base]],
+                "toe",
+                label=f"Toe berm, Dn50 = {foundation['toe_Dn50']:.2f} m "
+                      f"({foundation['toe_M50'] / 1000:.1f} t), both toes",
+                zorder=2.8,
+            )
 
-    if annotate:
-        dwg.level(x0 + 1.0, swl, f"SWL {swl:+.2f} m CD", side="right",
-                  symbol="water")
-        dwg.level(0.0, crest, f"Crest {crest:+.2f} m CD", side="left")
-        dwg.level(x1 - 1.0, bed, f"Seabed {bed:+.2f} m CD", side="left")
-
-        dwg.dim_h(outer.x_sea, outer.x_land, crest + 1.8, f"{crest_width:.1f}",
-                  extend_from=(crest, crest))
-        dwg.dim_v(swl, crest, x1 - margin * 0.35,
-                  f"Rc = {d.crest_freeboard:.2f}",
-                  extend_from=(outer.x_land, x1))
-
-        mid = 0.5 * (swl + crest)
-        dwg.slope((outer.x_sea - cot_land * 0 - d.cot_alpha * (crest - mid), mid),
-                  d.cot_alpha, rise=0.22 * (crest - bed), direction="left")
-        dwg.slope((outer.x_land + cot_land * (crest - mid), mid), cot_land,
-                  rise=0.22 * (crest - bed), direction="right")
-
-        dwg.note(
-            (outer.x_sea - d.cot_alpha * (crest - swl) * 0.5, 0.5 * (swl + crest)),
-            f"Van der Meer, {d.regime}\n"
-            f"S = 2, N = {d.conditions.wave_count:.0f} waves",
-            offset=(-62, 30), ha="right",
+    # -- crown block and its infill ---------------------------------------
+    if crown:
+        px0 = outer.x_sea
+        px1 = px0 + crown["parapet_width"]
+        dx1 = px1 + crown["deck_width"]
+        dwg.material(
+            [[px0, crown["base_level"]], [dx1, crown["base_level"]],
+             [dx1, crown["deck_level"]], [px1, crown["deck_level"]],
+             [px1, crown["parapet_top"]], [px0, crown["parapet_top"]]],
+            "concrete", label="Crown block, mass concrete", zorder=3.2,
         )
-        dwg.note((0.0, crest),
-                 f"q = {d.q_mean:.2g} l/s/m mean\n"
-                 f"{d.q_upper:.2g} l/s/m upper bound", offset=(58, 34))
+        if dx1 < outer.x_land:
+            dwg.material(
+                [[dx1, crown["base_level"]], [outer.x_land, crown["base_level"]],
+                 [outer.x_land, crest], [dx1, crest]],
+                "granular", label="Sand and gravel infill", zorder=3.0,
+            )
 
-    return (x0, x1), (bed - 4.0, crest + 5.0)
+    if not annotate:
+        return (x0, x1), (z0, top)
+
+    # -- levels ------------------------------------------------------------
+    dwg.level(x0 + 2, swl, f"SWL {fmt(swl)} m CD", side="right", symbol="water")
+    if crown:
+        dwg.level(outer.x_sea, crown["parapet_top"],
+                  f"Parapet {fmt(crown['parapet_top'])}", side="left")
+        dwg.level(outer.x_sea + crown["total_width"], crown["deck_level"],
+                  f"Deck {fmt(crown['deck_level'])}", side="right")
+    else:
+        dwg.level(0.0, crest, f"Crest {fmt(crest)} m CD", side="left")
+    # The blanket top is already given by its thickness dimension and the
+    # seabed level, so it does not get a third callout in the same corner.
+    dwg.level(land_toe + extension + 0.4 * margin, seabed_level,
+              f"Seabed {fmt(seabed_level)} m CD", side="left")
+
+    # -- dimensions --------------------------------------------------------
+    dwg.dim_h(outer.x_sea, outer.x_land, crest + 2.2, f"{crest_width:.1f}",
+              extend_from=(crest, crest))
+    dwg.dim_v(swl, crest, land_toe + 0.35 * extension,
+              f"Rc = {d.crest_freeboard:.2f}",
+              extend_from=(outer.x_land, land_toe + 0.35 * extension))
+
+    if foundation:
+        chain = seabed_level - 2.2
+        dwg.dim_h(sea_toe - extension, sea_toe, chain, f"{extension:.1f}",
+                  extend_from=(base, base))
+        dwg.dim_h(sea_toe, land_toe, chain, f"{land_toe - sea_toe:.1f}",
+                  extend_from=(base, base))
+        dwg.dim_h(land_toe, land_toe + extension, chain, f"{extension:.1f}",
+                  extend_from=(base, base))
+        dwg.dim_v(seabed_level, base, sea_toe - extension - 1.5,
+                  f"{blanket:.2f}", side="left")
+        dwg.note((0.5 * (sea_toe + land_toe), seabed_level),
+                 f"Geotextile, {(land_toe - sea_toe) + 2 * extension + 3 * blanket:.0f} m wide",
+                 offset=(0, -34), ha="center")
+        scour = foundation["scour"]
+        dwg.note((sea_toe - 0.6 * extension, base),
+                 f"Toe scour {scour['depth']:.2f} m predicted\n"
+                 f"(Kr = {scour['reflection']:.2f}, {scour['mobility'].get('regime', '')})",
+                 offset=(-20, 34), ha="right")
+
+    mid = 0.5 * (swl + crest)
+    dwg.slope((outer.x_sea - d.cot_alpha * (crest - mid), mid), d.cot_alpha,
+              rise=0.22 * (crest - base), direction="left")
+    dwg.slope((outer.x_land + cot_land * (crest - mid), mid), cot_land,
+              rise=0.22 * (crest - base), direction="right")
+
+    dwg.note((outer.x_sea - d.cot_alpha * (crest - swl) * 0.5, 0.5 * (swl + crest)),
+             f"Van der Meer, {d.regime}\n"
+             f"S = 2, N = {d.conditions.wave_count:.0f} waves",
+             offset=(-62, 30), ha="right")
+
+    return (x0, x1), (z0, top)
+
+
+def fmt(value: float) -> str:
+    """Signed level, the way a drawing writes one."""
+    return f"{value:+.2f}"
 
 
 def rubble_mound_notes(design, still_water_level, seabed_level,
-                       cot_land=None, crest_width=None) -> list[str]:
+                       cot_land=None, crest_width=None, foundation=None,
+                       crown=None) -> list[str]:
     """Specification notes generated from a rubble-mound design."""
     d = design
     outer, under, core, crest, cot_land, Dn_under, crest_width = _mound_geometry(
         d, still_water_level, seabed_level, cot_land, crest_width
     )
     areas = mound_layer_volumes([outer, under, core], seabed_level)
-    return [
+    notes = [
         f"Design condition: Hm0 = {d.conditions.Hm0:.2f} m and "
         f"Tm-1,0 = {d.conditions.Tm10:.2f} s at the toe, "
         f"{d.conditions.wave_count:.0f} waves in the design storm.",
@@ -581,6 +695,32 @@ def rubble_mound_notes(design, still_water_level, seabed_level,
         "(CIRIA/CUR/CETMEF 2007).",
         "Levels in metres to chart datum. Dimensions in metres unless noted.",
     ]
+    if foundation:
+        notes[7:7] = [
+            f"Bedding blanket: {foundation['bedding'].name.lower()}, "
+            f"{foundation['bedding_thickness']:.2f} m thick, laid on a "
+            "geotextile and carried "
+            f"{foundation['bedding_extension']:.1f} m beyond each toe so the "
+            "scour hole forms in the apron and not under the structure.",
+            f"Toe berm at each foot: Dn50 = {foundation['toe_Dn50']:.2f} m, "
+            f"M50 = {foundation['toe_M50'] / 1000:.1f} t, the same stone as "
+            f"the filter layer, {foundation['toe_width']:.1f} m wide and "
+            f"{foundation['toe_thickness']:.2f} m thick.",
+            f"Predicted toe scour {foundation['scour']['depth']:.2f} m at a "
+            f"reflection coefficient of {foundation['scour']['reflection']:.2f}. "
+            "A screening estimate; confirm by a mobile bed model before "
+            "fixing the apron.",
+        ]
+    if crown:
+        notes[7:7] = [
+            f"Crown block: parapet to {crown['parapet_top']:+.2f} m CD, deck "
+            f"at {crown['deck_level']:+.2f} m CD, founded at "
+            f"{crown['base_level']:+.2f} m CD, "
+            f"{crown['concrete_m3_per_m']:.1f} m3/m. Proportioned only: "
+            "sliding, overturning and uplift under wave impact are a separate "
+            "calculation.",
+        ]
+    return notes
 
 
 def rubble_mound_section(
@@ -669,25 +809,33 @@ def rubble_mound_sheet(
     view.scale_bar(20.0, loc=(0.62, 0.04))
     view.key(loc="upper left")
 
+    from .structures import crown_wall, mound_foundation
+
+    foundation = mound_foundation(d, max(still_water_level - seabed_level, 0.5))
+    crown = crown_wall(d, still_water_level)
+    base = seabed_level + foundation["bedding_thickness"]
     outer, under, core, crest, _, _, _ = _mound_geometry(
-        d, still_water_level, seabed_level, cot_land, crest_width
+        d, still_water_level, base, cot_land, crest_width
     )
-    areas = mound_layer_volumes([outer, under, core], seabed_level)
+    areas = mound_layer_volumes([outer, under, core], base)
 
     notes = sheet.viewport(rect=(0.72, 0.05, 0.28, 0.95), frame=False)
     notes.ax.set_xlim(0, 1)
     notes.ax.set_ylim(0, 1)
     notes.ax.set_aspect("auto")
     notes.notes_block(
-        rubble_mound_notes(d, still_water_level, seabed_level, cot_land,
-                           crest_width),
-        title="NOTES", width=40, loc=(0.0, 1.0), fontsize=6.4,
+        rubble_mound_notes(d, still_water_level, base, cot_land,
+                           crest_width, foundation=foundation, crown=crown),
+        title="NOTES", width=36, loc=(0.0, 1.0), fontsize=6.0,
     )
     notes.table(
         [
             ("ARMOUR", f"{areas[0]:.0f} m3/m"),
-            ("UNDERLAYER", f"{areas[1]:.0f} m3/m"),
+            ("FILTER", f"{areas[1]:.0f} m3/m"),
             ("CORE", f"{areas[2]:.0f} m3/m"),
+            ("BEDDING", f"{foundation['bedding_thickness'] * (outer.points(base)[-1, 0] - outer.points(base)[0, 0] + 2 * foundation['bedding_extension']):.0f} m3/m"),
+            ("TOE BERM", f"{2 * foundation['toe_width'] * foundation['toe_thickness']:.0f} m3/m"),
+            ("CROWN CONCRETE", f"{crown['concrete_m3_per_m']:.1f} m3/m"),
         ],
         title="QUANTITIES PER METRE RUN", loc=(0.0, 0.0), align="left",
         fontsize=6.8,

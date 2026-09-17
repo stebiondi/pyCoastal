@@ -1391,6 +1391,56 @@ function breakwaterToeScour(design, depth, bed, permeable) {
   return result;
 }
 
+function moundFoundation(design, depth, opts) {
+  opts = opts || {};
+  var bed = opts.bed || "medium_sand";
+  var permeable = opts.permeable === undefined ? true : opts.permeable;
+  var blanket = sediment(opts.bedding_material || "coarse_sand");
+  var settlement = opts.settlement_allowance || 0;
+  if (settlement < 0) throw new Error("Settlement allowance must be non-negative");
+
+  var scour = breakwaterToeScour(design, depth, bed, permeable);
+
+  /* The toe berm takes filter stone, not armour: it sits low, where the
+     orbital velocities are far smaller than at the waterline. */
+  var DnFilter = design.Dn50 / Math.pow(10, 1 / 3);
+  var toeThickness = 2.0 * DnFilter;
+  var toeWidth = Math.max(3.0 * DnFilter, 0.5 * design.conditions.Hm0, 2.0);
+  var beddingThickness = Math.max(0.6, 1.5 * DnFilter) + settlement;
+  var extension = Math.max(scour.apron_width, 2.0 * scour.depth, 3.0);
+
+  return {
+    scour: scour, toe_Dn50: DnFilter, toe_M50: 2650.0 * Math.pow(DnFilter, 3),
+    toe_width: toeWidth, toe_thickness: toeThickness,
+    bedding: blanket, bedding_thickness: beddingThickness,
+    bedding_extension: extension, settlement_allowance: settlement,
+    geotextile: true
+  };
+}
+
+function crownWall(design, stillWaterLevel, opts) {
+  opts = opts || {};
+  var deckWidth = opts.deck_width === undefined ? 7.5 : opts.deck_width;
+  var parapetWidth = opts.parapet_width === undefined ? 2.0 : opts.parapet_width;
+  var crest = stillWaterLevel + design.crest_freeboard;
+  var parapetHeight = opts.parapet_height === undefined
+    ? Math.max(0.3 * design.conditions.Hm0, 1.0) : opts.parapet_height;
+  var baseBelow = opts.base_below_crest === undefined
+    ? design.layer.thickness : opts.base_below_crest;
+  if (deckWidth <= 0 || parapetWidth <= 0) {
+    throw new Error("Deck and parapet widths must be positive");
+  }
+  var baseLevel = crest - baseBelow;
+  var area = parapetWidth * (crest + parapetHeight - baseLevel) +
+             deckWidth * (crest - baseLevel);
+  return {
+    base_level: baseLevel, deck_level: crest, parapet_top: crest + parapetHeight,
+    parapet_width: parapetWidth, deck_width: deckWidth,
+    total_width: parapetWidth + deckWidth,
+    concrete_m3_per_m: area, concrete_t_per_m: area * 2.4
+  };
+}
+
 function dredgedSideSlope(bed, factor) {
   factor = factor === undefined ? 2.0 : factor;
   var grains = sediment(bed);
@@ -1534,6 +1584,8 @@ var PYCOASTAL = {
   toeScour: toeScour,
   breakwaterToeScour: breakwaterToeScour,
   dredgedSideSlope: dredgedSideSlope,
+  moundFoundation: moundFoundation,
+  crownWall: crownWall,
   lMoments: lMoments,
   fitGpd: fitGpd,
   gpdReturnValue: gpdReturnValue,

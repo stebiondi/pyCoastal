@@ -62,6 +62,8 @@ from pyCoastal.applications.sediment import (
 from pyCoastal.applications.structures import (
     DesignConditions,
     breakwater_toe_scour,
+    crown_wall,
+    mound_foundation,
     design_rubble_mound,
     overtopping_sloped,
     overtopping_vertical,
@@ -378,6 +380,33 @@ def build() -> dict:
              {"fn": "toeScour", "args": [key, 3.0, 12.0, 15.0, Kr]},
              {"depth": got["depth"], "unlimited_depth": got["unlimited_depth"],
               "applies": got["applies"]})
+
+    # -- what the mound stands on ------------------------------------------
+    for cot, armour, key in ((1.5, "tetrapod", "fine_sand"),
+                             (2.0, "rock_two_layer_permeable", "medium_sand"),
+                             (3.0, "rock_two_layer_permeable", "coarse_gravel")):
+        c = DesignConditions.from_peak_period(Hm0=5.42, Tp=9.2, depth=10.0)
+        mound = design_rubble_mound(c, cot_alpha=cot, armour=armour)
+        got = mound_foundation(mound, 10.0, bed=key)
+        case(f"mound foundation cot={cot} {key}",
+             {"fn": "moundFoundation", "conditions": [5.42, 9.2, 10.0, 6 * 3600.0],
+              "args": [{"cot_alpha": cot, "armour": armour}, 10.0, {"bed": key}],
+              "design_first": True},
+             {"toe_Dn50": got["toe_Dn50"], "toe_M50": got["toe_M50"],
+              "toe_width": got["toe_width"],
+              "toe_thickness": got["toe_thickness"],
+              "bedding_thickness": got["bedding_thickness"],
+              "bedding_extension": got["bedding_extension"]})
+        block = crown_wall(mound, 0.0)
+        case(f"crown wall cot={cot}",
+             {"fn": "crownWall", "conditions": [5.42, 9.2, 10.0, 6 * 3600.0],
+              "args": [{"cot_alpha": cot, "armour": armour}, 0.0],
+              "design_first": True},
+             {"base_level": block["base_level"],
+              "deck_level": block["deck_level"],
+              "parapet_top": block["parapet_top"],
+              "total_width": block["total_width"],
+              "concrete_m3_per_m": block["concrete_m3_per_m"]})
 
     # -- the whole seawall, with the backfill in play ----------------------
     for label, (fill, table) in {

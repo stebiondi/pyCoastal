@@ -740,3 +740,137 @@ def breakwater_toe_scour(design, depth: float, bed="medium_sand",
     # The apron has to reach past the hole and be heavy enough to stay put.
     result["apron_width"] = max(2.0 * result["depth"], 1.5 * design.Dn50, 2.0)
     return result
+
+
+# ---------------------------------------------------------------------------
+# What the mound stands on
+# ---------------------------------------------------------------------------
+
+
+def mound_foundation(design, depth: float, bed="medium_sand",
+                     permeable: bool = True, bedding_material="coarse_sand",
+                     settlement_allowance: float = 0.0) -> dict:
+    """Bedding blanket, toe berm and geotextile under a rubble mound.
+
+    A trapezoid of rock does not sit straight on the seabed. Under it goes a
+    levelling blanket of graded sand and gravel, on a geotextile, carried
+    well past both toes so the scour hole forms in the apron rather than
+    under the structure. At the foot of the armour sits a berm of the same
+    stone as the filter layer, which is what stops the bottom of the
+    mantle unravelling.
+
+    Parameters
+    ----------
+    design : BreakwaterDesign
+        The sized mound.
+    depth : float
+        Water depth at the toe [m].
+    bed : Sediment or str
+        The natural seabed. Decides the scour, and therefore how far the
+        blanket has to reach.
+    bedding_material : Sediment or str
+        The blanket itself, normally a well graded sand and gravel.
+    settlement_allowance : float
+        Extra blanket thickness for consolidation of a soft seabed [m].
+
+    Returns
+    -------
+    dict
+        Every dimension the section needs, and the scour result behind it.
+
+    Notes
+    -----
+    Two rules are doing the work.
+
+    The toe berm takes the same stone as the filter layer rather than the
+    armour. It sits low, where the orbital velocities are much smaller than
+    at the waterline, and sizing it as armour is expensive without being
+    safer. This follows normal Italian and Rock Manual practice.
+
+    The blanket reaches past the toe by whichever is larger of the computed
+    scour apron and twice the predicted scour depth, with a floor of three
+    metres for something a dredger can actually place. Its job is to keep
+    the edge of the hole away from the toe, so it has to be wider than the
+    hole is deep.
+    """
+    from .sediment import sediment as _lookup
+
+    blanket = _lookup(bedding_material) if isinstance(bedding_material, str) \
+        else bedding_material
+    if settlement_allowance < 0:
+        raise ValueError(
+            f"Settlement allowance must be non-negative, got {settlement_allowance}"
+        )
+
+    scour = breakwater_toe_scour(design, depth, bed=bed, permeable=permeable)
+
+    # Filter stone, a tenth of the armour mass, is what the toe berm takes.
+    Dn_filter = design.Dn50 / 10.0 ** (1.0 / 3.0)
+    toe_thickness = 2.0 * Dn_filter
+    toe_width = max(3.0 * Dn_filter, 0.5 * design.conditions.Hm0, 2.0)
+
+    bedding_thickness = max(0.6, 1.5 * Dn_filter) + settlement_allowance
+    extension = max(scour["apron_width"], 2.0 * scour["depth"], 3.0)
+
+    return {
+        "scour": scour,
+        "toe_Dn50": Dn_filter,
+        "toe_M50": 2650.0 * Dn_filter**3,
+        "toe_width": toe_width,
+        "toe_thickness": toe_thickness,
+        "bedding": blanket,
+        "bedding_thickness": bedding_thickness,
+        "bedding_extension": extension,
+        "settlement_allowance": settlement_allowance,
+        "geotextile": True,
+    }
+
+
+def crown_wall(design, still_water_level: float, deck_width: float = 7.5,
+               parapet_width: float = 2.0, parapet_height: float | None = None,
+               base_below_crest: float | None = None) -> dict:
+    """A concrete crown block on the crest, in the usual stepped form.
+
+    A parapet on the seaward side to take the run-up, a deck behind it wide
+    enough to drive a lorry along for maintenance, and a base bedded into
+    the core below the armour crest.
+
+    Returns
+    -------
+    dict
+        Levels and widths for the block, and its concrete volume per metre
+        run at 2400 kg/m3.
+
+    Notes
+    -----
+    The block is proportioned here, not designed. Sliding and overturning
+    of a crown wall under wave impact are a separate calculation, and a
+    real one also has to survive the uplift that gets under it when the
+    core does not drain fast enough.
+    """
+    crest = still_water_level + design.crest_freeboard
+    if parapet_height is None:
+        # The parapet stands proud of the armour crest by enough to catch
+        # the run-up tongue without becoming a wave-reflecting wall.
+        parapet_height = max(0.3 * design.conditions.Hm0, 1.0)
+    if base_below_crest is None:
+        base_below_crest = design.layer["thickness"]
+    if deck_width <= 0 or parapet_width <= 0:
+        raise ValueError("Deck and parapet widths must be positive")
+
+    base_level = crest - base_below_crest
+    deck_level = crest
+    parapet_top = crest + parapet_height
+
+    area = (parapet_width * (parapet_top - base_level)
+            + deck_width * (deck_level - base_level))
+    return {
+        "base_level": base_level,
+        "deck_level": deck_level,
+        "parapet_top": parapet_top,
+        "parapet_width": parapet_width,
+        "deck_width": deck_width,
+        "total_width": parapet_width + deck_width,
+        "concrete_m3_per_m": area,
+        "concrete_t_per_m": area * 2.4,
+    }

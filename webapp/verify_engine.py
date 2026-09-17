@@ -39,7 +39,13 @@ function runCase(spec) {
   if (spec.conditions) {
     var c = PYCOASTAL.conditionsFromPeak(spec.conditions[0], spec.conditions[1],
                                          spec.conditions[2], spec.conditions[3]);
-    args.unshift(c);
+    if (spec.design_first) {
+      // The first argument is the options for a mound, not the conditions:
+      // build the design and pass that instead.
+      args[0] = PYCOASTAL.designRubbleMound(c, args[0]);
+    } else {
+      args.unshift(c);
+    }
   }
   if (spec.vessel) {
     var v = PYCOASTAL.makeVessel(spec.vessel[0], spec.vessel[1], spec.vessel[2],
