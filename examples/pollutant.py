@@ -10,6 +10,8 @@ pollutant.py
   - Animated visualization of scalar field
 """
 
+from pathlib import Path
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -21,7 +23,11 @@ from pyCoastal.numerics.operators import gradient, laplacian
 # -------------------------------------------------------------------
 # 1) Load config
 # -------------------------------------------------------------------
-cfg = read_data("configs/pollutant.yaml")
+# The config sits beside this script, so the path is resolved from the
+# script rather than from the shell. The example then runs from the
+# repository root, which is where the README says to run it from.
+CONFIG = Path(__file__).resolve().parent / "configs"
+cfg = read_data(CONFIG / "pollutant.yaml")
 
 # Domain and grid
 Lx = cfg["grid"]["Lx"]

@@ -3,7 +3,14 @@
   <img src="media/pyCoastal_logo.png"  width="400">
 </p>
 
-A Python module for Coastal Engineering calculations, and to play around with numerics.
+A Python toolbox for coastal, port and ocean engineering. It runs the chain a
+real scheme runs: a wave record becomes a design condition, the design
+condition sizes a structure, and the structure comes out as a dimensioned
+drawing with its quantities and its specification notes.
+
+Every relation names its source, states its range of validity, and says so
+when you push it outside. Nothing is a black box and nothing silently
+extrapolates.
 
 Copyright (c) 2025 Stefano Biondi
 Licensed under the MIT License. See LICENSE file for details.
@@ -22,6 +29,51 @@ pip install -e .
 ```
 ---
 
+## The design chain
+
+| Step | Module | What it gives you |
+|------|--------|-------------------|
+| Design condition | `applications.extremes` | 100-year wave or water level, with a confidence band |
+| Nearshore | `applications.port` | phase-resolved diffraction into a harbour, berth agitation |
+| Structure | `applications.structures`, `applications.seawall` | armour size, crest level, stability checks |
+| Loads | `applications.piles` | Morison base shear and mudline moment through the wave cycle |
+| Navigation | `applications.channel` | dredge level, channel width, dredge volume |
+| Flooding | `applications.surge` | water level budget and a connected flood map |
+| Deliverable | `drafting`, `applications.sections` | a dimensioned drawing sheet and a DXF |
+
+Each step hands its result to the next as an object, not as a number you
+retype, so a drawing cannot drift out of step with the calculation behind it.
+
+---
+
+## Drawings, not plots
+
+A cross-section is not a scatter plot. `pyCoastal.drafting` gives the
+primitives a design office uses: hatched materials, dimension lines with
+extension lines and terminators, levelling triangles, slope triangles, a
+sheet border and title block, numbered specification notes, and a true
+fitted drawing scale that the title block then states.
+
+<p align="center">
+  <img src="media/seawall_sheet.png" alt="Seawall drawing sheet" width="900">
+</p>
+
+```python
+from pyCoastal.applications.sections import seawall_sheet
+
+sheet = seawall_sheet(design, project="Bayfront promenade protection",
+                      client="Example Port Authority", size="A3")
+sheet.save("seawall.png")     # 1:200 @ A3, stated on the sheet
+sheet.to_dxf("seawall.dxf")   # geometry on named layers, for CAD
+```
+
+Sections are drawn at a true scale by default, so a 1:2 slope looks like a
+1:2 slope. Where a true scale is unreadable, as it is for a channel six
+hundred metres wide and twenty deep, the exaggeration is applied
+deliberately and printed on the drawing next to the scale.
+
+---
+
 ##  Simulation Preview
 
 circular wave propagation from a central disturbance:
@@ -37,6 +89,34 @@ circular wave propagation from a central disturbance:
 Scenario-level simulators built on the numerics, physics and tools layers.
 Each takes an engineering design and reports the quantities a project
 actually turns on.
+
+### Design conditions from a record
+
+Peaks over threshold and annual maxima, fitted by L-moments, with
+declustering, the standard threshold diagnostics, and a bootstrap band.
+
+```python
+from pyCoastal.applications.extremes import fit_pot, mean_residual_life
+
+mrl = mean_residual_life(record, thresholds)      # pick the threshold properly
+fit = fit_pot(record, threshold=2.5, separation=24, samples_per_year=2920)
+
+fit.return_value(100)                  # 100-year Hm0
+fit.confidence(100, level=0.90)        # and how much it could have been
+fit.extrapolation_note(100)            # how far past the record that reaches
+print(fit.summary())
+```
+
+<p align="center">
+  <img src="media/design_wave.png" alt="Extreme value analysis" width="900">
+</p>
+
+The worked example does what a real study cannot: because the record is
+synthetic, it repeats the whole 40-year analysis on fresh records and
+measures the true sampling spread of the 100-year estimate, then checks the
+bootstrap band against it.
+
+Worked example: `examples/design_wave.py`
 
 ### Beach nourishment
 
@@ -122,7 +202,7 @@ same screen cuts mean basin Kd from 0.20 to 0.04.
 
 Worked examples: `examples/port_diffraction.py`, `examples/port_layout_comparison.py`
 
-### Breakwater and seawall design
+### Rubble-mound breakwater design
 
 Armour sizing and wave overtopping, with every relation traced to its source:
 Van der Meer (1988) and Hudson (SPM 1984) for stability, EurOtop (2018) for
@@ -156,7 +236,130 @@ meets the limit, not the mean, which would be exceeded about half the time.
   <img src="media/breakwater_design.png" alt="Breakwater design curves" width="900">
 </p>
 
+The same design issued as a drawing, with the armour drawn as individual
+stones at the computed Dn50 and the layer quantities taken off the section:
+
+<p align="center">
+  <img src="media/breakwater_sheet.png" alt="Breakwater drawing sheet" width="900">
+</p>
+
 Worked example: `examples/breakwater_design.py`
+
+### Vertical seawall design
+
+The full chain for a gravity seawall: crest level from EurOtop, founding
+level from scour, Goda wave pressures on the wetted face, then the base
+width grown until sliding, overturning and the base pressure all pass.
+
+```python
+from pyCoastal.applications.seawall import design_seawall
+from pyCoastal.applications.structures import DesignConditions
+
+conditions = DesignConditions.from_peak_period(Hm0=2.8, Tp=9.5, depth=8.5)
+wall = design_seawall(conditions, still_water_level=2.9, seabed_level=-5.6,
+                      tolerable_use="trained_staff")
+print(wall.summary())
+wall.quantities()      # concrete, backfill, toe rock, excavation per metre run
+```
+
+```
+Crest level         +8.59 m CD (Rc = 5.69 m, Rc/Hm0 = 2.03)
+Founding level      -7.11 m CD (embedment 1.51 m, scour 1.51 m)
+Base                12.15 m wide x 1.20 m thick, stem 1.00 m
+Wave force          517 kN/m at 8.08 m above the base
+Sliding FoS         2.37
+Overturning FoS     2.99
+Bearing             p_max = 336 kPa, e = +2.02 m
+```
+
+The middle-third check on the base pressure is usually what governs, not
+sliding. Buoyancy is taken on the submerged part of the section, Goda uplift
+is applied under the base, and the embedment adds lever arm but no wave
+load, because below the seabed the wall is against soil.
+
+Worked example: `examples/seawall_section.py`
+
+### Navigation channel
+
+How deep and how wide, built as a stack of allowances that can be argued
+over line by line, which is how a dredging budget actually gets agreed.
+
+```python
+from pyCoastal.applications.channel import Vessel, design_channel
+
+vessel = Vessel(name="Post-Panamax container ship", length=336, beam=48.2,
+                draught=14.5, block_coefficient=0.68)
+
+channel = design_channel(vessel, speed=8.0, design_water_level=1.20,
+                         Hs=1.8, Tp=9.0, existing_bed=-11.5, two_way=True,
+                         conditions={"crosswind": "moderate", "waves": "moderate"})
+
+channel.dredge_level          # -16.37 m CD
+channel.width                 # 415 m at the bed
+channel.dredge_volume(1000)   # m3 per km of channel
+```
+
+<p align="center">
+  <img src="media/navigation_channel_sheet.png" alt="Navigation channel drawing sheet" width="900">
+</p>
+
+The sheet carries two views, as a real drawing set does: the whole channel
+exaggerated so it is readable, and the underkeel clearance at a true scale
+where the allowances can be read as real thicknesses.
+
+The squat depends on the depth and the depth depends on the squat, so the
+depth is solved rather than guessed. Width components you do not specify are
+taken at their most benign class and **reported as assumed**, because a
+silent default is how a channel ends up too narrow on paper.
+
+<p align="center">
+  <img src="media/channel_depth_chain.png" alt="Channel depth chain and sensitivity" width="900">
+</p>
+
+One judgement call, the fraction of the wave height taken as vertical vessel
+motion, moves the dredge level more than every tolerance put together.
+
+Worked example: `examples/navigation_channel.py`
+
+### Wave loads on piles
+
+Morison drag and inertia up the pile, integrated for base shear and mudline
+moment, and swept through the wave cycle.
+
+```python
+from pyCoastal.applications.piles import design_monopile
+
+result = design_monopile(diameter=8.0, H=12.0, T=13.0, depth=30.0)
+result["load"].force / 1e3        # kN, at the worst phase
+result["load"].moment / 1e6       # MNm about the mudline
+result["load"].inertia_fraction   # 0.90: this pile is inertia dominated
+result["crest_underestimate"]     # 0.62
+```
+
+<p align="center">
+  <img src="media/pile_wave_loads.png" alt="Morison wave loads on a monopile" width="900">
+</p>
+
+A large monopile is inertia dominated, so the load follows the fluid
+acceleration, which peaks a quarter cycle **before** the crest. Evaluating
+the load under the crest, because that is where the water is highest,
+understates the overturning moment by 62 per cent in this case. That is what
+the phase sweep exists to catch.
+
+| D (m) | KC | regime | inertia share | mudline moment |
+|-------|----|--------|---------------|----------------|
+| 1 | 51 | drag dominated | 5% | 3.8 MNm |
+| 2 | 25 | drag dominated | 15% | 8.1 MNm |
+| 4 | 13 | mixed | 50% | 20.7 MNm |
+| 8 | 6.3 | mixed | 90% | 77.2 MNm |
+| 12 | 4.2 | mixed | 96% | 176.0 MNm |
+
+Wheeler stretching carries the linear kinematics up to the instantaneous
+surface. Scour follows Sumer, Fredsoe and Christiansen (1992), which
+correctly predicts that waves alone barely scour a pile this large, because
+KC is small; current is what governs.
+
+Worked example: `examples/pile_wave_loads.py`
 
 ### Storm surge and flooding
 
@@ -201,7 +404,7 @@ If you use **pyCoastal** in a scientific publication, please cite:
 > **Biondi, S.** (2025)  
 > _pyCoastal: a Python package for Coastal Engineering_  
 > GitHub: [https://github.com/stebiondi/pyCoastal](https://github.com/stebiondi/pyCoastal)  
-> Version: v0.1.1  
+> Version: v0.2.0  
 
 You can also use this BibTeX entry:
 
@@ -211,5 +414,5 @@ You can also use this BibTeX entry:
   title   = {{pyCoastal}: Modular Coastal Process Modeling in Python},
   year    = {2025},
   url     = {https://github.com/stebiondi/pyCoastal},
-  version = {v0.1.1}
+  version = {v0.2.0}
 }
