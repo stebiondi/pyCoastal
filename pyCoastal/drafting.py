@@ -286,9 +286,11 @@ class Section:
             Polygon vertices in metres. It is closed automatically.
         kind : str
             Key into :data:`MATERIALS`.
-        label : str, optional
+        label : str or False, optional
             Overrides the material name in the key, for a size callout such
-            as "Rock armour, Dn50 = 1.45 m".
+            as "Rock armour, Dn50 = 1.45 m". Pass ``False`` to draw the
+            polygon but keep it out of the key: a pair of abutments, or a
+            row of piers, wants one entry rather than one each.
         """
         from matplotlib.patches import Polygon
 
@@ -313,10 +315,11 @@ class Section:
         if spec.stones > 0:
             self._stone_texture(patch, pts, spec, zorder + 0.1)
 
-        key = label or spec.name
-        self._used.setdefault(
-            key, Material(key, spec.face, spec.edge, spec.hatch, spec.weight)
-        )
+        if label is not False:
+            key = label or spec.name
+            self._used.setdefault(
+                key, Material(key, spec.face, spec.edge, spec.hatch, spec.weight)
+            )
         self._dxf.append(("POLY", pts, kind.upper()))
         return patch
 
@@ -681,12 +684,22 @@ class Section:
         ``rows`` is a sequence of (label, value) pairs. Values are already
         formatted strings: the drawing shows what the engineer decided, not
         a float repr.
+
+        A row of ``(None, None)`` draws a rule instead, for separating what
+        was measured from what was derived from it. A summary that lists
+        three scour components and then their totals wants the reader to
+        see at a glance which lines are which.
         """
         rows = list(rows)
         if not rows:
             return
-        width = max(len(str(a)) for a, _ in rows)
-        body = "\n".join(f"{a:<{width}}  {b}" for a, b in rows)
+        labelled = [r for r in rows if r[0] is not None]
+        if not labelled:
+            return
+        width = max(len(str(a)) for a, _ in labelled)
+        body = "\n".join(
+            "-" * (width + 12) if a is None else f"{a:<{width}}  {b}"
+            for a, b in rows)
         text = f"{title}\n" + "-" * (width + 12) + f"\n{body}"
         self.ax.text(
             loc[0], loc[1], text, transform=self.ax.transAxes,

@@ -69,7 +69,13 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .sediment import RHO_W, sediment, critical_shields, wave_orbital_velocity
+from .sediment import (
+    RHO_W,
+    critical_shields,
+    fall_velocity,
+    sediment,
+    wave_orbital_velocity,
+)
 
 __all__ = [
     "G",
@@ -94,6 +100,18 @@ __all__ = [
     "scour_protection",
     "PierScourDesign",
     "design_pier_scour",
+    "ABUTMENT_SHAPE",
+    "KU_CLEAR_WATER",
+    "KU_CRITICAL",
+    "abutment_shape_factor",
+    "BridgeOpening",
+    "critical_velocity",
+    "transport_exponent",
+    "contraction_scour",
+    "abutment_scour",
+    "bridge_scour_state",
+    "BridgeScourDesign",
+    "design_bridge_scour",
 ]
 
 G = 9.81
@@ -1054,5 +1072,660 @@ def _scour_notes(pier, base, conditions, governing, equilibrium, limited,
         "Sumer and Fredsoe's relations carry a standard deviation near 0.7 "
         "diameters in steady current. Treat the number as a mean, not a "
         "bound, and design protection with margin on it.")
+
+    return notes
+
+
+# ---------------------------------------------------------------------------
+# The waterway: contraction and abutment scour
+# ---------------------------------------------------------------------------
+#
+# Local scour at a pier is one of three components, and on its own it is the
+# smallest of the three about as often as not. HEC-18 splits total scour
+# into:
+#
+#   contraction scour  the bed drops across the whole opening because the
+#                      bridge squeezes the flow through less width than the
+#                      river used upstream
+#   local scour        the hole each pier digs for itself
+#   abutment scour     the hole at each end, where the embankment turns the
+#                      flow
+#
+# They are added, but only where they coexist. A pier in midstream sees
+# contraction plus its own local hole; an abutment sees contraction plus
+# its own. Adding all three at one point double-counts and is a common way
+# to arrive at a foundation depth nobody can build.
+
+#: HEC-18 abutment shape factor K1, for Froehlich's equation.
+ABUTMENT_SHAPE = {
+    "vertical": 1.00,
+    "wing_wall": 0.82,
+    "spill_through": 0.55,
+}
+
+#: Clear-water contraction scour coefficient, SI.
+KU_CLEAR_WATER = 0.025
+
+#: Critical velocity coefficient, SI.
+KU_CRITICAL = 6.19
+
+
+def abutment_shape_factor(shape: str) -> float:
+    """HEC-18 abutment shape factor K1."""
+    if shape not in ABUTMENT_SHAPE:
+        raise ValueError(
+            f"Unknown abutment shape {shape!r}. "
+            f"Options: {sorted(ABUTMENT_SHAPE)}")
+    return ABUTMENT_SHAPE[shape]
+
+
+@dataclass
+class BridgeOpening:
+    """The waterway, and the gap the bridge leaves in it.
+
+    Contraction scour is a property of the opening rather than of any
+    structure in it: squeeze the same discharge through less width and the
+    bed has to drop until the section can carry it again. So the geometry
+    that matters is the width upstream against the width left between the
+    abutments, less whatever the piers themselves occupy.
+
+    Attributes
+    ----------
+    approach_width : float
+        Bottom width of the channel upstream, W1 [m].
+    opening_width : float
+        Gross width between the abutment faces, W2 [m].
+    pier_blockage : float
+        Total width of piers standing in the opening [m]. Subtracted from
+        the gross width, because the flow does not use it.
+    abutment_length : float
+        Length of the embankment projected normal to the flow, L' [m], at
+        one end. This is what the abutment blocks, not how long the
+        structure is.
+    abutment_shape : str
+        Keys :data:`ABUTMENT_SHAPE`. Spill-through is the usual highway
+        form and the most forgiving; a vertical wall is nearly twice as
+        bad.
+    abutment_skew : float
+        Angle of the embankment to the flow [deg]. 90 is square on; less
+        than 90 points downstream, more points upstream.
+    slope : float
+        Energy grade line slope of the approach [-]. Only ever used to
+        classify the mode of transport, which moves the answer by a few
+        per cent; see :func:`contraction_scour`.
+    flow_fraction : float
+        Fraction of the total discharge that goes through the opening,
+        Q2/Q1. One where the bridge spans the whole waterway, less where
+        flow stays out on a floodplain.
+    abutment_depth_fraction : float
+        Flow depth at the abutment as a fraction of the approach channel
+        depth. Froehlich's ``ya`` is the depth where the embankment
+        actually sits, out on the bank or the floodplain, and not the
+        depth in the middle of the channel. It matters more than it looks:
+        the equation carries a ``+ ya`` term, so feeding it a mid-channel
+        depth in a deep estuary returns a hole deeper than the water.
+        Set it from the surveyed cross-section. The default assumes the
+        abutment stands in a little under half the channel depth.
+    """
+
+    approach_width: float = 120.0
+    opening_width: float = 70.0
+    pier_blockage: float = 0.0
+    abutment_length: float = 25.0
+    abutment_shape: str = "spill_through"
+    abutment_skew: float = 90.0
+    slope: float = 5e-4
+    flow_fraction: float = 1.0
+    abutment_depth_fraction: float = 0.4
+
+    def __post_init__(self) -> None:
+        if self.approach_width <= 0:
+            raise ValueError("Approach width must be positive")
+        if self.opening_width <= 0:
+            raise ValueError("Opening width must be positive")
+        if self.pier_blockage < 0:
+            raise ValueError("Pier blockage cannot be negative")
+        if self.pier_blockage >= self.opening_width:
+            raise ValueError(
+                f"Piers block the whole {self.opening_width} m opening")
+        if self.abutment_length < 0:
+            raise ValueError("Abutment length cannot be negative")
+        if not 0 < self.abutment_skew < 180:
+            raise ValueError("Abutment skew must be in (0,180) degrees")
+        if self.slope <= 0:
+            raise ValueError("Energy slope must be positive")
+        if not 0 < self.flow_fraction <= 1:
+            raise ValueError("Flow fraction must be in (0,1]")
+        if not 0 < self.abutment_depth_fraction <= 1:
+            raise ValueError("Abutment depth fraction must be in (0,1]")
+        abutment_shape_factor(self.abutment_shape)
+
+    @property
+    def net_opening(self) -> float:
+        """Width actually available to the flow, W2 [m]."""
+        return self.opening_width - self.pier_blockage
+
+    @property
+    def contraction_ratio(self) -> float:
+        """W1 / W2. One means no contraction; more means a squeeze."""
+        return self.approach_width / self.net_opening
+
+    @property
+    def contracted(self) -> bool:
+        return self.contraction_ratio > 1.0 + 1e-12
+
+
+def critical_velocity(bed, depth: float) -> float:
+    """Velocity at which the bed starts to move [m/s].
+
+    HEC-18 equation 6.1::
+
+        Vc = 6.19 y^(1/6) D50^(1/3)      (SI)
+
+    This is the switch between the two contraction scour modes, and it is
+    a real switch rather than a smooth transition: below it the approach
+    delivers no sediment to the opening and the bed there scours until the
+    flow can no longer move it, above it the opening is fed from upstream
+    and reaches a balance instead.
+    """
+    grains = sediment(bed) if isinstance(bed, str) else bed
+    if grains.d50 <= 0:
+        raise ValueError(
+            f"{grains.name} is cohesive; these relations are for sands "
+            "and gravels.")
+    if depth <= 0:
+        raise ValueError(f"Depth must be positive, got {depth}")
+    return KU_CRITICAL * depth ** (1.0 / 6.0) * grains.d50 ** (1.0 / 3.0)
+
+
+def transport_exponent(bed, depth: float, slope: float) -> dict:
+    """Laursen's exponent k1, and the mode of transport behind it.
+
+    The shear velocity against the fall velocity says whether the sediment
+    travels along the bed or up in the water column, and Laursen's
+    live-bed relation carries a different exponent for each::
+
+        V*/w < 0.50   k1 = 0.59   mostly contact load
+        0.50 to 2.0   k1 = 0.64   some suspended
+        V*/w > 2.0    k1 = 0.69   mostly suspended
+
+    The spread is worth keeping in perspective. k1 is an exponent on the
+    width ratio, so across the whole range it moves the scoured depth of a
+    two-to-one contraction by about seven per cent. It is not where the
+    uncertainty in a contraction scour estimate lives.
+    """
+    grains = sediment(bed) if isinstance(bed, str) else bed
+    if depth <= 0 or slope <= 0:
+        raise ValueError("Depth and slope must be positive")
+
+    shear = math.sqrt(G * depth * slope)
+    settling = fall_velocity(grains)
+    ratio = shear / settling if settling > 0 else math.inf
+
+    if ratio < 0.50:
+        k1, mode = 0.59, "contact load"
+    elif ratio <= 2.0:
+        k1, mode = 0.64, "some suspended load"
+    else:
+        k1, mode = 0.69, "mostly suspended load"
+
+    return {"k1": k1, "mode": mode, "shear_velocity": shear,
+            "fall_velocity": settling, "ratio": ratio}
+
+
+def contraction_scour(opening: BridgeOpening, depth: float, velocity: float,
+                      bed, opening_depth: float | None = None,
+                      regime: str | None = None) -> dict:
+    """Bed lowering across the whole opening [m].
+
+    Two modes, and which one applies is decided by whether the approach
+    flow is already carrying bed material.
+
+    **Live bed**, Laursen (1960), HEC-18 equation 6.2::
+
+        y2 / y1 = (Q2/Q1)^(6/7) (W1/W2)^k1
+
+    The opening is fed from upstream, so it scours only until the enlarged
+    section carries the sediment that arrives. The answer depends on the
+    width ratio and almost nothing else.
+
+    **Clear water**, HEC-18 equation 6.4::
+
+        y2 = [ 0.025 Q2^2 / (Dm^(2/3) W2^2) ]^(3/7)
+
+    Nothing arrives from upstream, so the opening scours until the flow in
+    it can no longer move the bed. Deeper, slower, and the mode that
+    governs a bridge on a coarse bed or in a slack tidal reach.
+
+    Parameters
+    ----------
+    depth, velocity : float
+        Approach flow, upstream of the contraction.
+    opening_depth : float, optional
+        Existing depth in the opening before scour, y0. Defaults to the
+        approach depth, which assumes a level bed through the bridge.
+    regime : str, optional
+        Force ``"live"`` or ``"clear"``. Left alone, the critical velocity
+        decides.
+
+        The two modes are separate relations fitted to separate data, and
+        they do not meet at the threshold: the predicted depth steps as the
+        bed comes alive. Forcing both and comparing them across the switch
+        is the honest way to see how big that step is for a given case
+        before quoting a number from either side of it.
+
+    Returns
+    -------
+    dict
+        ``depth`` of scour, the scoured flow depth ``y2``, the regime, and
+        the numbers behind it.
+    """
+    grains = sediment(bed) if isinstance(bed, str) else bed
+    if grains.d50 <= 0:
+        raise ValueError(
+            f"{grains.name} is cohesive; contraction scour in cohesive beds "
+            "is governed by erodibility testing, not by these relations.")
+    if depth <= 0:
+        raise ValueError(f"Depth must be positive, got {depth}")
+
+    y0 = depth if opening_depth is None else opening_depth
+    if y0 <= 0:
+        raise ValueError("Opening depth must be positive")
+
+    speed = abs(velocity)
+    Vc = critical_velocity(grains, depth)
+    if regime is None:
+        regime = "live" if speed > Vc else "clear"
+    if regime not in ("live", "clear"):
+        raise ValueError(f"Regime must be 'live' or 'clear', got {regime!r}")
+
+    W1 = opening.approach_width
+    W2 = opening.net_opening
+    Q1 = speed * depth * W1
+    Q2 = Q1 * opening.flow_fraction
+
+    transport = transport_exponent(grains, depth, opening.slope)
+
+    if speed == 0 or Q1 == 0:
+        y2 = y0
+    elif regime == "live":
+        y2 = depth * (opening.flow_fraction ** (6.0 / 7.0)) \
+            * (W1 / W2) ** transport["k1"]
+    else:
+        Dm = 1.25 * grains.d50
+        y2 = (KU_CLEAR_WATER * Q2 ** 2
+              / (Dm ** (2.0 / 3.0) * W2 ** 2)) ** (3.0 / 7.0)
+
+    scour = max(y2 - y0, 0.0)
+
+    return {
+        "depth": scour,
+        "y2": y2,
+        "y0": y0,
+        "regime": regime,
+        "critical_velocity": Vc,
+        "approach_velocity": speed,
+        "mobility": speed / Vc if Vc > 0 else math.inf,
+        "contraction_ratio": opening.contraction_ratio,
+        "discharge": Q1,
+        "opening_discharge": Q2,
+        "k1": transport["k1"],
+        "transport_mode": transport["mode"],
+        "opening_velocity": Q2 / (y2 * W2) if y2 > 0 else 0.0,
+    }
+
+
+def abutment_scour(opening: BridgeOpening, depth: float, velocity: float,
+                   method: str | None = None,
+                   abutment_depth: float | None = None) -> dict:
+    """Local scour at one abutment [m].
+
+    Two equations, chosen by how far the embankment reaches into the flow
+    compared with the depth.
+
+    **Froehlich (1989)**, for a short abutment, ``L'/y < 25``::
+
+        ys / y = 2.27 K1 K2 (L'/y)^0.43 Fr^0.61 + 1
+
+    **HIRE**, for a long one::
+
+        ys / y = 4 Fr^0.33 (K1 / 0.55) K2
+
+    Notes
+    -----
+    That trailing ``+ 1`` in Froehlich is not physics. HEC-18 added it as a
+    factor of safety, and it has the consequence that the equation can
+    never return less than one flow depth of scour, however short the
+    abutment or however slow the water. A spill-through abutment barely
+    projecting into a sluggish estuary will still be handed a metre of
+    scour for every metre of depth. It is reported here as
+    ``safety_margin`` so the conservatism is visible rather than baked
+    silently into a foundation level.
+
+    HEC-18 replaced both of these with the NCHRP 24-20 amplification
+    approach in its fifth edition. These are the fourth-edition relations,
+    which is the edition the pier scour in this module also comes from, and
+    they remain the ones most practitioners will recognise.
+
+    Parameters
+    ----------
+    depth : float
+        Approach depth in the channel [m].
+    abutment_depth : float, optional
+        Flow depth where the abutment actually stands [m]. Defaults to
+        ``depth`` reduced by the opening's
+        :attr:`~BridgeOpening.abutment_depth_fraction`, because an
+        abutment sits on the bank and not in the channel. Passing the
+        channel depth here is the single easiest way to get an absurd
+        answer out of Froehlich.
+    """
+    if depth <= 0:
+        raise ValueError(f"Depth must be positive, got {depth}")
+    if abutment_depth is None:
+        abutment_depth = depth * opening.abutment_depth_fraction
+    if abutment_depth <= 0:
+        raise ValueError("Abutment depth must be positive")
+
+    L = opening.abutment_length
+    if L == 0:
+        return {"depth": 0.0, "method": "none", "ratio": 0.0,
+                "froude": 0.0, "K1": 0.0, "K2": 0.0,
+                "relative_length": 0.0, "safety_margin": 0.0,
+                "abutment_depth": abutment_depth}
+
+    speed = abs(velocity)
+    froude = speed / math.sqrt(G * abutment_depth)
+    K1 = abutment_shape_factor(opening.abutment_shape)
+    K2 = (opening.abutment_skew / 90.0) ** 0.13
+    relative = L / abutment_depth
+
+    if method is None:
+        method = "froehlich" if relative < 25.0 else "hire"
+    if method not in ("froehlich", "hire"):
+        raise ValueError(
+            f"Method must be 'froehlich' or 'hire', got {method!r}")
+
+    if method == "froehlich":
+        bare = 2.27 * K1 * K2 * relative ** 0.43 * froude ** 0.61
+        ratio = bare + 1.0
+        margin = abutment_depth
+    else:
+        ratio = 4.0 * froude ** 0.33 * (K1 / 0.55) * K2
+        margin = 0.0
+
+    return {
+        "depth": ratio * abutment_depth,
+        "abutment_depth": abutment_depth,
+        "ratio": ratio,
+        "method": method,
+        "froude": froude,
+        "K1": K1,
+        "K2": K2,
+        "relative_length": relative,
+        "safety_margin": margin,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Total scour at a crossing
+# ---------------------------------------------------------------------------
+
+
+def bridge_scour_state(opening: BridgeOpening, depth: float, velocity: float,
+                       bed, pier: "Pier | None" = None,
+                       base: "PierBase | None" = None,
+                       Um: float = 0.0, period: float = 6.0,
+                       skew_degrees: float | None = None,
+                       limit_by_depth: bool = True) -> dict:
+    """All three scour components for one steady set of approach conditions.
+
+    The components are computed in the order the water meets them, because
+    each one changes the flow the next one sees:
+
+    1. **Contraction** first, from the *approach* depth and velocity. It
+       lowers the bed across the opening and so deepens the section.
+    2. **Local scour** second, from the flow *in the opening*. That flow is
+       faster than the approach, because the same discharge is going
+       through less width, and deeper, because the contraction has already
+       scoured it. Using approach conditions here is the classic way to
+       understate a pier.
+    3. **Abutment** scour alongside, from the approach flow it turns.
+
+    They are then added only where they coexist. A pier in midstream gets
+    contraction plus its own hole; an abutment gets contraction plus its
+    own. Adding all three at one point double-counts, and is a reliable
+    way to arrive at a foundation depth nobody can build.
+
+    Returns
+    -------
+    dict
+        ``contraction``, ``pier``, ``abutment``, the flow in the opening,
+        and the two totals.
+    """
+    contraction = contraction_scour(opening, depth, velocity, bed)
+    abutment = abutment_scour(opening, depth, velocity)
+
+    # The flow the piers actually stand in.
+    opening_depth = contraction["y2"]
+    opening_velocity = contraction["opening_velocity"]
+
+    local = None
+    if pier is not None:
+        local = equilibrium_scour(
+            pier, base, opening_depth, opening_velocity, Um, period,
+            skew_degrees=skew_degrees, limit_by_depth=limit_by_depth, bed=bed)
+
+    at_pier = contraction["depth"] + (local["depth"] if local else 0.0)
+    at_abutment = contraction["depth"] + abutment["depth"]
+
+    return {
+        "contraction": contraction,
+        "pier": local,
+        "abutment": abutment,
+        "opening_depth": opening_depth,
+        "opening_velocity": opening_velocity,
+        "approach_depth": depth,
+        "approach_velocity": abs(velocity),
+        "total_at_pier": at_pier,
+        "total_at_abutment": at_abutment,
+        "total": max(at_pier, at_abutment),
+        "governing_location": "abutment" if at_abutment > at_pier else "pier",
+    }
+
+
+@dataclass
+class BridgeScourDesign:
+    """The outcome of :func:`design_bridge_scour`."""
+
+    opening: BridgeOpening
+    conditions: EstuaryConditions
+    pier: "Pier | None"
+    base: "PierBase | None"
+    states: list[dict]
+    governing: dict
+    contraction: float
+    pier_local: float
+    abutment: float
+    total_at_pier: float
+    total_at_abutment: float
+    protection: dict
+    notes: list[str] = field(default_factory=list)
+
+    @property
+    def total(self) -> float:
+        """The deepest total at any location and any phase [m]."""
+        return max(self.total_at_pier, self.total_at_abutment)
+
+    @property
+    def governing_location(self) -> str:
+        return ("abutment" if self.total_at_abutment > self.total_at_pier
+                else "pier")
+
+    def phases(self) -> np.ndarray:
+        return np.array([s["state"]["phase"] for s in self.states])
+
+    def component(self, name: str) -> np.ndarray:
+        """Envelope of one component through the cycle [m]."""
+        if name == "contraction":
+            return np.array([s["scour"]["contraction"]["depth"]
+                             for s in self.states])
+        if name == "abutment":
+            return np.array([s["scour"]["abutment"]["depth"]
+                             for s in self.states])
+        if name == "pier":
+            return np.array([(s["scour"]["pier"]["depth"]
+                              if s["scour"]["pier"] else 0.0)
+                             for s in self.states])
+        if name in ("total", "total_at_pier", "total_at_abutment"):
+            key = "total" if name == "total" else name
+            return np.array([s["scour"][key] for s in self.states])
+        raise ValueError(
+            "Component must be one of contraction, pier, abutment, total, "
+            f"total_at_pier, total_at_abutment; got {name!r}")
+
+
+def design_bridge_scour(opening: BridgeOpening,
+                        conditions: EstuaryConditions,
+                        pier: "Pier | None" = None,
+                        base: "PierBase | None" = None,
+                        samples: int = 73,
+                        limit_by_depth: bool = True,
+                        protection_factor: float = 1.0) -> BridgeScourDesign:
+    """Total scour at a crossing, worked over the tidal cycle.
+
+    The same sweep as :func:`design_pier_scour`, carrying all three HEC-18
+    components rather than one. Each is enveloped over the cycle, and the
+    envelopes are reported separately as well as combined, because they do
+    not all peak at the same phase and a designer needs to see which one is
+    driving the number.
+
+    Returns
+    -------
+    BridgeScourDesign
+    """
+    if samples < 3:
+        raise ValueError(f"Need at least three phases, got {samples}")
+
+    states = []
+    for phase in np.linspace(0.0, 360.0, samples):
+        state = tidal_state(conditions, float(phase))
+        skew = base.skew if base is not None else 0.0
+        if base is not None and not state["ebb"]:
+            skew = 180.0 - base.skew
+        scour = bridge_scour_state(
+            opening, state["depth"], state["current"], conditions.material,
+            pier=pier, base=base, Um=state["Um"], period=conditions.Tp,
+            skew_degrees=skew, limit_by_depth=limit_by_depth)
+        states.append({"state": state, "scour": scour, "skew": skew})
+
+    governing = max(states, key=lambda s: s["scour"]["total"])
+
+    # Each component enveloped in its own right: they do not peak together.
+    def envelope(pick):
+        return max(pick(s["scour"]) for s in states)
+
+    contraction = envelope(lambda c: c["contraction"]["depth"])
+    abutment = envelope(lambda c: c["abutment"]["depth"])
+    local = envelope(lambda c: c["pier"]["depth"] if c["pier"] else 0.0)
+    at_pier = envelope(lambda c: c["total_at_pier"])
+    at_abutment = envelope(lambda c: c["total_at_abutment"])
+
+    gs = governing["state"]
+    protection = scour_protection(
+        pier if pier is not None else Pier(diameter=opening.net_opening / 10.0),
+        base, abs(gs["current"]) + gs["Um"],
+        protection_factor * max(at_pier, at_abutment))
+
+    notes = _bridge_notes(opening, conditions, governing, contraction,
+                          local, abutment, at_pier, at_abutment)
+
+    return BridgeScourDesign(
+        opening=opening, conditions=conditions, pier=pier, base=base,
+        states=states, governing=governing, contraction=contraction,
+        pier_local=local, abutment=abutment, total_at_pier=at_pier,
+        total_at_abutment=at_abutment, protection=protection, notes=notes)
+
+
+def _bridge_notes(opening, conditions, governing, contraction, local,
+                  abutment, at_pier, at_abutment) -> list[str]:
+    """What a reviewer would want said, in the order they would ask it."""
+    gs = governing["state"]
+    sc = governing["scour"]
+    con = sc["contraction"]
+    notes = []
+
+    notes.append(
+        f"Opening {opening.opening_width:.0f} m gross"
+        + (f" less {opening.pier_blockage:.1f} m of piers"
+           if opening.pier_blockage else "")
+        + f" in a {opening.approach_width:.0f} m waterway: a "
+        f"{opening.contraction_ratio:.2f} to 1 contraction.")
+
+    notes.append(
+        f"Governing phase {gs['phase']:.0f} deg on the "
+        f"{'ebb' if gs['ebb'] else 'flood'}: {abs(gs['current']):.2f} m/s "
+        f"approaching in {gs['depth']:.2f} m, becoming "
+        f"{sc['opening_velocity']:.2f} m/s in {sc['opening_depth']:.2f} m "
+        "through the opening.")
+
+    if con["regime"] == "clear":
+        notes.append(
+            f"Clear-water contraction scour: the approach at "
+            f"{con['approach_velocity']:.2f} m/s is below the "
+            f"{con['critical_velocity']:.2f} m/s needed to move this bed, so "
+            "no sediment arrives to replace what the opening loses. It "
+            "scours until the flow in it can no longer lift the bed, which "
+            "is the deeper of the two modes.")
+    else:
+        notes.append(
+            f"Live-bed contraction scour: the approach at "
+            f"{con['approach_velocity']:.2f} m/s is "
+            f"{con['mobility']:.1f} times the {con['critical_velocity']:.2f} "
+            "m/s threshold, so the opening is fed from upstream and scours "
+            "only until it can pass what arrives. Note that this mode does "
+            "not depend on how fast the water goes: Laursen's relation is a "
+            "sediment balance, and above the threshold it turns on the width "
+            "ratio alone.")
+
+    notes.append(
+        f"Components: contraction {contraction:.2f} m, pier local "
+        f"{local:.2f} m, abutment {abutment:.2f} m. Each is the worst over "
+        "the whole cycle; they do not all peak at the same phase.")
+
+    notes.append(
+        f"Total {at_pier:.2f} m at a pier and {at_abutment:.2f} m at an "
+        f"abutment. The {('abutment' if at_abutment > at_pier else 'pier')} "
+        "governs. These are not added together: they are depths at two "
+        "different places, and combining them would invent a hole that "
+        "exists nowhere.")
+
+    ab = sc["abutment"]
+    if ab["method"] == "froehlich" and ab["safety_margin"] > 0:
+        share = 100.0 * ab["safety_margin"] / ab["depth"] if ab["depth"] else 0.0
+        notes.append(
+            f"Abutment scour by Froehlich, of which {ab['safety_margin']:.2f} m "
+            f"({share:.0f}%) is the +1 flow depth HEC-18 adds as a factor of "
+            "safety rather than as physics. Worth knowing before it is "
+            "treated as a measurement.")
+
+    notes.append(
+        "Local scour is computed on the flow in the contracted opening, not "
+        "on the approach, since the contraction has already accelerated and "
+        "deepened it. Taking approach values here is the usual way a pier "
+        "gets understated.")
+
+    if at_abutment > gs["depth"] or at_pier > gs["depth"]:
+        notes.append(
+            f"A total of {max(at_pier, at_abutment):.2f} m exceeds the "
+            f"{gs['depth']:.2f} m of water at the governing phase. That is a "
+            "signal the relations have been pushed past where they were "
+            "fitted, not a foundation level. Check the abutment depth and "
+            "the contraction ratio, and get a physical model or a "
+            "morphodynamic run before committing to it.")
+
+    notes.append(
+        "Long-term degradation or aggradation of the reach is not included "
+        "and is a separate study. HEC-18 adds it to these; on a river with "
+        "a moving bed it can exceed all three.")
 
     return notes

@@ -37,7 +37,7 @@ pip install -e .
 | Nearshore | `applications.port` | phase-resolved diffraction into a harbour, berth agitation |
 | Structure | `applications.structures`, `applications.seawall` | armour size, crest level, stability checks |
 | Loads | `applications.piles` | Morison base shear and mudline moment through the wave cycle |
-| Scour | `applications.scour` | pier scour in combined waves, tide and river, over the tidal cycle |
+| Scour | `applications.scour` | total bridge scour: contraction, pier and abutment, over the tidal cycle |
 | Navigation | `applications.channel` | dredge level, channel width, dredge volume |
 | Flooding | `applications.surge` | water level budget and a connected flood map |
 | Deliverable | `drafting`, `applications.sections` | a dimensioned drawing sheet and a DXF |
@@ -241,6 +241,72 @@ hides:
   root is not an outcome the pier can stay at.
 
 Worked example: `examples/pier_scour.py`
+
+### Total bridge scour
+
+Local scour at a pier is the component everyone computes, and on a
+contracted crossing it is routinely the smallest of the three. HEC-18
+splits total scour into contraction, local and abutment; all three are here
+and all three are worked over the tidal cycle.
+
+```python
+from pyCoastal.applications.scour import (
+    BridgeOpening, Pier, PierBase, EstuaryConditions, design_bridge_scour,
+)
+
+opening = BridgeOpening(approach_width=140, opening_width=80,
+                        pier_blockage=5, abutment_length=22,
+                        abutment_shape="spill_through")
+
+design = design_bridge_scour(opening, estuary, pier, base)
+
+design.contraction          # bed lowering across the whole opening
+design.pier_local           # the hole each pier digs
+design.abutment             # the hole at each end
+design.total_at_pier        # contraction + pier
+design.total_at_abutment    # contraction + abutment
+design.component("pier")    # that component through the tidal cycle
+```
+
+<p align="center">
+  <img src="media/bridge_scour_sheet.png" alt="Bridge scour assessment sheet" width="900">
+</p>
+
+The three are drawn on one bed line on purpose. They are computed
+separately and usually quoted separately, and a reader who sees them apart
+will add them. On the elevation it is visible that the deepest point is one
+hole at one place, not the sum of three numbers.
+
+**The components are chained, not parallel.** Contraction is computed from
+the approach flow; local scour is then computed from the flow *in the
+contracted opening*, which is faster and deeper because the contraction has
+already been through it. Taking approach values for a pier is the usual way
+it gets understated.
+
+<p align="center">
+  <img src="media/bridge_scour_components.png" alt="Scour components through the tidal cycle" width="900">
+</p>
+
+Two things fall out of working the cycle:
+
+- **Live-bed contraction scour does not depend on velocity.** Laursen's
+  relation is a sediment balance — faster water carries more but delivers
+  more, and the two cancel, leaving the width ratio. Below the threshold
+  nothing arrives from upstream, the mode flips, and velocity becomes
+  everything. The two relations were fitted separately and do not meet at
+  the switch; `contraction_scour` will compute either on demand so the step
+  can be seen rather than assumed away.
+- **The components peak at different phases**, so each gets its own
+  envelope rather than all being read off the worst moment for one of them.
+
+Froehlich's abutment equation carries a `+1` that HEC-18 added as a factor
+of safety rather than as physics, and it is frequently more than half the
+answer; it is reported as `safety_margin` instead of being folded in
+silently. When a total exceeds the water depth, the result says so — that
+is a signal the relations have been pushed past their fitted range, not a
+foundation level.
+
+Worked example: `examples/bridge_scour.py`
 
 ### Port layout
 

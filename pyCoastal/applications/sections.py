@@ -65,6 +65,11 @@ __all__ = [
     "pier_scour_notes",
     "pier_scour_section",
     "pier_scour_sheet",
+    "bridge_bed_profile",
+    "draw_bridge_scour",
+    "bridge_scour_notes",
+    "bridge_scour_section",
+    "bridge_scour_sheet",
 ]
 
 
@@ -2122,5 +2127,287 @@ def pier_scour_sheet(design,
                         else "EXPOSED" if design.base_exposed else "BURIED"))
     notes.table(rows, title="SUMMARY", loc=(0.0, 0.0), align="left",
                 fontsize=6.4)
+    sheet.set_scale_from(view)
+    return sheet
+
+
+# ---------------------------------------------------------------------------
+# Bridge scour, in elevation
+# ---------------------------------------------------------------------------
+
+
+def bridge_bed_profile(design, repose: float = REPOSE_ANGLE):
+    """The scoured bed across the whole waterway, left bank to right.
+
+    Traces, in order: the untouched bed on the left bank, down the left
+    abutment hole, up to the contracted bed, down into the pier hole and
+    back out, then the mirror image. Every face stands at the angle of
+    repose, because that is the steepest a hole in sand can be.
+
+    Returning one polyline rather than three separate holes is deliberate.
+    The components are computed apart and they are drawn together, and
+    seeing them in one line is what stops anyone adding the pier hole to
+    the abutment hole.
+    """
+    opening = design.opening
+    contraction = design.contraction
+    at_pier = design.total_at_pier
+    at_abutment = design.total_at_abutment
+
+    cot = 1.0 / math.tan(math.radians(repose))
+    half_channel = 0.5 * opening.approach_width
+    face = 0.5 * opening.opening_width
+
+    # The abutment hole undercuts the face rather than ramping back under
+    # the embankment. That is both what happens and what matters: an
+    # abutment fails because the hole takes the ground out from beneath its
+    # toe, and a gentle ramp drawn back into the bank hides exactly that.
+    inner_reach = max(at_abutment - contraction, 0.0) * cot
+
+    # As wide as whatever dug it. The pier hole is set by the effective
+    # obstruction, which is the footing once the scour has reached it, not
+    # by the stem.
+    local = design.governing["scour"].get("pier")
+    obstruction = local["D_e"] if local else opening.pier_blockage
+    pier_half = max(0.5 * max(obstruction, opening.pier_blockage), 0.4)
+    pier_reach = max(at_pier - contraction, 0.0) * cot
+
+    pts = [[-half_channel, 0.0]]
+    pts.append([-face, 0.0])
+    pts.append([-face, -at_abutment])
+    pts.append([-face + inner_reach, -contraction])
+
+    if at_pier > contraction:
+        pts.append([-pier_half - pier_reach, -contraction])
+        pts.append([-pier_half, -at_pier])
+        pts.append([pier_half, -at_pier])
+        pts.append([pier_half + pier_reach, -contraction])
+
+    pts.append([face - inner_reach, -contraction])
+    pts.append([face, -at_abutment])
+    pts.append([face, 0.0])
+    pts.append([half_channel, 0.0])
+
+    # Non-decreasing in x, or the polygon self-intersects and the fill
+    # inverts. Equal x is allowed and is how the undercut faces are drawn.
+    for i in range(1, len(pts)):
+        pts[i][0] = max(pts[i][0], pts[i - 1][0])
+    return pts
+
+
+def draw_bridge_scour(dwg: Section, design, annotate: bool = True,
+                      freeboard: float = 2.0):
+    """Elevation through a bridge opening, with all three scour components.
+
+    Looking downstream: the abutments at each end, the pier between them,
+    and one bed line carrying the contraction across the whole opening with
+    the local holes cut into it at the pier and at each abutment toe.
+
+    Drawing them on one line is the point. The three components are
+    computed separately and are often quoted separately, and a reader who
+    sees them apart will add them. Here it is visible that the deepest
+    point is one hole at one place, not the sum of three.
+    """
+    opening = design.opening
+    conditions = design.conditions
+    pier = design.pier
+    base = design.base
+
+    bed = bridge_bed_profile(design)
+    half_channel = 0.5 * opening.approach_width
+    face = 0.5 * opening.opening_width
+
+    mwl = conditions.mean_depth
+    hw = mwl + conditions.tidal_amplitude
+    lw = mwl - conditions.tidal_amplitude
+    deck = hw + freeboard
+
+    lowest = min(p[1] for p in bed)
+    if base is not None:
+        lowest = min(lowest, base.bottom_level)
+    x0, x1 = -half_channel * 1.06, half_channel * 1.06
+    z0 = lowest - max(0.25 * abs(lowest), 1.5)
+    z1 = deck + 0.30 * (deck - z0)          # room for the key above the deck
+
+    # Bed, cut to the scoured profile.
+    dwg.material([[x0, z0]] + [[x0, 0.0]] + bed + [[x1, 0.0], [x1, z0]],
+                 "subgrade", label="Estuary bed", zorder=1.4)
+
+    # Water, down into every hole.
+    dwg.material([[x0, hw], [x1, hw], [x1, 0.0]]
+                 + [p for p in reversed(bed)] + [[x0, 0.0]],
+                 "water", zorder=1.2)
+
+    # The abutments, spill-through, standing on the bank.
+    for sign in (-1.0, 1.0):
+        toe = sign * face
+        crest = sign * (face + 1.8 * (deck - 0.0) / 2.0)
+        outer = sign * half_channel
+        dwg.material(
+            [[toe, -0.0], [crest, deck], [outer, deck], [outer, 0.0]],
+            "rock_fill",
+            label="Abutment embankment" if sign < 0 else False, zorder=2.6)
+
+    # The pier and its footing.
+    if pier is not None:
+        stem_r = 0.5 * pier.diameter
+        if base is not None:
+            base_r = 0.5 * base.width
+            dwg.material(
+                [[-base_r, base.bottom_level], [base_r, base.bottom_level],
+                 [base_r, base.top_level], [-base_r, base.top_level]],
+                "reinforced", label="Pile cap", zorder=4.0)
+            stem_from = base.top_level
+        else:
+            stem_from = -design.total_at_pier
+        dwg.material([[-stem_r, stem_from], [stem_r, stem_from],
+                      [stem_r, deck], [-stem_r, deck]],
+                     "concrete", label="Pier", zorder=4.2)
+
+    # Deck.
+    dwg.material([[x0, deck], [x1, deck], [x1, deck + 1.1], [x0, deck + 1.1]],
+                 "pavement", label="Deck", zorder=4.4)
+
+    dwg.line([[x0, 0.0], [x1, 0.0]], weight="thin", style="--", zorder=3.0)
+    dwg.line([[-face, -design.total_at_abutment], [face, -design.total_at_abutment]],
+             weight="thin", style=":", zorder=3.0)
+
+    if not annotate:
+        return (x0, x1), (z0, z1)
+
+    dwg.level(x0 + 0.03 * (x1 - x0), hw, f"HW +{hw:.2f}", "water")
+    dwg.level(x0 + 0.03 * (x1 - x0), lw, f"LW +{lw:.2f}", "water")
+    dwg.level(x1 - 0.03 * (x1 - x0), 0.0, "Bed 0.00", side="right")
+
+    dwg.dim_h(-face, face, deck + 2.4, f"opening {opening.opening_width:.0f} m")
+    dwg.dim_h(-half_channel, half_channel, z0 + 0.12 * (lowest - z0),
+              f"waterway {opening.approach_width:.0f} m")
+
+    dwg.dim_v(-design.contraction, 0.0, -face + 0.30 * face,
+              f"contraction {design.contraction:.2f} m")
+    dwg.note((-face, -design.total_at_abutment),
+             f"abutment {design.abutment:.2f} m\n"
+             f"total {design.total_at_abutment:.2f} m",
+             offset=(30, -26), ha="left")
+    if design.pier is not None:
+        dwg.note((0.0, -design.total_at_pier),
+                 f"pier {design.pier_local:.2f} m\n"
+                 f"total {design.total_at_pier:.2f} m",
+                 offset=(46, 30), ha="left")
+
+    state = design.governing["state"]
+    dwg.note((-0.45 * half_channel, deck + 1.1),
+             f"{abs(state['current']):.2f} m/s approach, "
+             f"{design.governing['scour']['opening_velocity']:.2f} m/s in the opening",
+             offset=(0, 58), ha="center")
+
+    return (x0, x1), (z0, z1)
+
+
+def bridge_scour_notes(design) -> list[str]:
+    """Drawing notes for a bridge scour assessment."""
+    opening = design.opening
+    conditions = design.conditions
+    material = conditions.material
+    con = design.governing["scour"]["contraction"]
+
+    notes = [
+        f"Bed: {material.name.lower()}, d50 = {material.d50 * 1000:.2f} mm. "
+        f"Critical velocity {con['critical_velocity']:.2f} m/s at the "
+        "governing phase.",
+        f"Waterway {opening.approach_width:.0f} m, opening "
+        f"{opening.opening_width:.0f} m gross"
+        + (f" less {opening.pier_blockage:.1f} m of piers"
+           if opening.pier_blockage else "")
+        + f", a {opening.contraction_ratio:.2f} to 1 contraction.",
+        f"Abutments {opening.abutment_length:.0f} m projection, "
+        f"{opening.abutment_shape.replace('_', ' ')}, "
+        f"{opening.abutment_skew:.0f} deg to the flow, standing in "
+        f"{100 * opening.abutment_depth_fraction:.0f}% of the channel depth.",
+    ]
+    notes.extend(design.notes)
+    notes.append(
+        f"Holes drawn at the {REPOSE_ANGLE:.0f} degree angle of repose. The "
+        "three components are shown on one bed line because they are one "
+        "bed: the deepest point is a single hole at a single place, not the "
+        "sum of the three numbers.")
+    notes.append(f"Protection: {design.protection['note']}")
+    return notes
+
+
+def bridge_scour_section(design,
+                         title: str = "Bridge scour, total",
+                         figsize: tuple[float, float] = (13.0, 7.0),
+                         exaggeration: float | None = None,
+                         ax=None) -> Section:
+    """A standalone elevation of the crossing and its scour."""
+    if exaggeration is None:
+        import matplotlib.pyplot as plt
+
+        probe = Section(figsize=figsize, ax=ax)
+        xlim, zlim = draw_bridge_scour(probe, design, annotate=False)
+        exaggeration = round(probe.auto_exaggeration(xlim, zlim))
+        if ax is None:
+            plt.close(probe.fig)
+        else:
+            probe.fig.clear()
+
+    stretched = ("" if exaggeration <= 1
+                 else f"  VERTICAL EXAGGERATION {exaggeration:g}:1")
+    dwg = Section(
+        title,
+        subtitle=(
+            f"HEC-18. Contraction {design.contraction:.2f} m, pier "
+            f"{design.pier_local:.2f} m, abutment {design.abutment:.2f} m. "
+            f"Total {design.total:.2f} m at the {design.governing_location}."
+            + stretched
+        ),
+        figsize=figsize,
+        exaggeration=exaggeration,
+        ax=ax,
+    )
+    xlim, zlim = draw_bridge_scour(dwg, design)
+    dwg.key(loc="upper right")
+    dwg.finish(xlim=xlim, zlim=zlim)
+    dwg.ax.set_xlabel("distance across the waterway (m)")
+    dwg.ax.set_ylabel("level to the initial bed (m)")
+    return dwg
+
+
+def bridge_scour_sheet(design,
+                       project: str = "Estuary crossing",
+                       title: str = "Bridge scour assessment",
+                       size: str = "A3",
+                       file: str = "bridge_scour_sheet.py",
+                       **titleblock) -> Sheet:
+    """A drawing sheet of the crossing, its scour and its protection."""
+    sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
+
+    view = sheet.viewport(rect=(0.0, 0.10, 0.70, 0.86))
+    xlim, zlim = draw_bridge_scour(view, design)
+    view.auto_exaggeration(xlim, zlim)
+    view.fit_scale(xlim, zlim, paper=size, round_vertical=True)
+    view.detail_bubble("A", title.upper(), view.scale_text, loc=(0.02, -0.12))
+    view.key(loc="upper right")
+
+    notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
+    notes.ax.set_xlim(0, 1)
+    notes.ax.set_ylim(0, 1)
+    notes.ax.set_aspect("auto")
+    text = bridge_scour_notes(design)
+    if view.exaggeration_note:
+        text.insert(0, view.exaggeration_note.capitalize() + ".")
+    notes.notes_block(text, title="NOTES", width=36, loc=(0.0, 1.0),
+                      fontsize=5.4)
+
+    notes.table(
+        [("CONTRACTION", f"{design.contraction:.2f} m"),
+         ("PIER LOCAL", f"{design.pier_local:.2f} m"),
+         ("ABUTMENT", f"{design.abutment:.2f} m"),
+         (None, None),
+         ("AT PIER", f"{design.total_at_pier:.2f} m"),
+         ("AT ABUTMENT", f"{design.total_at_abutment:.2f} m"),
+         ("GOVERNS", design.governing_location.upper())],
+        title="TOTAL SCOUR", loc=(0.0, 0.0), align="left", fontsize=6.4)
     sheet.set_scale_from(view)
     return sheet

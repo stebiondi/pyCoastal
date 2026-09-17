@@ -13,6 +13,7 @@ var D = globalThis.DRAW;
 var STATE = {
   module: "seawall",
   knowledge: null,
+  knowledgePending: false,
   vectors: null,
   topic: null,
   verified: null
@@ -1256,17 +1257,60 @@ function boot() {
     renderVerification();
   });
 
+  wireTheory();
+}
+
+/* The literature corpus is 1.7 MB and most sittings never open it, so it
+   is fetched the first time somebody asks and not before. Until then the
+   page is a tool and nothing else. */
+function loadKnowledge() {
+  if (STATE.knowledge || STATE.knowledgePending) return;
+  STATE.knowledgePending = true;
+  var stat = document.getElementById("corpus-stat");
+  if (stat) stat.textContent = "Fetching the extract\u2026";
+
   fetch("knowledge.json").then(function (r) { return r.json(); }).then(function (k) {
     STATE.knowledge = k;
-    var stat = document.getElementById("corpus-stat");
-    stat.textContent = k.corpus.papers.toLocaleString() + " papers · " +
-      k.corpus.knowledge_claims.toLocaleString() + " claims · " +
-      k.corpus.topics + " topics";
+    STATE.knowledgePending = false;
+    if (stat) {
+      stat.textContent = k.corpus.papers.toLocaleString() + " papers \u00b7 " +
+        k.corpus.knowledge_claims.toLocaleString() + " claims \u00b7 " +
+        k.corpus.topics + " topics";
+    }
     renderTopics();
     renderKnowledge();
-  }).catch(function (err) {
-    document.getElementById("corpus-stat").textContent =
-      "Literature extract did not load";
+  }).catch(function () {
+    STATE.knowledgePending = false;
+    if (stat) stat.textContent = "Literature extract did not load";
+  });
+}
+
+function wireTheory() {
+  var panel = document.getElementById("theory");
+  var veil = document.getElementById("theory-veil");
+  var open = document.getElementById("theory-open");
+  var close = document.getElementById("theory-close");
+  if (!panel || !open) return;
+
+  function show(on) {
+    panel.hidden = !on;
+    if (veil) veil.hidden = !on;
+    open.setAttribute("aria-expanded", String(on));
+    if (on) {
+      loadKnowledge();
+      renderTopics();
+      renderKnowledge();
+      if (close) close.focus();
+    } else {
+      open.focus();
+    }
+  }
+
+  open.addEventListener("click", function () { show(panel.hidden); });
+  if (close) close.addEventListener("click", function () { show(false); });
+  if (veil) veil.addEventListener("click", function () { show(false); });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !panel.hidden) show(false);
   });
 }
 
