@@ -27,7 +27,17 @@ from pyCoastal.applications.nourishment import (
     profile_overfill_factor,
     shoreline_advance,
 )
-from pyCoastal.applications.sections import nourishment_section, nourishment_sheet
+from pyCoastal.applications.nourishment import (
+    SECONDS_PER_YEAR,
+    NourishmentDesign,
+    WaveClimate,
+)
+from pyCoastal.applications.sections import (
+    nourishment_plan_section,
+    nourishment_section,
+    nourishment_sheet,
+    spreading_half_life,
+)
 from pyCoastal.applications.sediment import sediment
 from pyCoastal.drafting import use_crisp_style
 
@@ -74,15 +84,36 @@ chosen = results[CHOSEN][1]
 section = nourishment_section(chosen, NATIVE, CHOSEN, BERM, CLOSURE)
 section.save("media/nourishment_profile.png")
 
+# --- the same design seen from above ---------------------------------------
+# The profile says how much dry beach the sand buys. It says nothing about
+# how long it stays there, and for a fill that is the second half of the
+# question: a 1.5 km placement in this climate is half gone inside a year.
+LENGTH = 1500.0
+climate = WaveClimate(Hb=1.2, T=8.0, alpha0=0.0)
+design = NourishmentDesign(length=LENGTH, berm_width=chosen["advance"],
+                           taper=0.1 * LENGTH, D=CLOSURE, B=BERM)
+
+half_life = spreading_half_life(design, climate) / SECONDS_PER_YEAR
+print(f"\nPlanform, {LENGTH:.0f} m of fill in Hb = {climate.Hb:.1f} m:")
+print(f"  spreading half-life  {half_life:.2f} yr")
+print(f"  placed volume        "
+      f"{design.placed_volume / 1e3:.0f} thousand m3 in place")
+
+plan = nourishment_plan_section(design, climate)
+plan.save("media/nourishment_plan.png")
+
 sheet = nourishment_sheet(
     chosen, NATIVE, CHOSEN, BERM, CLOSURE,
     project="Bayfront beach management",
     title="Nourishment design profile",
     client="Example Coastal Authority",
     file="examples/nourishment_profile.py",
+    plan_design=design,
+    plan_climate=climate,
 )
 sheet.save("media/nourishment_sheet.png")
-print(f"\nWrote media/nourishment_profile.png and media/nourishment_sheet.png")
+print("\nWrote media/nourishment_profile.png, media/nourishment_plan.png "
+      "and media/nourishment_sheet.png")
 
 # --- how the answer moves with the borrow source --------------------------
 fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13.0, 5.4))

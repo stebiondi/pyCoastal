@@ -55,6 +55,10 @@ __all__ = [
     "nourishment_notes",
     "nourishment_section",
     "nourishment_sheet",
+    "draw_nourishment_plan",
+    "nourishment_plan_section",
+    "spreading_half_life",
+    "plan_margin",
 ]
 
 
@@ -1551,17 +1555,58 @@ def nourishment_sheet(
     title: str = "Nourishment design profile",
     size: str = "A3",
     exaggeration: float = 6.0,
+    plan_design=None,
+    plan_climate=None,
+    plan_years=None,
     file: str = "nourishment_sheet.py",
     **titleblock,
 ) -> Sheet:
-    """A drawing sheet of a nourishment profile, with its borrow notes."""
+    """A drawing sheet of a nourishment profile, with its borrow notes.
+
+    Pass ``plan_design`` and ``plan_climate`` to add a second view below the
+    section: the planform spreading alongshore, from the same
+    Pelnard-Considere solution the app plots. A fill is designed in two
+    directions at once, and a sheet that shows only the profile leaves the
+    reader to imagine how long it stays there.
+    """
     sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
-    view = sheet.viewport(rect=(0.0, 0.05, 0.70, 0.95), exaggeration=exaggeration)
+    has_plan = plan_design is not None and plan_climate is not None
+    rect = (0.0, 0.52, 0.70, 0.44) if has_plan else (0.0, 0.05, 0.70, 0.95)
+    view = sheet.viewport(rect=rect, exaggeration=exaggeration)
     xlim, zlim = draw_nourishment(view, result, native, borrow, berm_height,
                                  closure_depth, water_level)
     view.fit_scale(xlim, zlim, paper=size)
     view.detail_bubble("A", title, view.scale_text, loc=(0.02, 0.05))
-    view.key(loc="lower left")
+    view.key(loc="upper right")
+
+    if has_plan:
+        plan_years = plan_years if plan_years is not None else _plan_years(
+            plan_design, plan_climate)
+        # The plan is kilometres by tens of metres, so it gets its own
+        # exaggeration; the section's would flatten it to a line.
+        plan = sheet.viewport(rect=(0.0, 0.11, 0.70, 0.40))
+        plan.exaggeration_axis = "CROSS-SHORE"
+        # The ladder is coarse this far out (1:25000, then 1:50000), and
+        # falling a couple of percent over a rung would waste half the
+        # paper. Trim the discretionary margin instead, the way a drafter
+        # would, but never by more than a sixth of the width.
+        margin = plan_margin(plan_design, plan_climate, plan_years)
+        width = plan_design.length + 2.0 * margin
+        pos = plan.ax.get_position()
+        paper_w = pos.width * plan.fig.get_size_inches()[0] * 0.0254
+        rungs = [c for c in plan.STANDARD_SCALES if c * paper_w >= 0.84 * width]
+        if rungs:
+            fits = rungs[0] * paper_w
+            if fits < width:
+                margin = max(0.0, 0.5 * (fits - plan_design.length))
+        px, py = draw_nourishment_plan(plan, plan_design, plan_climate,
+                                       plan_years, margin=margin)
+        plan.auto_exaggeration(px, py)
+        plan.fit_scale(px, py, paper=size, round_vertical=True)
+        # The plan fills its viewport edge to edge, so its bubble goes in
+        # the strip below it rather than on top of the sand.
+        plan.detail_bubble("B", "PLANFORM EVOLUTION", plan.scale_text,
+                           loc=(0.02, -0.16))
 
     notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
     notes.ax.set_xlim(0, 1)
@@ -1581,3 +1626,218 @@ def nourishment_sheet(
     )
     sheet.set_scale_from(view)
     return sheet
+
+
+#: erfinv(1/2), to the precision the half-life deserves.
+_ERFINV_HALF = 0.4769362762044698733814
+
+def plan_margin(design, climate, years) -> float:
+    """How far past the fill a planform has to be drawn, in metres.
+
+    Enough to show the sand that has left: 1.4 spreading lengths at the
+    latest time, and never less than the fill is long. Split out from the
+    drawing so a sheet can ask for the extents before it commits to a
+    scale, and trim them to hold a rung of the scale ladder.
+    """
+    from .nourishment import SECONDS_PER_YEAR, longshore_diffusivity
+
+    longest = max(years) * SECONDS_PER_YEAR
+    spread = math.sqrt(longshore_diffusivity(climate, design) * longest)         if longest > 0 else 0.0
+    return max(1.4 * spread, 0.6 * design.length, 200.0)
+
+
+def _plan_years(design, climate) -> list[float]:
+    """Times to draw a planform at, keyed to the fill's own half-life."""
+    from .nourishment import SECONDS_PER_YEAR
+
+    half_life = spreading_half_life(design, climate) / SECONDS_PER_YEAR
+    return [0.0] + [round(f * half_life, 2) for f in (0.5, 1.0, 2.0, 4.0)]
+
+
+def spreading_half_life(design, climate) -> float:
+    """Time for the centre of a fill to lose half its width [s].
+
+    From the Pelnard-Considere solution: the centre width is
+    ``W erf(a / (2 sqrt(eps t)))``, which is halved when the argument
+    reaches erfinv(1/2) = 0.476936... It is the natural clock of a fill, and the right basis
+    for choosing what times to draw: a plan at ten years tells you nothing
+    about a fill whose half-life is seven months.
+    """
+    from .nourishment import longshore_diffusivity
+
+    diffusivity = longshore_diffusivity(climate, design)
+    half = 0.5 * design.length
+    return half**2 / (4.0 * _ERFINV_HALF**2 * diffusivity)
+
+
+def draw_nourishment_plan(dwg: Section, design, climate, years=(0, 1, 2, 5, 10),
+                          annotate: bool = True, samples: int = 601,
+                          margin: float | None = None) -> tuple[tuple, tuple]:
+    """Plan view of a fill spreading alongshore, from the analytical solution.
+
+    Pelnard-Considere (1956) linearises the one-line equation into a
+    diffusion equation, so a rectangular fill spreads exactly as a slug of
+    heat does: the planform is a pair of error functions whose width grows
+    as the square root of time. This draws that solution as a map, which is
+    how a beach manager actually looks at it.
+
+    Parameters
+    ----------
+    design, climate : NourishmentDesign, WaveClimate
+        The fill and the wave climate driving it.
+    years : sequence
+        Times to draw, in years. Zero is the placed planform.
+
+    Returns
+    -------
+    (xlim, ylim)
+        Extents in metres.
+
+    Notes on the scale
+    ------------------
+    Both axes are distance, so this could be drawn 1:1. It should not be. A
+    fill is kilometres long and tens of metres wide, and at a true scale the
+    whole story is a hairline. Shoreline-change plans are conventionally
+    drawn with the cross-shore axis stretched, and
+    :func:`nourishment_plan_section` picks the factor and prints it.
+
+    Notes
+    -----
+    The analytical solution is for a rectangular fill with no tapers and a
+    constant diffusivity. A real fill is tapered, the diffusivity varies
+    with the wave climate, and the ends interact with whatever is next to
+    them. It is the reference case, and it is the right one for seeing what
+    the spreading does; it is not the numerical solver.
+    """
+    from .nourishment import SECONDS_PER_YEAR, longshore_diffusivity, pelnard_considere
+
+    years = list(years)
+    if not years:
+        raise ValueError("Need at least one time to draw")
+    if min(years) < 0:
+        raise ValueError("Times must be non-negative")
+
+    diffusivity = longshore_diffusivity(climate, design)
+    longest = max(years) * SECONDS_PER_YEAR
+    spread = math.sqrt(diffusivity * longest) if longest > 0 else 0.0
+    half = 0.5 * design.length
+    margin = plan_margin(design, climate, years) if margin is None else margin
+
+    x0, x1 = -half - margin, half + margin
+    x = np.linspace(x0, x1, samples)
+    centred = _recentre_free(design, x)
+
+    widths = {}
+    for year in years:
+        widths[year] = pelnard_considere(x, year * SECONDS_PER_YEAR,
+                                         centred, climate)
+
+    peak = float(max(w.max() for w in widths.values()))
+    y0 = -0.45 * peak
+    y1 = peak * 1.55
+
+    # The sea above the original shoreline, the land below it.
+    dwg.material([[x0, y0], [x1, y0], [x1, 0.0], [x0, 0.0]], "sand",
+                 label="Existing beach", zorder=1.4)
+    dwg.water(x0, x1, y1, bed=0.0, zorder=1.2)
+
+    # The placed fill.
+    placed = widths[0] if 0 in widths else None
+    if placed is None:
+        placed = pelnard_considere(x, 0.0, centred, climate)
+    dwg.material(
+        np.vstack((np.column_stack((x, np.zeros_like(x))),
+                   np.column_stack((x[::-1], placed[::-1])))),
+        "granular", label=f"Fill as placed, {design.berm_width:.0f} m wide",
+        zorder=2.0,
+    )
+
+    # Later shorelines, cool to warm with age.
+    ramp = ["#0b3554", "#1b6fa0", "#2f93b8", "#79c6d6", "#c47f1a", "#8a2f24"]
+    later = [year for year in years if year > 0]
+    for index, year in enumerate(later):
+        colour = ramp[index % len(ramp)]
+        dwg.line(np.column_stack((x, widths[year])), weight="medium",
+                 color=colour, zorder=4.0 + 0.01 * index)
+        if annotate:
+            peak_here = float(widths[year].max())
+            dwg.note((0.0, peak_here),
+                     f"{year:g} yr, {peak_here:.0f} m at the centre",
+                     offset=(70 + 0 * index, 18 - 18 * index))
+
+    dwg.line([[x0, 0.0], [x1, 0.0]], weight="medium", style=(0, (6, 3)),
+             zorder=3.8)
+
+    if not annotate:
+        return (x0, x1), (y0, y1)
+
+    dwg.dim_h(-half, half, -0.22 * peak, f"fill length {design.length:.0f} m",
+              extend_from=(0.0, 0.0))
+    dwg.note((x0 + 0.06 * (x1 - x0), 0.0), "original shoreline",
+             offset=(0, -26), ha="left")
+    dwg.note((half + 0.45 * margin, 0.12 * peak),
+             f"spreading reaches\n{spread:.0f} m in {max(years):g} yr",
+             offset=(20, 40))
+
+    return (x0, x1), (y0, y1)
+
+
+def _recentre_free(design, x: np.ndarray):
+    """A copy of the design centred on the drawn window."""
+    from dataclasses import replace
+
+    return replace(design, center=0.0)
+
+
+def nourishment_plan_section(
+    design, climate, years=None,
+    title: str = "Beach nourishment, planform evolution",
+    figsize: tuple[float, float] = (14.0, 6.5),
+    exaggeration: float | None = None,
+    ax=None,
+) -> Section:
+    """A standalone plan-view figure of a fill spreading alongshore.
+
+    Left to themselves the times come from the fill's own half-life, so the
+    plan always shows the part of the evolution that is worth looking at,
+    and the cross-shore exaggeration is chosen to fill the sheet and printed
+    on it.
+    """
+    from .nourishment import SECONDS_PER_YEAR, longshore_diffusivity
+
+    diffusivity = longshore_diffusivity(climate, design)
+    if years is None:
+        years = _plan_years(design, climate)
+
+    if exaggeration is None:
+        import matplotlib.pyplot as plt
+
+        probe = Section(figsize=figsize, ax=ax)
+        xlim, ylim = draw_nourishment_plan(probe, design, climate, years,
+                                           annotate=False)
+        exaggeration = round(probe.auto_exaggeration(xlim, ylim))
+        if ax is None:
+            plt.close(probe.fig)
+        else:
+            probe.fig.clear()
+
+    dwg = Section(
+        title,
+        subtitle=(
+            f"Pelnard-Considere (1956). Fill {design.length:.0f} m long, "
+            f"{design.berm_width:.0f} m wide, diffusivity "
+            f"{diffusivity * SECONDS_PER_YEAR / 1e3:.0f} thousand m2/yr. "
+            f"Half-life {spreading_half_life(design, climate) / SECONDS_PER_YEAR:.2f} yr. "
+            f"CROSS-SHORE EXAGGERATION {exaggeration:g}:1"
+        ),
+        figsize=figsize,
+        exaggeration=exaggeration,
+        ax=ax,
+    )
+    dwg.exaggeration_axis = "CROSS-SHORE"
+    xlim, ylim = draw_nourishment_plan(dwg, design, climate, years)
+    dwg.key(loc="lower right")
+    dwg.finish(xlim=xlim, zlim=ylim)
+    dwg.ax.set_xlabel("alongshore distance (m)")
+    dwg.ax.set_ylabel("shoreline advance (m)")
+    return dwg

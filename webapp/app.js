@@ -385,7 +385,13 @@ var MODULES = {
                   "coarse_sand", "fine_gravel", "coarse_gravel"] },
       { key: "volume", label: "Placed volume", unit: "m3/m", min: 20, max: 1200, step: 10, value: 250 },
       { key: "berm", label: "Berm height", unit: "m", min: 0.5, max: 5, step: 0.1, value: 2.0 },
-      { key: "closure", label: "Depth of closure", unit: "m", min: 2, max: 14, step: 0.5, value: 6.0 }
+      { key: "closure", label: "Depth of closure", unit: "m", min: 2, max: 14, step: 0.5, value: 6.0 },
+      { key: "view", label: "View", type: "select", value: "profile",
+        options: ["profile", "planform"] },
+      { key: "length", label: "Fill length (planform)", unit: "m",
+        min: 200, max: 6000, step: 50, value: 1500 },
+      { key: "Hb", label: "Breaking wave height (planform)", unit: "m",
+        min: 0.3, max: 3.0, step: 0.1, value: 1.2 }
     ],
     run: function (v) {
       var An = P.deanScale(v.native);
@@ -401,9 +407,24 @@ var MODULES = {
       r.match = P.grainCompatibility(v.native, v.borrow);
       r.overfill = P.profileOverfillFactor(v.native, v.borrow, v.berm,
                                            v.closure, Math.max(r.advance, 1));
+
+      // The plan is the same design seen from above. It needs a width to
+      // spread, so a fill that produced no dry beach gets no planform.
+      r.view = v.view;
+      r.plan_length = v.length;
+      r.plan_width = r.advance;
+      if (r.advance > 0) {
+        var fill = P.makeFill(v.length, r.advance, 0.1 * v.length,
+                              v.closure, v.berm);
+        var climate = P.makeClimate(v.Hb, 8.0, 0.0);
+        r.plan = P.planformEvolution(fill, climate);
+      }
       return r;
     },
-    draw: function (host, r, w, h) { D.drawNourishment(host, r, w, h); },
+    draw: function (host, r, w, h) {
+      if (r.view === "planform" && r.plan) D.drawNourishmentPlan(host, r, w, h);
+      else D.drawNourishment(host, r, w, h);
+    },
     checks: function (r) {
       return [
         { name: "Dry beach", value: r.advance.toFixed(1) + " m",
@@ -422,7 +443,12 @@ var MODULES = {
         { name: "Critical volume",
           value: r.critical_volume > 0 ? r.critical_volume.toFixed(0) + " m3/m" : "none",
           target: "for any dry beach",
-          ok: r.critical_volume === 0, warn: r.critical_volume > 0 }
+          ok: r.critical_volume === 0, warn: r.critical_volume > 0 },
+        { name: "Spreading half-life",
+          value: r.plan ? r.plan.half_life.toFixed(2) + " yr" : "n/a",
+          target: "half the width lost",
+          ok: !!(r.plan && r.plan.half_life >= 2.0),
+          warn: !!(r.plan && r.plan.half_life < 2.0) }
       ];
     },
     report: function (r) {
@@ -433,6 +459,16 @@ var MODULES = {
         ["Borrow", r.borrow_name],
         ["  phi", r.match.phi_borrow.toFixed(2)],
         ["  A borrow", r.A_fill.toFixed(3)],
+        [null, null],
+        ["Planform", r.plan ? "" : "no dry beach to spread"],
+        ["  diffusivity", r.plan
+          ? (r.plan.diffusivity * P.SECONDS_PER_YEAR / 1e3).toFixed(0)
+            + " thousand m2/yr" : "n/a"],
+        ["  half-life", r.plan ? r.plan.half_life.toFixed(2) + " yr" : "n/a"],
+        ["  width left", r.plan
+          ? (100 * r.plan.retained).toFixed(0) + "% at "
+            + r.plan.years[r.plan.years.length - 1] + " yr" : "n/a"],
+        ["  spread to", r.plan ? r.plan.spread.toFixed(0) + " m" : "n/a"],
         [null, null],
         ["Compatibility", r.match.coarser ? "coarser" : "finer"],
         ["  delta", (r.match.delta >= 0 ? "+" : "") + r.match.delta.toFixed(2)],
@@ -1048,6 +1084,12 @@ function runCase(spec) {
     } else {
       args.unshift(c);
     }
+  }
+  if (spec.fill) {
+    args.unshift(P.makeClimate(spec.climate[0], spec.climate[1],
+                               spec.climate[2]));
+    args.unshift(P.makeFill(spec.fill[0], spec.fill[1], spec.fill[2],
+                            spec.fill[3], spec.fill[4]));
   }
   if (spec.vessel) {
     args.unshift(P.makeVessel(spec.vessel[0], spec.vessel[1], spec.vessel[2],

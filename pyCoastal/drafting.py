@@ -250,6 +250,10 @@ class Section:
         self.scale_text: str = ""
         #: Set by :meth:`fit_scale` when the section is exaggerated.
         self.exaggeration_note: str = ""
+        #: What the stretched axis is called on this view. A plan stretches
+        #: the cross-shore axis, not a vertical one, and the drawing has to
+        #: say which or the reader measures the wrong thing.
+        self.exaggeration_axis: str = "VERTICAL"
         #: Paper size, set when the view belongs to a :class:`Sheet`.
         self.paper: str = ""
         self._used: dict[str, Material] = {}
@@ -693,9 +697,34 @@ class Section:
 
     #: Scales a drawing office will actually print at.
     STANDARD_SCALES = (5, 10, 20, 25, 50, 75, 100, 125, 150, 200, 250, 500,
-                       750, 1000, 1250, 2000, 2500, 5000)
+                       750, 1000, 1250, 2000, 2500, 5000, 10000, 20000,
+                       25000, 50000)
 
-    def fit_scale(self, xlim, zlim, scales=None, paper: str = "") -> float:
+    def auto_exaggeration(self, xlim, zlim, cap: float = 200.0) -> float:
+        """Stretch the second axis just enough to fill this viewport.
+
+        A guessed exaggeration is nearly always wrong, and the cost is not
+        cosmetic: :meth:`fit_scale` sizes the drawing to whichever axis is
+        tighter, so an exaggeration a little too large throws the whole view
+        onto the next scale up and leaves half the paper empty. The viewport
+        already knows its own proportions, so let it do the arithmetic.
+
+        Returns the factor, and sets :attr:`exaggeration` to it.
+        """
+        pos = self.ax.get_position()
+        fig_w, fig_h = self.fig.get_size_inches()
+        paper_aspect = (pos.width * fig_w) / (pos.height * fig_h)
+        need_w = float(xlim[1] - xlim[0])
+        need_h = float(zlim[1] - zlim[0])
+        if need_w <= 0 or need_h <= 0:
+            raise ValueError("Extents must be positive")
+        e = min(cap, max(1.0, (need_w / need_h) / paper_aspect))
+        self.exaggeration = e
+        self.ax.set_aspect(e)
+        return e
+
+    def fit_scale(self, xlim, zlim, scales=None, paper: str = "",
+                  round_vertical: bool = False) -> float:
         """Set the view to a true, round drawing scale that fits the extents.
 
         Picks the smallest standard scale at which the requested extents fit
@@ -712,6 +741,10 @@ class Section:
             Candidate denominators. Defaults to :data:`STANDARD_SCALES`.
         paper : str
             Paper size to name in the returned string, e.g. "A3".
+        round_vertical : bool
+            Snap the vertical scale to a standard denominator too, adjusting
+            the exaggeration to suit. A section labelled "V 1:1210.83" cannot
+            be scaled off the paper by anyone; "V 1:1250" can.
 
         Returns
         -------
@@ -737,9 +770,23 @@ class Section:
         e = self.exaggeration
         required = max(need_w / (w_in * 0.0254),
                        need_h * e / (h_in * 0.0254))
-        chosen = next((c for c in candidates if c >= required), None)
+        # A hair of tolerance: extents fitted to a rung come back as
+        # required = rung + 1e-9, and a strict test would skip to the next
+        # rung up and leave half the paper empty.
+        chosen = next((c for c in candidates if c >= required * (1.0 - 1e-9)),
+                      None)
         if chosen is None:
             chosen = required        # nothing standard is large enough
+
+        if round_vertical:
+            # The vertical scale must stay large enough for the extents to
+            # fit, so snap it up, never down, and back out the exaggeration.
+            needed_v = need_h / (h_in * 0.0254)
+            snapped = next((c for c in candidates
+                            if c >= needed_v * (1.0 - 1e-9)), None)
+            if snapped is not None and snapped <= chosen:
+                e = chosen / snapped
+                self.exaggeration = e
 
         span_x = w_in * 0.0254 * chosen
         span_z = h_in * 0.0254 * chosen / e
@@ -759,7 +806,7 @@ class Section:
                 f"H 1:{chosen:g}  V 1:{self.vertical_scale:g}{on}"
             )
             self.exaggeration_note = (
-                f"VERTICAL EXAGGERATION {e:g} : 1"
+                f"{self.exaggeration_axis} EXAGGERATION {e:g} : 1"
             )
         return self.scale
 

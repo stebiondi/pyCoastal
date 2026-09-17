@@ -100,10 +100,21 @@ function serialise(node) {
 """
 
 HARNESS = """
-function renderModule(name, w, h) {
+function inputsFor(name, overrideJson) {
   var mod = MODULES[name];
   var v = {};
   mod.inputs.forEach(function (input) { v[input.key] = input.value; });
+  var over = overrideJson ? JSON.parse(overrideJson) : {};
+  for (var k in over) {
+    if (!(k in v)) throw new Error(name + " has no input " + k);
+    v[k] = over[k];
+  }
+  return v;
+}
+
+function renderModule(name, w, h, overrideJson) {
+  var mod = MODULES[name];
+  var v = inputsFor(name, overrideJson);
   var result = mod.run(v);
   var host = document.createElement("div");
   mod.draw(host, result, w, h);
@@ -112,10 +123,9 @@ function renderModule(name, w, h) {
   return serialise(svg);
 }
 
-function countShapes(name, w, h) {
+function countShapes(name, w, h, overrideJson) {
   var mod = MODULES[name];
-  var v = {};
-  mod.inputs.forEach(function (input) { v[input.key] = input.value; });
+  var v = inputsFor(name, overrideJson);
   var host = document.createElement("div");
   mod.draw(host, mod.run(v), w, h);
   var svg = host.children[host.children.length - 1];
@@ -127,6 +137,21 @@ function countShapes(name, w, h) {
   return JSON.stringify(tally);
 }
 """
+
+
+# Every drawing the app can put on screen, including the ones that need a
+# non-default input to reach. A view nobody renders is a view nobody has
+# looked at.
+VIEWS = [
+    ("seawall", "seawall", {}),
+    ("breakwater", "breakwater_trunk", {}),
+    ("breakwater", "breakwater_head", {"section": "head"}),
+    ("channel", "channel", {}),
+    ("monopile", "monopile", {}),
+    ("nourishment", "nourishment_profile", {}),
+    ("nourishment", "nourishment_planform", {"view": "planform"}),
+    ("extremes", "extremes", {}),
+]
 
 
 def main() -> int:
@@ -155,18 +180,19 @@ def main() -> int:
     args.out.mkdir(parents=True, exist_ok=True)
 
     problems = 0
-    for module in ("seawall", "breakwater", "channel", "monopile",
-                   "nourishment", "extremes"):
+    for module, label, overrides in VIEWS:
         try:
-            markup = render(module, args.width, args.height)
+            markup = render(module, args.width, args.height,
+                            json.dumps(overrides))
         except Exception as err:  # noqa: BLE001
-            print(f"  {module:<11} FAILED: {err}")
+            print(f"  {label:<22} FAILED: {err}")
             problems += 1
             continue
 
-        svg_path = args.out / f"{module}.svg"
+        svg_path = args.out / f"{label}.svg"
         svg_path.write_text(markup, encoding="utf-8")
-        counts = json.loads(tally(module, args.width, args.height))
+        counts = json.loads(tally(module, args.width, args.height,
+                                  json.dumps(overrides)))
 
         # A sheet that draws only its own frame is the blank-page failure.
         drawn = counts.get("path", 0) + counts.get("circle", 0) + counts.get("rect", 0)
@@ -174,7 +200,7 @@ def main() -> int:
         if drawn < 12:
             note = "  LOOKS EMPTY"
             problems += 1
-        print(f"  {module:<11} {len(markup) // 1024:>4} kB markup, "
+        print(f"  {label:<22} {len(markup) // 1024:>4} kB markup, "
               f"{drawn:>4} shapes, {counts.get('text', 0):>3} labels{note}")
 
         if not args.no_png:
@@ -185,7 +211,7 @@ def main() -> int:
                 from svglib.svglib import svg2rlg
 
                 drawing = svg2rlg(str(svg_path))
-                renderPDF.drawToFile(drawing, str(args.out / f"{module}.pdf"))
+                renderPDF.drawToFile(drawing, str(args.out / f"{label}.pdf"))
             except Exception as err:  # noqa: BLE001
                 print(f"    (render failed: {type(err).__name__}: {err})")
 

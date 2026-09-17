@@ -1761,6 +1761,176 @@ function gevReturnValue(location, scale, shape, returnPeriod) {
   return location + scale / shape * (Math.exp(shape * y) - 1.0);
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Beach nourishment, planform                                         */
+/* ------------------------------------------------------------------ */
+
+/* erf to double precision, via the incomplete gamma function.
+ *
+ * The usual pocket approximations (Abramowitz and Stegun 7.1.26 and
+ * friends) are good to about 1e-7, which is fine for a picture and useless
+ * here: verify_engine.py holds this file to 1e-9 against Python's
+ * math.erf, and a 1e-7 erf would show up as a real disagreement. The
+ * series and continued fraction below both converge to machine epsilon.
+ */
+var _LN_GAMMA_HALF = 0.5723649429247001;   /* ln(sqrt(pi)) */
+
+function _gammpSeries(a, x) {
+  var ap = a, sum = 1.0 / a, del = sum;
+  for (var n = 1; n <= 300; n++) {
+    ap += 1.0;
+    del *= x / ap;
+    sum += del;
+    if (Math.abs(del) < Math.abs(sum) * 1e-17) break;
+  }
+  return sum * Math.exp(-x + a * Math.log(x) - _LN_GAMMA_HALF);
+}
+
+function _gammqFraction(a, x) {
+  var tiny = 1e-300;
+  var b = x + 1.0 - a, c = 1.0 / tiny, d = 1.0 / b, h = d;
+  for (var i = 1; i <= 300; i++) {
+    var an = -i * (i - a);
+    b += 2.0;
+    d = an * d + b;
+    if (Math.abs(d) < tiny) d = tiny;
+    c = b + an / c;
+    if (Math.abs(c) < tiny) c = tiny;
+    d = 1.0 / d;
+    var del = d * c;
+    h *= del;
+    if (Math.abs(del - 1.0) < 1e-17) break;
+  }
+  return Math.exp(-x + a * Math.log(x) - _LN_GAMMA_HALF) * h;
+}
+
+function erf(x) {
+  if (x === 0) return 0;
+  if (!isFinite(x)) return x > 0 ? 1 : -1;
+  var ax = Math.abs(x), z = ax * ax;
+  var value = z < 1.5 ? _gammpSeries(0.5, z) : 1.0 - _gammqFraction(0.5, z);
+  return x < 0 ? -value : value;
+}
+
+var SECONDS_PER_YEAR = 365.25 * 24 * 3600.0;
+
+function cercCoefficient(K, s, gammaB, g) {
+  K = K === undefined ? 0.39 : K;
+  s = s === undefined ? 2.65 : s;
+  gammaB = gammaB === undefined ? 0.78 : gammaB;
+  g = g === undefined ? 9.81 : g;
+  return K * Math.sqrt(g / gammaB) / (16.0 * (s - 1.0));
+}
+
+var KCERC_DEFAULT = cercCoefficient();
+
+function makeClimate(Hb, T, alpha0, Kcerc) {
+  Hb = Hb === undefined ? 1.0 : Hb;
+  T = T === undefined ? 8.0 : T;
+  if (Hb <= 0) throw new Error("Breaking wave height must be positive");
+  if (T <= 0) throw new Error("Wave period must be positive");
+  return {
+    Hb: Hb, T: T,
+    alpha0: alpha0 === undefined ? 0.0 : alpha0,
+    Kcerc: Kcerc === undefined ? KCERC_DEFAULT : Kcerc
+  };
+}
+
+function makeFill(length, bermWidth, taper, D, B, porosity) {
+  if (length <= 0) throw new Error("Fill length must be positive");
+  if (bermWidth <= 0) throw new Error("Berm width must be positive");
+  taper = taper === undefined ? 100.0 : taper;
+  if (taper < 0) throw new Error("Taper cannot be negative");
+  porosity = porosity === undefined ? 0.4 : porosity;
+  if (porosity < 0 || porosity >= 1) throw new Error("Porosity must be in [0,1)");
+  D = D === undefined ? 8.0 : D;
+  B = B === undefined ? 2.0 : B;
+  return {
+    length: length, berm_width: bermWidth, taper: taper,
+    D: D, B: B, porosity: porosity,
+    active_height: D + B,
+    placed_volume: bermWidth * (length + taper) * (D + B)
+  };
+}
+
+function longshoreDiffusivity(climate, design) {
+  return 2.0 * climate.Kcerc * Math.pow(climate.Hb, 2.5)
+    / ((1.0 - design.porosity) * design.active_height);
+}
+
+/* Pelnard-Considere (1956): a rectangular fill spreading by diffusion. */
+function pelnardConsidere(x, t, design, climate) {
+  var a = 0.5 * design.length, out = new Array(x.length), i;
+  if (t <= 0) {
+    for (i = 0; i < x.length; i++) {
+      out[i] = Math.abs(x[i]) <= a ? design.berm_width : 0.0;
+    }
+    return out;
+  }
+  var denom = 2.0 * Math.sqrt(longshoreDiffusivity(climate, design) * t);
+  for (i = 0; i < x.length; i++) {
+    out[i] = 0.5 * design.berm_width
+      * (erf((a - x[i]) / denom) + erf((a + x[i]) / denom));
+  }
+  return out;
+}
+
+/* erfinv(1/2): the argument at which the centre width is halved. */
+var ERFINV_HALF = 0.4769362762044698733814;
+
+function spreadingHalfLife(design, climate) {
+  var half = 0.5 * design.length;
+  return half * half
+    / (4.0 * ERFINV_HALF * ERFINV_HALF * longshoreDiffusivity(climate, design));
+}
+
+function planMargin(design, climate, years) {
+  var longest = Math.max.apply(null, years) * SECONDS_PER_YEAR;
+  var spread = longest > 0
+    ? Math.sqrt(longshoreDiffusivity(climate, design) * longest) : 0.0;
+  return Math.max(1.4 * spread, 0.6 * design.length, 200.0);
+}
+
+function planYears(design, climate) {
+  var h = spreadingHalfLife(design, climate) / SECONDS_PER_YEAR;
+  var out = [0.0], f = [0.5, 1.0, 2.0, 4.0], i;
+  for (i = 0; i < f.length; i++) out.push(Math.round(f[i] * h * 100) / 100);
+  return out;
+}
+
+/* Everything the plan view and its summary need, from one call. */
+function planformEvolution(design, climate, years, samples) {
+  years = years || planYears(design, climate);
+  samples = samples || 601;
+  var margin = planMargin(design, climate, years);
+  var half = 0.5 * design.length;
+  var x0 = -half - margin, x1 = half + margin;
+  var x = new Array(samples), i;
+  for (i = 0; i < samples; i++) x[i] = x0 + (x1 - x0) * i / (samples - 1);
+
+  var curves = [], peak = 0.0;
+  for (i = 0; i < years.length; i++) {
+    var y = pelnardConsidere(x, years[i] * SECONDS_PER_YEAR, design, climate);
+    var c = 0.0, j;
+    for (j = 0; j < y.length; j++) if (y[j] > c) c = y[j];
+    if (c > peak) peak = c;
+    curves.push({ year: years[i], y: y, centre: y[(samples - 1) / 2 | 0] });
+  }
+  var longest = Math.max.apply(null, years) * SECONDS_PER_YEAR;
+  return {
+    x: x, x0: x0, x1: x1, curves: curves, peak: peak, margin: margin,
+    years: years,
+    diffusivity: longshoreDiffusivity(climate, design),
+    half_life: spreadingHalfLife(design, climate) / SECONDS_PER_YEAR,
+    spread: longest > 0
+      ? Math.sqrt(longshoreDiffusivity(climate, design) * longest) : 0.0,
+    centre_now: curves[0].centre,
+    centre_last: curves[curves.length - 1].centre,
+    retained: curves[curves.length - 1].centre / design.berm_width
+  };
+}
+
 /* Node and browser both, without assuming either. */
 var PYCOASTAL = {
   dispersion: dispersion,
@@ -1831,6 +2001,17 @@ var PYCOASTAL = {
   criticalVolume: criticalVolume,
   shorelineAdvance: shorelineAdvance,
   profileOverfillFactor: profileOverfillFactor,
+  erf: erf,
+  cercCoefficient: cercCoefficient,
+  makeClimate: makeClimate,
+  makeFill: makeFill,
+  longshoreDiffusivity: longshoreDiffusivity,
+  pelnardConsidere: pelnardConsidere,
+  spreadingHalfLife: spreadingHalfLife,
+  planMargin: planMargin,
+  planYears: planYears,
+  planformEvolution: planformEvolution,
+  SECONDS_PER_YEAR: SECONDS_PER_YEAR,
   grainCompatibility: grainCompatibility,
   lMoments: lMoments,
   fitGpd: fitGpd,

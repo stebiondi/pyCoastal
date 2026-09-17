@@ -150,7 +150,32 @@ fill, which the test suite uses to verify the solver.
   <img src="media/nourishment_design.png" alt="Nourishment design study" width="800">
 </p>
 
-Worked example: `examples/nourishment_design.py`
+That analytical solution also draws. `nourishment_plan_section` maps the
+planform spreading alongshore, at times taken from the fill's own half-life
+so the view always covers the part of the evolution worth looking at:
+
+```python
+from pyCoastal.applications.sections import (
+    nourishment_plan_section, spreading_half_life,
+)
+
+spreading_half_life(design, climate) / SECONDS_PER_YEAR   # years to lose half
+nourishment_plan_section(design, climate).save("plan.png")
+```
+
+<p align="center">
+  <img src="media/nourishment_plan.png" alt="Nourishment planform evolution" width="800">
+</p>
+
+Both axes are distance, so the plan could be drawn 1:1 and should not be: a
+fill is kilometres long and tens of metres wide. The cross-shore axis is
+stretched to fill the sheet and the factor is stated on the drawing, the same
+way a section states its vertical exaggeration. Pass `plan_design` and
+`plan_climate` to `nourishment_sheet` to put the section and the plan on one
+sheet, each at its own standard scale.
+
+Worked examples: `examples/nourishment_design.py`,
+`examples/nourishment_profile.py`
 
 ### Port layout
 

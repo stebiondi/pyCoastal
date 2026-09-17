@@ -1,6 +1,6 @@
 {
  "generated_from": "pyCoastal",
- "count": 173,
+ "count": 183,
  "cases": [
   {
    "name": "dispersion T=8.0 h=5.0",
@@ -3068,6 +3068,192 @@
     "earth_arm": 4.987552338172202,
     "drawdown_sliding": 1.2021274520312233,
     "drawdown_net": 1337.6610210066062
+   }
+  },
+  {
+   "name": "erf z=0.0",
+   "call": {
+    "fn": "erf",
+    "args": [
+     0.0
+    ]
+   },
+   "expect": {
+    "value": 0.0
+   }
+  },
+  {
+   "name": "erf z=0.25",
+   "call": {
+    "fn": "erf",
+    "args": [
+     0.25
+    ]
+   },
+   "expect": {
+    "value": 0.27632639016823696
+   }
+  },
+  {
+   "name": "erf z=0.8",
+   "call": {
+    "fn": "erf",
+    "args": [
+     0.8
+    ]
+   },
+   "expect": {
+    "value": 0.7421009647076605
+   }
+  },
+  {
+   "name": "erf z=1.5",
+   "call": {
+    "fn": "erf",
+    "args": [
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.9661051464753108
+   }
+  },
+  {
+   "name": "erf z=2.5",
+   "call": {
+    "fn": "erf",
+    "args": [
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.999593047982555
+   }
+  },
+  {
+   "name": "erf z=4.0",
+   "call": {
+    "fn": "erf",
+    "args": [
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.9999999845827421
+   }
+  },
+  {
+   "name": "erf z=-1.1",
+   "call": {
+    "fn": "erf",
+    "args": [
+     -1.1
+    ]
+   },
+   "expect": {
+    "value": -0.8802050695740817
+   }
+  },
+  {
+   "name": "planform L=1500.0 W=40.0 Hb=1.2",
+   "call": {
+    "fn": "planformEvolution",
+    "fill": [
+     1500.0,
+     40.0,
+     150.0,
+     6.0,
+     2.0
+    ],
+    "climate": [
+     1.2,
+     8.0,
+     0.0
+    ],
+    "args": [
+     [
+      0.0,
+      0.28,
+      0.57,
+      1.14,
+      2.28
+     ]
+    ]
+   },
+   "expect": {
+    "diffusivity": 0.034434180837031036,
+    "half_life": 0.5689159365042913,
+    "margin": 2203.648492396282,
+    "centre_last": 10.553033055311243,
+    "spread": 1574.034637425916
+   }
+  },
+  {
+   "name": "planform L=800.0 W=25.0 Hb=0.6",
+   "call": {
+    "fn": "planformEvolution",
+    "fill": [
+     800.0,
+     25.0,
+     80.0,
+     4.0,
+     1.5
+    ],
+    "climate": [
+     0.6,
+     8.0,
+     0.0
+    ],
+    "args": [
+     [
+      0.0,
+      0.31,
+      0.63,
+      1.26,
+      2.52
+     ]
+    ]
+   },
+   "expect": {
+    "diffusivity": 0.008854051917988551,
+    "half_life": 0.6293514642346775,
+    "margin": 1174.7658729313277,
+    "centre_last": 6.598420197169447,
+    "spread": 839.1184806652342
+   }
+  },
+  {
+   "name": "planform L=3000.0 W=60.0 Hb=2.1",
+   "call": {
+    "fn": "planformEvolution",
+    "fill": [
+     3000.0,
+     60.0,
+     300.0,
+     10.0,
+     3.0
+    ],
+    "climate": [
+     2.1,
+     8.0,
+     0.0
+    ],
+    "args": [
+     [
+      0.0,
+      0.46,
+      0.91,
+      1.83,
+      3.65
+     ]
+    ]
+   },
+   "expect": {
+    "diffusivity": 0.08584826299337489,
+    "half_life": 0.9127804596428214,
+    "margin": 4402.427448793564,
+    "centre_last": 15.846405070299443,
+    "spread": 3144.591034852546
    }
   }
  ]

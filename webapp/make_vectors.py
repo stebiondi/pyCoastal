@@ -22,6 +22,16 @@ import json
 import math
 from pathlib import Path
 
+import numpy as np
+
+from pyCoastal.applications.nourishment import (
+    SECONDS_PER_YEAR,
+    NourishmentDesign,
+    WaveClimate,
+    longshore_diffusivity,
+    pelnard_considere,
+)
+from pyCoastal.applications.sections import _plan_years, plan_margin, spreading_half_life
 from pyCoastal.applications.channel import (
     Vessel,
     channel_width,
@@ -512,6 +522,37 @@ def build() -> dict:
               "earth_arm": got.earth_driving["arm"],
               "drawdown_sliding": got.drawdown["sliding_FoS"],
               "drawdown_net": got.drawdown["net_force"]})
+
+    # -- the planform: erf, diffusivity and the half-life ------------------
+    import math as _math
+
+    for z in (0.0, 0.25, 0.8, 1.5, 2.5, 4.0, -1.1):
+        case(f"erf z={z}", {"fn": "erf", "args": [z]},
+             {"value": _math.erf(z)})
+
+    for length, width, Hb, D, B in (
+        (1500.0, 40.0, 1.2, 6.0, 2.0),
+        (800.0, 25.0, 0.6, 4.0, 1.5),
+        (3000.0, 60.0, 2.1, 10.0, 3.0),
+    ):
+        design = NourishmentDesign(length=length, berm_width=width,
+                                   taper=0.1 * length, D=D, B=B)
+        climate = WaveClimate(Hb=Hb, T=8.0, alpha0=0.0)
+        years = _plan_years(design, climate)
+        tag = f"L={length} W={width} Hb={Hb}"
+        call = {"fn": "planformEvolution",
+                "fill": [length, width, 0.1 * length, D, B],
+                "climate": [Hb, 8.0, 0.0],
+                "args": [years]}
+        centre = pelnard_considere(
+            np.array([0.0]), years[-1] * SECONDS_PER_YEAR, design, climate)
+        case(f"planform {tag}", call,
+             {"diffusivity": longshore_diffusivity(climate, design),
+              "half_life": spreading_half_life(design, climate) / SECONDS_PER_YEAR,
+              "margin": plan_margin(design, climate, years),
+              "centre_last": float(centre[0]),
+              "spread": _math.sqrt(longshore_diffusivity(climate, design)
+                                   * years[-1] * SECONDS_PER_YEAR)})
 
     return {"generated_from": "pyCoastal", "count": len(CASES), "cases": CASES}
 

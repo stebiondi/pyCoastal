@@ -839,6 +839,81 @@ function drawNourishment(host, r, w, h) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Beach nourishment, planform                                         */
+/* ------------------------------------------------------------------ */
+
+function drawNourishmentPlan(host, r, w, h) {
+  var svg = newSheet(host, w, h);
+  var p = r.plan;
+  if (!p) throw new Error("No planform was computed for this fill");
+
+  var peak = p.peak;
+  var y0 = -0.45 * peak, y1 = peak * 1.55;
+  var box = { x: 54, y: 16, w: w - 74, h: h - 66 };
+
+  /* Both axes are distance here, so this could be drawn 1:1. It should not
+     be: a fill is kilometres long and tens of metres wide, and at a true
+     scale the whole story is a hairline. The cross-shore axis is stretched
+     to fill the sheet and the factor is printed below. */
+  var exaggeration = Math.max(1, Math.round(
+    ((p.x1 - p.x0) / (y1 - y0)) / (box.w / box.h)));
+
+  var body = el("g", null, svg);
+  var view = new View(box, [p.x0, p.x1], [y0, y1], exaggeration);
+  clipTo(svg, body, view.box);
+  var keys = [];
+
+  keys.push(view.poly(body,
+    [[p.x0, y0], [p.x1, y0], [p.x1, 0], [p.x0, 0]],
+    "subgrade", "Existing beach"));
+  keys.push(view.poly(body,
+    [[p.x0, 0], [p.x1, 0], [p.x1, y1], [p.x0, y1]], "water"));
+
+  var half = 0.5 * r.plan_length;
+  keys.push(view.poly(body,
+    [[-half, 0], [half, 0], [half, r.plan_width], [-half, r.plan_width]],
+    "sand", "Fill as placed, " + r.plan_width.toFixed(0) + " m wide"));
+
+  /* Cool to warm with age, so the order reads without the labels. */
+  var ramp = ["#0b3554", "#1b6fa0", "#2f93b8", "#79c6d6", "#c47f1a", "#8a2f24"];
+  var i, j;
+  for (i = 1; i < p.curves.length; i++) {
+    var c = p.curves[i];
+    var pts = [];
+    for (j = 0; j < p.x.length; j++) pts.push([p.x[j], c.y[j]]);
+    view.line(body, pts,
+              { stroke: ramp[Math.min(i - 1, ramp.length - 1)], width: 1.9 });
+  }
+
+  /* Callouts fan down the right, in the order the curves are stacked. */
+  var labelX = half + 0.10 * (p.x1 - half);
+  for (i = 1; i < p.curves.length; i++) {
+    var cc = p.curves[i];
+    view.pad(body, view.X(labelX),
+             view.Y(cc.centre) + 4 + (i - 1) * 2,
+             cc.year + " yr, " + cc.centre.toFixed(0) + " m at the centre");
+  }
+
+  view.dimH(body, -half, half, -0.22 * peak,
+            "fill length " + r.plan_length.toFixed(0) + " m", [0, 0]);
+  // Right-anchored against the seaward edge, on two lines: one long line
+  // here runs off the sheet, since there is no wrapping in SVG.
+  var noteX = view.X(p.x1) - 14;
+  var noteY = view.Y(0.78 * peak);
+  view.pad(body, noteX, noteY, "spreading reaches", "end");
+  view.pad(body, noteX, noteY + 15,
+           p.spread.toFixed(0) + " m in " + p.years[p.years.length - 1] + " yr",
+           "end");
+
+  legend(svg, keys, 62, h - 132);
+  sheetFrame(svg, w, h, {
+    bubble: "B", title: "Planform evolution",
+    scale: "cross-shore exaggeration " + exaggeration + " : 1"
+  });
+  return svg;
+}
+
+/* ------------------------------------------------------------------ */
 /* Charts, for the modules whose answer is a curve not a section       */
 /* ------------------------------------------------------------------ */
 
@@ -916,6 +991,7 @@ var DRAW = {
   drawBreakwater: drawBreakwater,
   drawChannel: drawChannel,
   drawNourishment: drawNourishment,
+  drawNourishmentPlan: drawNourishmentPlan,
   newSheet: newSheet,
   chartFrame: chartFrame,
   axis: axis,

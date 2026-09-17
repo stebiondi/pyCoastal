@@ -47,6 +47,12 @@ function runCase(spec) {
       args.unshift(c);
     }
   }
+  if (spec.fill) {
+    var f = spec.fill;
+    var cl = spec.climate;
+    args.unshift(PYCOASTAL.makeClimate(cl[0], cl[1], cl[2]));
+    args.unshift(PYCOASTAL.makeFill(f[0], f[1], f[2], f[3], f[4]));
+  }
   if (spec.vessel) {
     var v = PYCOASTAL.makeVessel(spec.vessel[0], spec.vessel[1], spec.vessel[2],
                                  spec.vessel[3], spec.vessel[4]);
