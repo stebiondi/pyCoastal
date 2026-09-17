@@ -59,6 +59,12 @@ __all__ = [
     "nourishment_plan_section",
     "spreading_half_life",
     "plan_margin",
+    "REPOSE_ANGLE",
+    "scour_hole_profile",
+    "draw_pier_scour",
+    "pier_scour_notes",
+    "pier_scour_section",
+    "pier_scour_sheet",
 ]
 
 
@@ -1841,3 +1847,280 @@ def nourishment_plan_section(
     dwg.ax.set_xlabel("alongshore distance (m)")
     dwg.ax.set_ylabel("shoreline advance (m)")
     return dwg
+
+
+# ---------------------------------------------------------------------------
+# Pier scour
+# ---------------------------------------------------------------------------
+
+#: Angle of repose of the scoured face, in degrees. The hole cannot stand
+#: steeper than the sand will, so this sets how wide it is for a given
+#: depth, and therefore how far the protection has to reach.
+REPOSE_ANGLE = 32.0
+
+
+def scour_hole_profile(scour: float, radius: float, repose: float = REPOSE_ANGLE,
+                       samples: int = 2):
+    """Points tracing one side of the scour hole, from the pier face out.
+
+    The hole is drawn as a straight face at the angle of repose, because
+    that is what a scour hole in sand is: it deepens until the sides stand
+    at their limiting slope, and then widens. Anything smoother would be an
+    invention.
+    """
+    if scour < 0:
+        raise ValueError(f"Scour cannot be negative, got {scour}")
+    if repose <= 0 or repose >= 90:
+        raise ValueError(f"Repose angle must be in (0,90), got {repose}")
+    reach = scour / math.tan(math.radians(repose))
+    return [[radius, -scour], [radius + reach, 0.0]], reach
+
+
+def draw_pier_scour(dwg: Section, design, annotate: bool = True,
+                    protected: bool = False):
+    """Section through a pier, either scoured or protected.
+
+    Levels are to the initial bed, which is the datum that matters here:
+    every dimension on the drawing is either a depth below it or a height
+    above it, and the base level relative to it is the design lever.
+
+    The two cases are drawn separately and deliberately so. An apron and a
+    fully developed scour hole cannot both appear on one section: the
+    apron exists to stop that hole, and showing them together says the
+    protection failed and worked at the same time. ``protected=False`` is
+    the prediction if nothing is done; ``protected=True`` is the proposed
+    works, on an intact bed.
+
+    Returns
+    -------
+    (xlim, zlim)
+        Extents in metres.
+    """
+    pier = design.pier
+    base = design.base
+    conditions = design.conditions
+    scour = design.equilibrium
+
+    stem_r = 0.5 * pier.diameter
+    base_r = 0.5 * base.width if base is not None else stem_r
+
+    hole, reach = scour_hole_profile(scour, max(stem_r, base_r))
+    if protected:
+        reach = max(reach, design.protection["extent"])
+    mwl = conditions.mean_depth
+    hw = mwl + conditions.tidal_amplitude
+    lw = mwl - conditions.tidal_amplitude
+
+    half = max(stem_r, base_r) + reach
+    margin = max(0.45 * half, 3.0)
+    x0, x1 = -half - margin, half + margin
+    lowest = min(-scour, base.bottom_level if base is not None else 0.0)
+    z0 = lowest - max(0.30 * scour, 1.5)
+    z1 = hw + max(0.22 * hw, 1.5)
+
+    if protected:
+        # Intact bed: the apron is here so the hole below never forms.
+        dwg.material([[x0, z0], [x1, z0], [x1, 0.0], [x0, 0.0]],
+                     "subgrade", label="Estuary bed", zorder=1.4)
+        dwg.material([[x0, 0.0], [x1, 0.0], [x1, z1], [x0, z1]],
+                     "water", zorder=1.2)
+        apron = design.protection
+        outer = max(stem_r, base_r) + apron["extent"]
+        dwg.material(
+            [[-outer, 0.0], [outer, 0.0],
+             [outer, apron["thickness"]], [-outer, apron["thickness"]]],
+            "toe", label=f"Rock apron, d50 = {apron['d50'] * 1000:.0f} mm",
+            zorder=2.2)
+    else:
+        # Bed, with the hole carved out of it.
+        left = [[p[0] * -1.0, p[1]] for p in reversed(hole)]
+        bed = ([[x0, z0], [x0, 0.0]] + left
+               + [[-max(stem_r, base_r), -scour], [max(stem_r, base_r), -scour]]
+               + hole + [[x1, 0.0], [x1, z0]])
+        dwg.material(bed, "subgrade", label="Estuary bed", zorder=1.4)
+
+        # Water over everything, down into the hole.
+        water = ([[x0, z1], [x1, z1], [x1, 0.0]] + [p for p in reversed(hole)]
+                 + [[max(stem_r, base_r), -scour], [-max(stem_r, base_r), -scour]]
+                 + [[p[0] * -1.0, p[1]] for p in hole] + [[x0, 0.0]])
+        dwg.material(water, "water", zorder=1.2)
+
+    # The base, then the stem over it.
+    if base is not None:
+        dwg.material(
+            [[-base_r, base.bottom_level], [base_r, base.bottom_level],
+             [base_r, base.top_level], [-base_r, base.top_level]],
+            "reinforced", label="Pile cap / footing", zorder=4.0)
+        stem_from = base.top_level
+    else:
+        stem_from = 0.0 if protected else -scour
+
+    dwg.material([[-stem_r, stem_from], [stem_r, stem_from],
+                  [stem_r, z1], [-stem_r, z1]],
+                 "concrete", label="Pier stem", zorder=4.2)
+
+    dwg.line([[x0, 0.0], [x1, 0.0]], weight="thin", style="--", zorder=3.0)
+
+    if not annotate:
+        return (x0, x1), (z0, z1)
+
+    dwg.level(x0 + 0.04 * (x1 - x0), hw, f"HW +{hw:.2f} m", "water")
+    dwg.level(x0 + 0.04 * (x1 - x0), mwl, f"MWL +{mwl:.2f} m", "water")
+    dwg.level(x0 + 0.04 * (x1 - x0), lw, f"LW +{lw:.2f} m", "water")
+    dwg.level(x1 - 0.04 * (x1 - x0), 0.0, "Initial bed 0.00 m", side="right")
+
+    dwg.dim_h(-stem_r, stem_r, z1 - 0.10 * (z1 - z0),
+              f"stem {pier.diameter:.2f} m")
+    if base is not None:
+        dwg.dim_h(-base_r, base_r, base.top_level + 0.055 * (z1 - z0),
+                  f"base {base.width:.2f} m")
+
+    state = design.governing["state"]
+    dwg.note((0.0, z1 - 0.03 * (z1 - z0)),
+             f"{abs(state['current']):.2f} m/s at the governing phase",
+             offset=(0, 26), ha="center")
+
+    if protected:
+        apron = design.protection
+        outer = max(stem_r, base_r) + apron["extent"]
+        dwg.dim_h(max(stem_r, base_r), outer, 0.35 * z1,
+                  f"apron {apron['extent']:.1f} m", extend_from=(0.0, 0.0))
+        dwg.note((0.5 * (max(stem_r, base_r) + outer), 0.35 * z1),
+                 f"{apron['thickness']:.2f} m thick, falling apron, "
+                 f"{apron['launch_allowance']:.1f} m launch allowance",
+                 offset=(0, -34), ha="center")
+    else:
+        dwg.level(x1 - 0.04 * (x1 - x0), -scour,
+                  f"Scoured bed {-scour:.2f} m", side="right")
+        dwg.dim_v(-scour, 0.0, -half - 0.45 * margin, f"scour {scour:.2f} m")
+        dwg.slope((max(stem_r, base_r) + reach, 0.0),
+                  round(1.0 / math.tan(math.radians(REPOSE_ANGLE)), 2),
+                  -0.35 * scour)
+        if base is not None and design.undermined:
+            dwg.note((base_r, base.bottom_level),
+                     "hole reaches below the footing",
+                     offset=(34, -26), ha="left")
+
+    return (x0, x1), (z0, z1)
+
+
+def pier_scour_notes(design) -> list[str]:
+    """Drawing notes for a pier scour assessment."""
+    conditions = design.conditions
+    material = conditions.material
+    pier = design.pier
+    base = design.base
+
+    notes = [
+        f"Bed: {material.name.lower()}, d50 = {material.d50 * 1000:.2f} mm.",
+        f"Tide: {2 * conditions.tidal_amplitude:.1f} m range on a "
+        f"{conditions.tidal_period / 3600:.2f} hour period, peak tidal "
+        f"current {conditions.tidal_current:.2f} m/s, "
+        f"{conditions.current_phase:.0f} deg ahead of the elevation.",
+        f"River: {conditions.river_current:.2f} m/s steady and seaward, so "
+        f"peak ebb is {conditions.peak_ebb_current:.2f} m/s against "
+        f"{conditions.peak_flood_current:.2f} m/s on the flood.",
+        f"Waves: Hs = {conditions.Hs:.2f} m, Tp = {conditions.Tp:.1f} s.",
+        f"Pier: {pier.diameter:.2f} m {pier.shape.replace('_', ' ')} stem"
+        + (f" on a {base.width:.1f} by {base.length:.1f} m base "
+           f"{base.height:.1f} m thick, top at {base.top_level:+.2f} m to "
+           f"the initial bed, skewed {base.skew:.0f} deg to the ebb."
+           if base is not None else ", no base."),
+    ]
+    notes.extend(design.notes)
+    notes.append(
+        f"Scour hole drawn at the {REPOSE_ANGLE:.0f} degree angle of repose, "
+        "which sets its width and therefore how far protection must reach.")
+    notes.append(
+        f"Protection: {design.protection['note']}")
+    return notes
+
+
+def pier_scour_section(design,
+                       title: str = "Pier scour, estuary",
+                       figsize: tuple[float, float] = (11.0, 7.0),
+                       protected: bool = False,
+                       exaggeration: float = 1.0,
+                       ax=None) -> Section:
+    """A standalone section of the pier and its scour hole.
+
+    Drawn true to scale by default. A scour section is one of the few
+    drawings in coastal work whose horizontal and vertical extents are
+    comparable, so there is no reason to distort it, and the angle of
+    repose then reads as the angle it actually is.
+    """
+    state = design.governing["state"]
+    dwg = Section(
+        title,
+        subtitle=(
+            f"Governing phase {state['phase']:.0f} deg on the "
+            f"{'ebb' if state['ebb'] else 'flood'}: "
+            f"{abs(state['current']):.2f} m/s current, "
+            f"{state['Um']:.2f} m/s near-bed orbital, "
+            f"{state['depth']:.2f} m depth. "
+            f"Equilibrium scour {design.equilibrium:.2f} m."
+        ),
+        figsize=figsize,
+        exaggeration=exaggeration,
+        ax=ax,
+    )
+    xlim, zlim = draw_pier_scour(dwg, design, protected=protected)
+    dwg.key(loc="upper right")
+    dwg.finish(xlim=xlim, zlim=zlim)
+    dwg.ax.set_xlabel("distance from pier axis (m)")
+    dwg.ax.set_ylabel("level to initial bed (m)")
+    return dwg
+
+
+def pier_scour_sheet(design,
+                     project: str = "Estuary crossing",
+                     title: str = "Pier scour assessment",
+                     size: str = "A3",
+                     show_protection: bool = True,
+                     file: str = "pier_scour_sheet.py",
+                     **titleblock) -> Sheet:
+    """A drawing sheet of the pier, its scour hole and its protection."""
+    sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
+
+    rect = ((0.0, 0.56, 0.70, 0.40) if show_protection
+            else (0.0, 0.10, 0.70, 0.86))
+    view = sheet.viewport(rect=rect)
+    xlim, zlim = draw_pier_scour(view, design, protected=False)
+    view.fit_scale(xlim, zlim, paper=size)
+    view.detail_bubble("A", "PREDICTED SCOUR, UNPROTECTED", view.scale_text,
+                       loc=(0.02, -0.12))
+    view.key(loc="upper right")
+
+    if show_protection:
+        works = sheet.viewport(rect=(0.0, 0.08, 0.70, 0.40))
+        wx, wz = draw_pier_scour(works, design, protected=True)
+        works.fit_scale(wx, wz, paper=size)
+        works.detail_bubble("B", "PROPOSED PROTECTION", works.scale_text,
+                            loc=(0.02, -0.12))
+        works.key(loc="upper right")
+
+    notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
+    notes.ax.set_xlim(0, 1)
+    notes.ax.set_ylim(0, 1)
+    notes.ax.set_aspect("auto")
+    text = pier_scour_notes(design)
+    if view.exaggeration_note:
+        text.insert(0, view.exaggeration_note.capitalize() + ".")
+    notes.notes_block(text, title="NOTES", width=36, loc=(0.0, 1.0),
+                      fontsize=5.6)
+
+    base = design.base
+    rows = [
+        ("SCOUR", f"{design.equilibrium:.2f} m"),
+        ("ONE TIDE", f"{design.tidal_limited:.2f} m"),
+        ("D EFF", f"{design.governing['scour']['D_e']:.2f} m"),
+        ("APRON d50", f"{design.protection['d50'] * 1000:.0f} mm"),
+        ("APRON", f"{design.protection['extent']:.1f} m"),
+    ]
+    if base is not None:
+        rows.insert(2, ("BASE", "UNDERMINED" if design.undermined
+                        else "EXPOSED" if design.base_exposed else "BURIED"))
+    notes.table(rows, title="SUMMARY", loc=(0.0, 0.0), align="left",
+                fontsize=6.4)
+    sheet.set_scale_from(view)
+    return sheet

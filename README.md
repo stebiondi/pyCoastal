@@ -37,6 +37,7 @@ pip install -e .
 | Nearshore | `applications.port` | phase-resolved diffraction into a harbour, berth agitation |
 | Structure | `applications.structures`, `applications.seawall` | armour size, crest level, stability checks |
 | Loads | `applications.piles` | Morison base shear and mudline moment through the wave cycle |
+| Scour | `applications.scour` | pier scour in combined waves, tide and river, over the tidal cycle |
 | Navigation | `applications.channel` | dredge level, channel width, dredge volume |
 | Flooding | `applications.surge` | water level budget and a connected flood map |
 | Deliverable | `drafting`, `applications.sections` | a dimensioned drawing sheet and a DXF |
@@ -176,6 +177,70 @@ sheet, each at its own standard scale.
 
 Worked examples: `examples/nourishment_design.py`,
 `examples/nourishment_profile.py`
+
+### Pier scour in an estuary
+
+Three drivers that do not peak together: a tide that reverses twice a day, a
+river that does not, waves that come and go, and a water depth that moves
+under all of it. So the calculation works a tidal cycle rather than a load
+case, and reports the envelope.
+
+```python
+from pyCoastal.applications.scour import (
+    Pier, PierBase, EstuaryConditions, design_pier_scour,
+)
+
+pier = Pier(diameter=2.5, shape="circular")
+base = PierBase(width=7.0, length=12.0, height=2.5, top_level=-1.5, skew=20.0)
+estuary = EstuaryConditions(mean_depth=9.0, tidal_amplitude=2.2,
+                            tidal_current=1.1, river_current=0.4,
+                            Hs=1.2, Tp=5.5, bed="medium_sand")
+
+design = design_pier_scour(pier, estuary, base)
+
+design.equilibrium        # design scour depth
+design.tidal_limited      # what one half cycle can actually cut
+design.undermined         # does the hole reach below the footing?
+design.protection         # apron d50, extent, thickness, launch allowance
+```
+
+<p align="center">
+  <img src="media/pier_scour_sheet.png" alt="Pier scour assessment sheet" width="900">
+</p>
+
+The sheet carries two views because an apron and a fully developed scour
+hole cannot share one section: the apron exists to stop that hole. A is the
+prediction if nothing is done, B is the proposed works on an intact bed.
+
+Scour comes from Sumer and Fredsoe (2001) for combined waves and current,
+which collapses to Sumer, Fredsoe and Christiansen (1992) at zero current
+and to S/D = 1.3 in pure current. One addition is flagged rather than
+silent: KC is built on the *wave* orbital velocity, so a strong current
+under a small chop gives a high Ucw and a low KC at once and the bare
+relation returns almost nothing. A current that moves the bed digs its own
+hole, so where the approach current alone is live-bed the ratio is floored
+at the steady-current value, and the result says `current_governs`.
+
+<p align="center">
+  <img src="media/pier_scour_tide.png" alt="Tidal envelope and burial depth" width="900">
+</p>
+
+Two things fall out of sweeping the cycle that a table of design values
+hides:
+
+- **The worst phase is not peak current.** The obstacle width is weighted
+  over the depth of flow, so once the footing is exposed a wide base counts
+  for more in shallow water. Here the governing phase is well after peak
+  ebb, at 0.78 m/s rather than the 1.50 m/s peak.
+- **Burial depth is a cliff.** The hole and the base are coupled: scour
+  exposes the footing, the footing is wider, the hole deepens, more is
+  exposed. Bury the base deeper than the bare stem would scour and nothing
+  happens; a metre shallower and it runs away to nearly twice the depth.
+  `equilibrium_scour` solves that feedback for its *deepest* self-consistent
+  root, by bisection, because a scour hole does not refill and the shallow
+  root is not an outcome the pier can stay at.
+
+Worked example: `examples/pier_scour.py`
 
 ### Port layout
 
