@@ -31,6 +31,8 @@ from ..tools.shoreline import (
     suggest_dt,
 )
 
+from .sediment import NU, fall_velocity, sediment
+
 SECONDS_PER_YEAR = 365.25 * 24 * 3600.0
 
 
@@ -491,4 +493,347 @@ def renourishment_schedule(
         "placement_times": times,
         "total_volume": design.placed_volume * len(times),
         "initial_result": result,
+    }
+
+
+# ---------------------------------------------------------------------------
+# The cross-shore side: what the borrow material does to the profile
+# ---------------------------------------------------------------------------
+#
+# The planform model above answers how long the fill lasts. It says nothing
+# about the question that is asked first on every scheme: how much dry beach
+# does this much sand buy, and does it matter where the sand comes from.
+#
+# It matters a great deal. A beach takes the profile its own grain size can
+# hold. Fill coarser than the native sand stands steeper and buys more dry
+# beach per cubic metre; fill finer than the native sand lies flatter, and
+# below a critical volume it buys none at all, because the whole placement
+# goes into building a gentler underwater slope.
+#
+# Sources
+# -------
+# Dean, R. G. (1991), "Equilibrium beach profiles: characteristics and
+#     applications". The h = A y^(2/3) profile and the fill classification.
+#
+# Dean, R. G. (2002), Beach Nourishment: Theory and Practice.
+#
+# Kriebel, D. L., Kraus, N. C. and Larson, M. (1991). The scale parameter
+#     from the fall velocity, A = 0.067 w^0.44.
+
+
+def phi_size(d50: float) -> float:
+    """Grain size on the phi scale, phi = -log2(d in mm).
+
+    Sediment statistics are done in phi because the distributions are close
+    to normal there and are anything but in millimetres. Note the sign:
+    coarser sand is a *smaller* phi.
+    """
+    if d50 <= 0:
+        raise ValueError(f"Grain size must be positive, got {d50}")
+    return -math.log2(d50 * 1000.0)
+
+
+def size_from_phi(phi: float) -> float:
+    """Grain size in metres from a phi value."""
+    return 2.0 ** (-phi) / 1000.0
+
+
+def dean_scale(material, viscosity: float = NU) -> float:
+    """Profile scale parameter A [m^(1/3)] from the fall velocity.
+
+        A = 0.067 w^0.44,  w in cm/s
+
+    Kriebel, Kraus and Larson (1991). Tying A to the fall velocity rather
+    than reading it off a grain-size table means it comes from the same
+    Soulsby relation the rest of the package uses, so a sediment cannot have
+    one settling velocity for scour and another for its profile.
+
+    Checks against Dean's own table: fine sand at 0.19 mm gives 0.094 and
+    medium sand at 0.38 mm gives 0.141, against tabulated values of about
+    0.10 and 0.14.
+    """
+    grains = material if hasattr(material, "d50") else sediment(material)
+    if grains.cohesive or grains.d50 <= 0:
+        raise ValueError(
+            f"{grains.name} is cohesive. An equilibrium sand profile does not "
+            "describe it, and a beach cannot be built from it."
+        )
+    w_cm_s = fall_velocity(grains, viscosity) * 100.0
+    return 0.067 * w_cm_s**0.44
+
+
+def equilibrium_profile(A: float, y):
+    """Depth h = A y^(2/3) at distance y offshore [m]."""
+    y = np.asarray(y, dtype=float)
+    if A <= 0:
+        raise ValueError(f"Profile scale must be positive, got {A}")
+    return A * np.maximum(y, 0.0) ** (2.0 / 3.0)
+
+
+def profile_width(A: float, depth: float) -> float:
+    """Distance offshore to a given depth on an equilibrium profile [m]."""
+    if A <= 0 or depth < 0:
+        raise ValueError("Scale must be positive and depth non-negative")
+    return (depth / A) ** 1.5
+
+
+def fill_volume_for_advance(A_native: float, A_fill: float, advance: float,
+                            berm_height: float, closure_depth: float) -> dict:
+    """Fill volume per metre of beach for a given shoreline advance.
+
+    The integration runs over *depth*, not distance, because the active
+    profile is bounded by the closure contour and not by a line at some
+    fixed chainage. At each depth the fill has pushed the profile seaward by
+
+        offset(h) = advance + (h / A_fill)^(3/2) - (h / A_native)^(3/2)
+
+    and the volume is that offset integrated from the waterline down to
+    closure, plus the dry berm::
+
+        V = B a + a h_L + 0.4 h_L^(5/2) (A_f^-3/2 - A_n^-3/2)
+
+    where h_L is the closure depth, or the depth at which the two profiles
+    meet if the fill is coarse enough to intersect first.
+
+    Returns
+    -------
+    dict
+        The ``volume`` [m3 per m], the depth and distance at which the
+        profiles meet, and whether they meet at all.
+
+    Notes
+    -----
+    For equal grain sizes every term but the first two vanishes and this is
+    exactly V = (B + h*) a, the formula everyone starts from. That is not an
+    approximation here, it is the same expression with A_fill = A_native.
+    """
+    if advance < 0:
+        raise ValueError(f"Advance must be non-negative, got {advance}")
+    if berm_height < 0:
+        raise ValueError(f"Berm height must be non-negative, got {berm_height}")
+    if closure_depth <= 0:
+        raise ValueError(f"Closure depth must be positive, got {closure_depth}")
+    if A_native <= 0 or A_fill <= 0:
+        raise ValueError("Profile scales must be positive")
+
+    kn = A_native ** -1.5
+    kf = A_fill ** -1.5
+
+    meeting_depth = None
+    intersects = False
+    if kf < kn:
+        # Coarser fill: the offset falls to zero at a finite depth.
+        meeting_depth = (advance / (kn - kf)) ** (2.0 / 3.0) if advance > 0 else 0.0
+        intersects = meeting_depth <= closure_depth
+
+    limit = min(meeting_depth, closure_depth) if meeting_depth is not None         else closure_depth
+
+    volume = (berm_height * advance + advance * limit
+              + 0.4 * limit ** 2.5 * (kf - kn))
+
+    meeting_distance = None
+    if intersects and meeting_depth is not None and meeting_depth > 0:
+        meeting_distance = advance + (meeting_depth / A_fill) ** 1.5
+
+    return {
+        "volume": volume,
+        "berm_volume": berm_height * advance,
+        "limit_depth": limit,
+        "meeting_depth": meeting_depth if intersects else None,
+        "meeting": meeting_distance,
+        "intersects": intersects,
+    }
+
+
+def critical_volume(A_native: float, A_fill: float, berm_height: float,
+                    closure_depth: float) -> float:
+    """Volume per metre below which a fine fill gives no dry beach at all.
+
+    Fill finer than the native sand lies flatter. The first cubic metres go
+    into flattening the underwater profile, and only once that is paid for
+    does the waterline move. Below this volume the placement is an offshore
+    terrace, which is a legitimate design but not the one that was sold.
+
+    Zero for fill as coarse as the native sand or coarser.
+    """
+    if A_fill >= A_native:
+        return 0.0
+    return fill_volume_for_advance(A_native, A_fill, 0.0, berm_height,
+                                   closure_depth)["volume"]
+
+
+def shoreline_advance(A_native: float, A_fill: float, volume: float,
+                      berm_height: float, closure_depth: float,
+                      tolerance: float = 1e-4) -> dict:
+    """Dry beach gained for a given fill volume, and how the profile behaves.
+
+    Parameters
+    ----------
+    volume : float
+        Placed volume per metre of beach [m3/m].
+
+    Returns
+    -------
+    dict
+        ``advance`` [m], the profile ``kind`` (intersecting, non-intersecting
+        or submerged), and the critical volume where that matters.
+
+    Notes
+    -----
+    Solved by bisection on the volume, which is monotonic in the advance.
+    An analytic inverse exists for each case separately; one solver that
+    cannot pick the wrong branch is worth more than three formulae.
+    """
+    if volume < 0:
+        raise ValueError(f"Volume must be non-negative, got {volume}")
+
+    critical = critical_volume(A_native, A_fill, berm_height, closure_depth)
+    if volume <= critical:
+        return {
+            "advance": 0.0,
+            "kind": "submerged",
+            "critical_volume": critical,
+            "volume": volume,
+            "note": (
+                f"{volume:.0f} m3/m of fill this fine does not reach the "
+                f"critical {critical:.0f} m3/m, so none of it appears as dry "
+                "beach. It forms a submerged terrace instead."
+            ),
+        }
+
+    low, high = 0.0, 10.0
+    while fill_volume_for_advance(A_native, A_fill, high, berm_height,
+                                  closure_depth)["volume"] < volume:
+        high *= 2.0
+        if high > 1e5:
+            raise RuntimeError("No advance within 100 km delivers that volume")
+
+    while high - low > tolerance:
+        mid = 0.5 * (low + high)
+        if fill_volume_for_advance(A_native, A_fill, mid, berm_height,
+                                   closure_depth)["volume"] < volume:
+            low = mid
+        else:
+            high = mid
+
+    advance = 0.5 * (low + high)
+    detail = fill_volume_for_advance(A_native, A_fill, advance, berm_height,
+                                     closure_depth)
+
+    if abs(A_fill - A_native) < 1e-9:
+        kind = "matched"
+        note = ("The borrow matches the native sand, so the profile simply "
+                "translates seaward and every cubic metre buys the same "
+                "width.")
+    elif detail["intersects"]:
+        kind = "intersecting"
+        note = ("The fill is coarser than the native sand, so it stands "
+                "steeper and meets the native profile "
+                f"{detail['meeting']:.0f} m offshore, at "
+                f"{detail['meeting_depth']:.1f} m depth. Every cubic metre "
+                "works on the visible beach.")
+    else:
+        kind = "non-intersecting"
+        note = ("The fill is finer than the native sand, so it lies flatter "
+                "and never meets the native profile: the placement runs all "
+                "the way to closure, and part of it does nothing for the dry "
+                "beach.")
+
+    return {
+        "advance": advance,
+        "kind": kind,
+        "critical_volume": critical,
+        "volume": volume,
+        "meeting": detail["meeting"],
+        "meeting_depth": detail["meeting_depth"],
+        "limit_depth": detail["limit_depth"],
+        "note": note,
+    }
+
+
+def profile_overfill_factor(native, borrow, berm_height: float,
+                            closure_depth: float, advance: float = 30.0) -> dict:
+    """How much more borrow material is needed for the same dry beach.
+
+    The ratio of the volume needed using the borrow material to the volume
+    needed using sand identical to the native, for the same shoreline
+    advance.
+
+    Returns
+    -------
+    dict
+        The ``factor``, both volumes, and the two profile scales.
+
+    Notes
+    -----
+    This is a profile-based factor and is not the same quantity as James's
+    (1975) textural overfill ratio R_A, which comes off a chart built from
+    the phi mean and sorting of both distributions and accounts for the
+    fines winnowing out. Both answer "how much extra do I buy"; they do it
+    from different evidence, and neither replaces the other. Use
+    :func:`grain_compatibility` for the textural side.
+    """
+    A_native = dean_scale(native)
+    A_borrow = dean_scale(borrow)
+    native_volume = fill_volume_for_advance(
+        A_native, A_native, advance, berm_height, closure_depth)["volume"]
+    borrow_volume = fill_volume_for_advance(
+        A_native, A_borrow, advance, berm_height, closure_depth)["volume"]
+    return {
+        "factor": borrow_volume / native_volume if native_volume > 0 else float("inf"),
+        "native_volume": native_volume,
+        "borrow_volume": borrow_volume,
+        "A_native": A_native,
+        "A_borrow": A_borrow,
+        "advance": advance,
+    }
+
+
+def grain_compatibility(native, borrow) -> dict:
+    """Compare a borrow source with the native beach, on the phi scale.
+
+    Returns
+    -------
+    dict
+        ``delta`` = (phi_borrow - phi_native) / sigma_native, the mean shift
+        in native standard deviations, negative when the borrow is coarser;
+        ``sorting_ratio`` = sigma_borrow / sigma_native; and a ``verdict``.
+
+    Notes
+    -----
+    The verdict follows the rule every nourishment text states and no chart
+    is needed for: borrow that is coarser and no more poorly sorted than the
+    native sand is well suited, and borrow that is finer is not, in
+    proportion to how much finer. James's (1975) chart puts numbers on the
+    second case; this says which case you are in and how far.
+    """
+    native = native if hasattr(native, "d50") else sediment(native)
+    borrow = borrow if hasattr(borrow, "d50") else sediment(borrow)
+    for grains in (native, borrow):
+        if grains.cohesive or grains.d50 <= 0:
+            raise ValueError(f"{grains.name} is not a beach material")
+
+    phi_native = phi_size(native.d50)
+    phi_borrow = phi_size(borrow.d50)
+    delta = (phi_borrow - phi_native) / native.phi_sorting
+    ratio = borrow.phi_sorting / native.phi_sorting
+
+    if delta <= -0.5:
+        verdict = "coarser than native, well suited"
+    elif delta < 0.25:
+        verdict = "close to native, suitable"
+    elif delta < 1.0:
+        verdict = "finer than native, expect losses"
+    else:
+        verdict = "much finer than native, poorly suited"
+    if ratio > 1.5 and delta > -0.5:
+        verdict += "; also more poorly sorted, so the fines will winnow out"
+
+    return {
+        "phi_native": phi_native,
+        "phi_borrow": phi_borrow,
+        "delta": delta,
+        "sorting_ratio": ratio,
+        "coarser": delta < 0.0,
+        "verdict": verdict,
     }

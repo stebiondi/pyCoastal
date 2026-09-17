@@ -373,6 +373,85 @@ var MODULES = {
     }
   },
 
+  nourishment: {
+    label: "Nourishment",
+    note: "What a borrow source is worth, on Dean's equilibrium profile.",
+    inputs: [
+      { key: "native", label: "Native beach sand", type: "select",
+        value: "medium_sand", options: ["silt", "very_fine_sand", "fine_sand", "medium_sand",
+                  "coarse_sand", "fine_gravel", "coarse_gravel"] },
+      { key: "borrow", label: "Borrow source", type: "select",
+        value: "coarse_sand", options: ["silt", "very_fine_sand", "fine_sand", "medium_sand",
+                  "coarse_sand", "fine_gravel", "coarse_gravel"] },
+      { key: "volume", label: "Placed volume", unit: "m3/m", min: 20, max: 1200, step: 10, value: 250 },
+      { key: "berm", label: "Berm height", unit: "m", min: 0.5, max: 5, step: 0.1, value: 2.0 },
+      { key: "closure", label: "Depth of closure", unit: "m", min: 2, max: 14, step: 0.5, value: 6.0 }
+    ],
+    run: function (v) {
+      var An = P.deanScale(v.native);
+      var Af = P.deanScale(v.borrow);
+      var r = P.shorelineAdvance(An, Af, v.volume, v.berm, v.closure);
+      r.A_native = An;
+      r.A_fill = Af;
+      r.berm_height = v.berm;
+      r.closure_depth = v.closure;
+      r.native_name = P.sediment(v.native).name;
+      r.borrow_name = P.sediment(v.borrow).name;
+      r.borrow_d50 = P.sediment(v.borrow).d50;
+      r.match = P.grainCompatibility(v.native, v.borrow);
+      r.overfill = P.profileOverfillFactor(v.native, v.borrow, v.berm,
+                                           v.closure, Math.max(r.advance, 1));
+      return r;
+    },
+    draw: function (host, r, w, h) { D.drawNourishment(host, r, w, h); },
+    checks: function (r) {
+      return [
+        { name: "Dry beach", value: r.advance.toFixed(1) + " m",
+          target: r.volume.toFixed(0) + " m3/m placed",
+          ok: r.advance > 0, warn: r.advance === 0 },
+        { name: "Profile", value: r.kind,
+          target: r.kind === "submerged" ? "no dry beach" : "Dean (1991)",
+          ok: r.kind !== "submerged", neutral: r.kind !== "submerged" },
+        { name: "Overfill factor", value: r.overfill.factor.toFixed(2),
+          target: "x native volume",
+          ok: r.overfill.factor <= 1.05, warn: r.overfill.factor > 1.05 },
+        { name: "Grain match",
+          value: (r.match.delta >= 0 ? "+" : "") + r.match.delta.toFixed(2),
+          target: "native sigma-phi",
+          ok: r.match.coarser, warn: !r.match.coarser },
+        { name: "Critical volume",
+          value: r.critical_volume > 0 ? r.critical_volume.toFixed(0) + " m3/m" : "none",
+          target: "for any dry beach",
+          ok: r.critical_volume === 0, warn: r.critical_volume > 0 }
+      ];
+    },
+    report: function (r) {
+      return [
+        ["Native", r.native_name],
+        ["  phi", r.match.phi_native.toFixed(2)],
+        ["  A native", r.A_native.toFixed(3)],
+        ["Borrow", r.borrow_name],
+        ["  phi", r.match.phi_borrow.toFixed(2)],
+        ["  A borrow", r.A_fill.toFixed(3)],
+        [null, null],
+        ["Compatibility", r.match.coarser ? "coarser" : "finer"],
+        ["  delta", (r.match.delta >= 0 ? "+" : "") + r.match.delta.toFixed(2)],
+        ["  sorting ratio", r.match.sorting_ratio.toFixed(2)],
+        ["  verdict", r.match.verdict.split(",")[0]],
+        [null, null],
+        ["Placed volume", r.volume.toFixed(0) + " m3/m"],
+        ["Dry beach gained", r.advance.toFixed(1) + " m"],
+        ["Profile type", r.kind],
+        ["Critical volume", r.critical_volume.toFixed(0) + " m3/m"],
+        [null, null],
+        ["For the same width", ""],
+        ["  with this borrow", r.overfill.borrow_volume.toFixed(0) + " m3/m"],
+        ["  with native sand", r.overfill.native_volume.toFixed(0) + " m3/m"],
+        ["  overfill factor", r.overfill.factor.toFixed(2)]
+      ];
+    }
+  },
+
   extremes: {
     label: "Return values",
     note: "Generalised Pareto tail above a storm threshold.",
@@ -755,6 +834,7 @@ function renderWarnings(result) {
   var host = document.getElementById("warnings");
   host.innerHTML = "";
   var list = (result.warnings || (result.load && result.load.warnings) || []);
+  if (!list.length && result.note) list = [result.note];
   if (!list.length) { host.hidden = true; return; }
   host.hidden = false;
   list.forEach(function (text) {
@@ -787,7 +867,7 @@ var SECTION_ORDER = [
 
 var MODULE_TO_KEY = {
   seawall: "seawall", breakwater: "structures", channel: "channel",
-  monopile: "piles", extremes: "extremes"
+  monopile: "piles", extremes: "extremes", nourishment: "nourishment"
 };
 
 function renderTopics() {

@@ -1123,6 +1123,7 @@ function makeSediment(name, d50, opts) {
   s.dry_unit_weight = (1 - s.porosity) * s.specific_gravity * GAMMA_W;
   s.saturated_unit_weight = s.dry_unit_weight + s.porosity * GAMMA_W;
   s.submerged_unit_weight = s.saturated_unit_weight - GAMMA_W;
+  s.phi_sorting = opts.phi_sorting === undefined ? 0.6 : opts.phi_sorting;
   s.cohesive = s.cohesion > 0;
   return s;
 }
@@ -1130,29 +1131,39 @@ function makeSediment(name, d50, opts) {
 var SEDIMENTS = {
   soft_clay: makeSediment("Soft clay", 0.0, {
     specific_gravity: 2.70, porosity: 0.55, friction_angle: 22.0, cohesion: 15.0,
+    phi_sorting: 2.0,
     description: "normally consolidated, undrained strength governs" }),
   stiff_clay: makeSediment("Stiff clay", 0.0, {
     specific_gravity: 2.72, porosity: 0.42, friction_angle: 26.0, cohesion: 40.0,
+    phi_sorting: 2.0,
     description: "overconsolidated" }),
   silt: makeSediment("Silt", 0.03e-3, {
     porosity: 0.48, friction_angle: 28.0,
+    phi_sorting: 1.6,
     description: "mobile at almost any wave" }),
   very_fine_sand: makeSediment("Very fine sand", 0.09e-3, {
     porosity: 0.45, friction_angle: 29.0,
+    phi_sorting: 0.55,
     description: "suspends readily, high siltation" }),
   fine_sand: makeSediment("Fine sand", 0.19e-3, {
     porosity: 0.43, friction_angle: 31.0,
+    phi_sorting: 0.45,
     description: "the usual beach and nearshore sand" }),
   medium_sand: makeSediment("Medium sand", 0.38e-3, {
-    porosity: 0.40, friction_angle: 33.0, description: "typical dredged fill" }),
+    porosity: 0.40, friction_angle: 33.0, phi_sorting: 0.55,
+    description: "typical dredged fill" }),
   coarse_sand: makeSediment("Coarse sand", 0.75e-3, {
-    porosity: 0.38, friction_angle: 35.0, description: "good drained backfill" }),
+    porosity: 0.38, friction_angle: 35.0, phi_sorting: 0.7,
+    description: "good drained backfill" }),
   fine_gravel: makeSediment("Fine gravel", 6.0e-3, {
-    porosity: 0.35, friction_angle: 38.0, description: "free draining" }),
+    porosity: 0.35, friction_angle: 38.0, phi_sorting: 0.95,
+    description: "free draining" }),
   coarse_gravel: makeSediment("Coarse gravel", 30.0e-3, {
-    porosity: 0.35, friction_angle: 40.0, description: "shingle beach" }),
+    porosity: 0.35, friction_angle: 40.0, phi_sorting: 1.1,
+    description: "shingle beach" }),
   rock_fill: makeSediment("Quarry rock fill", 150.0e-3, {
     porosity: 0.37, friction_angle: 42.0,
+    phi_sorting: 1.4,
     description: "engineered granular backfill" })
 };
 
@@ -1518,6 +1529,170 @@ function dredgedSideSlope(bed, factor) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Beach nourishment, cross-shore                                      */
+/* ------------------------------------------------------------------ */
+
+function phiSize(d50) {
+  if (!(d50 > 0)) throw new Error("Grain size must be positive");
+  return -Math.log(d50 * 1000) / Math.LN2;
+}
+
+function sizeFromPhi(phi) { return Math.pow(2, -phi) / 1000; }
+
+/* A = 0.067 w^0.44 with w in cm/s (Kriebel, Kraus and Larson 1991), so the
+   profile scale comes from the same fall velocity the scour work uses. */
+function deanScale(material, viscosity) {
+  var grains = sediment(material);
+  if (grains.cohesive || !(grains.d50 > 0)) {
+    throw new Error(grains.name + " is cohesive. An equilibrium sand profile " +
+      "does not describe it, and a beach cannot be built from it.");
+  }
+  return 0.067 * Math.pow(fallVelocity(grains, viscosity) * 100, 0.44);
+}
+
+function equilibriumProfile(A, y) {
+  if (!(A > 0)) throw new Error("Profile scale must be positive");
+  return A * Math.pow(Math.max(y, 0), 2 / 3);
+}
+
+function profileWidth(A, depth) {
+  if (!(A > 0) || depth < 0) {
+    throw new Error("Scale must be positive and depth non-negative");
+  }
+  return Math.pow(depth / A, 1.5);
+}
+
+/* The offset between the nourished and native profiles, integrated over
+   depth to the closure contour, plus the dry berm. With matched sand every
+   term but the first two vanishes and this is exactly (B + h*) a. */
+function fillVolumeForAdvance(Anative, Afill, advance, bermHeight, closureDepth) {
+  if (advance < 0) throw new Error("Advance must be non-negative");
+  if (bermHeight < 0) throw new Error("Berm height must be non-negative");
+  if (!(closureDepth > 0)) throw new Error("Closure depth must be positive");
+  if (!(Anative > 0) || !(Afill > 0)) throw new Error("Profile scales must be positive");
+
+  var kn = Math.pow(Anative, -1.5);
+  var kf = Math.pow(Afill, -1.5);
+  var meetingDepth = null, intersects = false;
+  if (kf < kn) {
+    meetingDepth = advance > 0 ? Math.pow(advance / (kn - kf), 2 / 3) : 0;
+    intersects = meetingDepth <= closureDepth;
+  }
+  var limit = meetingDepth !== null ? Math.min(meetingDepth, closureDepth)
+                                    : closureDepth;
+  var volume = bermHeight * advance + advance * limit +
+               0.4 * Math.pow(limit, 2.5) * (kf - kn);
+  var meeting = null;
+  if (intersects && meetingDepth !== null && meetingDepth > 0) {
+    meeting = advance + Math.pow(meetingDepth / Afill, 1.5);
+  }
+  return {
+    volume: volume, berm_volume: bermHeight * advance, limit_depth: limit,
+    meeting_depth: intersects ? meetingDepth : null, meeting: meeting,
+    intersects: intersects
+  };
+}
+
+function criticalVolume(Anative, Afill, bermHeight, closureDepth) {
+  if (Afill >= Anative) return 0;
+  return fillVolumeForAdvance(Anative, Afill, 0, bermHeight, closureDepth).volume;
+}
+
+function shorelineAdvance(Anative, Afill, volume, bermHeight, closureDepth, tol) {
+  tol = tol === undefined ? 1e-4 : tol;
+  if (volume < 0) throw new Error("Volume must be non-negative");
+
+  var critical = criticalVolume(Anative, Afill, bermHeight, closureDepth);
+  if (volume <= critical) {
+    return {
+      advance: 0, kind: "submerged", critical_volume: critical, volume: volume,
+      meeting: null, meeting_depth: null, limit_depth: closureDepth,
+      note: volume.toFixed(0) + " m3/m of fill this fine does not reach the " +
+        "critical " + critical.toFixed(0) + " m3/m, so none of it appears as " +
+        "dry beach. It forms a submerged terrace instead."
+    };
+  }
+
+  var low = 0, high = 10;
+  while (fillVolumeForAdvance(Anative, Afill, high, bermHeight, closureDepth).volume < volume) {
+    high *= 2;
+    if (high > 1e5) throw new Error("No advance within 100 km delivers that volume");
+  }
+  while (high - low > tol) {
+    var mid = 0.5 * (low + high);
+    if (fillVolumeForAdvance(Anative, Afill, mid, bermHeight, closureDepth).volume < volume) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+  var advance = 0.5 * (low + high);
+  var detail = fillVolumeForAdvance(Anative, Afill, advance, bermHeight, closureDepth);
+
+  var kind, note;
+  if (Math.abs(Afill - Anative) < 1e-9) {
+    kind = "matched";
+    note = "The borrow matches the native sand, so the profile simply " +
+      "translates seaward and every cubic metre buys the same width.";
+  } else if (detail.intersects) {
+    kind = "intersecting";
+    note = "The fill is coarser than the native sand, so it stands steeper " +
+      "and meets the native profile " + detail.meeting.toFixed(0) +
+      " m offshore, at " + detail.meeting_depth.toFixed(1) + " m depth. " +
+      "Every cubic metre works on the visible beach.";
+  } else {
+    kind = "non-intersecting";
+    note = "The fill is finer than the native sand, so it lies flatter and " +
+      "never meets the native profile: the placement runs all the way to " +
+      "closure, and part of it does nothing for the dry beach.";
+  }
+  return {
+    advance: advance, kind: kind, critical_volume: critical, volume: volume,
+    meeting: detail.meeting, meeting_depth: detail.meeting_depth,
+    limit_depth: detail.limit_depth, note: note
+  };
+}
+
+function profileOverfillFactor(native, borrow, bermHeight, closureDepth, advance) {
+  advance = advance === undefined ? 30 : advance;
+  var An = deanScale(native), Ab = deanScale(borrow);
+  var nativeVolume = fillVolumeForAdvance(An, An, advance, bermHeight, closureDepth).volume;
+  var borrowVolume = fillVolumeForAdvance(An, Ab, advance, bermHeight, closureDepth).volume;
+  return {
+    factor: nativeVolume > 0 ? borrowVolume / nativeVolume : Infinity,
+    native_volume: nativeVolume, borrow_volume: borrowVolume,
+    A_native: An, A_borrow: Ab, advance: advance
+  };
+}
+
+function grainCompatibility(native, borrow) {
+  native = sediment(native);
+  borrow = sediment(borrow);
+  [native, borrow].forEach(function (g) {
+    if (g.cohesive || !(g.d50 > 0)) {
+      throw new Error(g.name + " is not a beach material");
+    }
+  });
+  var phiNative = phiSize(native.d50);
+  var phiBorrow = phiSize(borrow.d50);
+  var delta = (phiBorrow - phiNative) / native.phi_sorting;
+  var ratio = borrow.phi_sorting / native.phi_sorting;
+
+  var verdict;
+  if (delta <= -0.5) verdict = "coarser than native, well suited";
+  else if (delta < 0.25) verdict = "close to native, suitable";
+  else if (delta < 1.0) verdict = "finer than native, expect losses";
+  else verdict = "much finer than native, poorly suited";
+  if (ratio > 1.5 && delta > -0.5) {
+    verdict += "; also more poorly sorted, so the fines will winnow out";
+  }
+  return {
+    phi_native: phiNative, phi_borrow: phiBorrow, delta: delta,
+    sorting_ratio: ratio, coarser: delta < 0, verdict: verdict
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* Extreme values                                                      */
 /* ------------------------------------------------------------------ */
 
@@ -1647,6 +1822,16 @@ var PYCOASTAL = {
   roundheadKdRatio: roundheadKdRatio,
   ROUNDHEAD_KD_RATIO: ROUNDHEAD_KD_RATIO,
   crownWall: crownWall,
+  phiSize: phiSize,
+  sizeFromPhi: sizeFromPhi,
+  deanScale: deanScale,
+  equilibriumProfile: equilibriumProfile,
+  profileWidth: profileWidth,
+  fillVolumeForAdvance: fillVolumeForAdvance,
+  criticalVolume: criticalVolume,
+  shorelineAdvance: shorelineAdvance,
+  profileOverfillFactor: profileOverfillFactor,
+  grainCompatibility: grainCompatibility,
   lMoments: lMoments,
   fitGpd: fitGpd,
   gpdReturnValue: gpdReturnValue,

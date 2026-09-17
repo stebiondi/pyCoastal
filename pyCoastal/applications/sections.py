@@ -51,6 +51,10 @@ __all__ = [
     "channel_section",
     "channel_sheet",
     "draw_channel_detail",
+    "draw_nourishment",
+    "nourishment_notes",
+    "nourishment_section",
+    "nourishment_sheet",
 ]
 
 
@@ -1298,3 +1302,282 @@ def draw_seawall_toe_detail(dwg: Section, design, annotate: bool = True
                   rise=d.toe_berm_thickness, direction="left", label="1 : 1.5")
 
     return (x0, x1), (floor, bed + d.toe_berm_thickness + 2.2)
+
+
+# ---------------------------------------------------------------------------
+# Beach nourishment
+# ---------------------------------------------------------------------------
+
+
+def draw_nourishment(dwg: Section, result, native, borrow, berm_height: float,
+                     closure_depth: float, water_level: float = 0.0,
+                     annotate: bool = True,
+                     landward: float = 40.0) -> tuple[tuple, tuple]:
+    """Put a nourishment cross-section into an open :class:`Section`.
+
+    The native profile, the design fill over it, and the closure contour
+    that bounds the whole exercise. The fill wedge is drawn as the borrow
+    material, so a section placed with coarse sand and one placed with fine
+    sand do not look alike, which they should not.
+
+    Parameters
+    ----------
+    result : dict
+        Output of :func:`~pyCoastal.applications.nourishment.shoreline_advance`.
+    native, borrow : Sediment or str
+        The beach and the borrow source.
+    """
+    from .nourishment import dean_scale, equilibrium_profile, profile_width
+    from .sediment import sediment as _lookup
+
+    native = _lookup(native) if isinstance(native, str) else native
+    borrow = _lookup(borrow) if isinstance(borrow, str) else borrow
+    A_native = dean_scale(native)
+    A_fill = dean_scale(borrow)
+    advance = result["advance"]
+
+    native_end = profile_width(A_native, closure_depth)
+    fill_end = advance + profile_width(A_fill, closure_depth)
+    offshore = max(native_end, fill_end) * 1.12
+    x0, x1 = -landward, offshore
+    z_bed = water_level - closure_depth
+    z0 = z_bed - 3.0
+    z1 = water_level + berm_height + 3.0
+
+    y = np.linspace(0.0, offshore, 500)
+    native_z = water_level - equilibrium_profile(A_native, y)
+
+    # Ground below the native profile.
+    dwg.material(
+        np.vstack(([[x0, z0]], [[0.0, z0]],
+                   np.column_stack((y, native_z)),
+                   [[offshore, z0]])),
+        "subgrade", label="Native beach and seabed", zorder=1.6,
+    )
+    # The dry native beach landward of the original waterline.
+    dwg.material([[x0, z0], [0.0, z0], [0.0, water_level + berm_height],
+                  [x0, water_level + berm_height]], "subgrade",
+                 label="Native beach and seabed", zorder=1.6)
+
+    dwg.water(x0, x1, water_level,
+              bed=np.column_stack((np.concatenate(([x0], y)),
+                                   np.concatenate(([water_level + berm_height],
+                                                   native_z)))),
+              zorder=1.2)
+
+    # The fill: between the nourished profile and the native one.
+    if advance > 0:
+        yf = np.linspace(0.0, max(fill_end, advance + 1e-6), 500)
+        fill_z = np.where(
+            yf <= advance,
+            water_level + berm_height,
+            water_level - equilibrium_profile(A_fill, np.maximum(yf - advance, 0.0)),
+        )
+        native_on_yf = water_level - equilibrium_profile(A_native, yf)
+        above = fill_z > native_on_yf + 1e-9
+        if above.any():
+            last = int(np.max(np.nonzero(above)))
+            wedge = np.vstack((
+                np.column_stack((yf[: last + 1], fill_z[: last + 1])),
+                np.column_stack((yf[: last + 1][::-1],
+                                 native_on_yf[: last + 1][::-1])),
+            ))
+            dwg.material(wedge, "sand",
+                         label=f"Nourishment, {borrow.name.lower()} "
+                               f"(d50 = {borrow.d50 * 1000:.2f} mm)",
+                         zorder=2.4)
+
+    # Profiles drawn over the fills, so both are readable.
+    dwg.line(np.column_stack((y, native_z)), weight="medium",
+             style=(0, (6, 3)), zorder=4.0)
+    if advance > 0:
+        drawn = yf <= (result["meeting"] if result.get("meeting") else yf[-1])
+        dwg.line(np.column_stack((yf[drawn], fill_z[drawn])), weight="heavy",
+                 zorder=4.2)
+
+    # The closure contour bounds the whole problem.
+    dwg.line([[x0, z_bed], [x1, z_bed]], weight="thin", style=(0, (2, 3)),
+             color="#8a2f24", zorder=3.8)
+
+    if not annotate:
+        return (x0, x1), (z0, z1)
+
+    dwg.level(x0 + 0.1 * landward, water_level,
+              f"MSL {water_level:+.2f} m", side="right", symbol="water")
+    dwg.level(x0 + 0.1 * landward, water_level + berm_height,
+              f"Berm {water_level + berm_height:+.2f} m", side="right")
+    dwg.level(offshore * 0.30, z_bed,
+              f"Closure {z_bed:+.2f} m", side="right")
+
+    if advance > 0:
+        dwg.dim_h(0.0, advance, water_level + berm_height + 1.4,
+                  f"dry beach gained {advance:.1f} m",
+                  extend_from=(water_level + berm_height,
+                               water_level + berm_height))
+    if result.get("meeting"):
+        dwg.note((result["meeting"], water_level - result["meeting_depth"]),
+                 f"profiles meet, {result['meeting']:.0f} m out",
+                 offset=(30, 26))
+    else:
+        dwg.note((0.75 * fill_end, water_level - 0.8 * closure_depth),
+                 "fill runs to closure without meeting\nthe native profile",
+                 offset=(0, -40), ha="center")
+
+    dwg.note((0.35 * advance if advance > 2 else 6.0, water_level + berm_height),
+             f"{result['volume']:.0f} m3 per metre of beach",
+             offset=(-20, 34), ha="right")
+
+    return (x0, x1), (z0, z1)
+
+
+def nourishment_notes(result, native, borrow, berm_height: float,
+                      closure_depth: float, design=None) -> list[str]:
+    """Specification notes generated from a nourishment design."""
+    from .nourishment import (dean_scale, grain_compatibility,
+                              profile_overfill_factor)
+    from .sediment import sediment as _lookup
+
+    native = _lookup(native) if isinstance(native, str) else native
+    borrow = _lookup(borrow) if isinstance(borrow, str) else borrow
+    match = grain_compatibility(native, borrow)
+    overfill = profile_overfill_factor(native, borrow, berm_height,
+                                       closure_depth,
+                                       advance=max(result["advance"], 1.0))
+
+    notes = [
+        f"Native beach: {native.name.lower()}, d50 = "
+        f"{native.d50 * 1000:.2f} mm, phi = {match['phi_native']:.2f}, "
+        f"sorting {native.phi_sorting:.2f}. Profile scale A = "
+        f"{dean_scale(native):.3f} m^(1/3).",
+        f"Borrow source: {borrow.name.lower()}, d50 = "
+        f"{borrow.d50 * 1000:.2f} mm, phi = {match['phi_borrow']:.2f}, "
+        f"sorting {borrow.phi_sorting:.2f}. Profile scale A = "
+        f"{dean_scale(borrow):.3f} m^(1/3).",
+        f"Compatibility: the borrow sits {abs(match['delta']):.2f} native "
+        f"standard deviations "
+        + ("coarser" if match["coarser"] else "finer")
+        + f" than the beach it is going on. Verdict: {match['verdict']}.",
+        f"Profile type: {result['kind']}. {result['note']}",
+        f"Placed volume {result['volume']:.0f} m3 per metre of beach for "
+        f"{result['advance']:.1f} m of dry beach, over an active profile "
+        f"from the {berm_height:.1f} m berm to the {closure_depth:.1f} m "
+        "closure depth.",
+        f"Profile overfill factor {overfill['factor']:.2f}: that many cubic "
+        "metres of this borrow are needed for every cubic metre of native "
+        "sand, to reach the same beach width. This is a profile comparison "
+        "and not James's textural overfill ratio, which also accounts for "
+        "the fines winnowing out.",
+        "The equilibrium profile is Dean's h = A y^(2/3) with A from the "
+        "fall velocity (Kriebel, Kraus and Larson 1991). It describes the "
+        "profile a beach settles to, not the one it has on any given day.",
+        "Volumes are in place. Add the contractor's bulking, the overfill "
+        "for losses during placement, and the advance nourishment that buys "
+        "the design life.",
+    ]
+    if result["critical_volume"] > 0:
+        notes.insert(4, (
+            f"Critical volume {result['critical_volume']:.0f} m3/m: below "
+            "this, fill this fine produces no dry beach at all, because the "
+            "whole placement goes into flattening the underwater profile."
+        ))
+    return notes
+
+
+def nourishment_section(
+    result, native, borrow, berm_height: float, closure_depth: float,
+    water_level: float = 0.0,
+    title: str = "Beach nourishment, design profile",
+    figsize: tuple[float, float] = (14.0, 7.0),
+    exaggeration: float | None = None,
+    ax=None,
+) -> Section:
+    """A standalone figure of a nourishment profile.
+
+    Vertically exaggerated, because a beach profile is hundreds of metres
+    long and a few metres deep and at a true scale it is a line. Left to
+    itself the exaggeration is chosen so the profile fills the sheet, which
+    is what makes it readable; pass a number to fix it instead.
+    """
+    from .nourishment import dean_scale, grain_compatibility
+
+    if exaggeration is None:
+        probe = Section(figsize=figsize, ax=ax)
+        xlim, zlim = draw_nourishment(probe, result, native, borrow,
+                                      berm_height, closure_depth, water_level,
+                                      annotate=False)
+        probe.fig.clear()
+        span = (xlim[1] - xlim[0]) / (zlim[1] - zlim[0])
+        exaggeration = max(1.0, round(span / (figsize[0] / figsize[1])))
+
+    native_name = native if isinstance(native, str) else native.name
+    dwg = Section(
+        title,
+        subtitle=(
+            f"Native {native_name.replace('_', ' ')}, borrow "
+            f"{(borrow if isinstance(borrow, str) else borrow.name).replace('_', ' ')}. "
+            f"Berm {berm_height:.1f} m, closure {closure_depth:.1f} m. "
+            f"VERTICAL EXAGGERATION {exaggeration:g}:1"
+        ),
+        figsize=figsize,
+        exaggeration=exaggeration,
+        ax=ax,
+    )
+    xlim, zlim = draw_nourishment(dwg, result, native, borrow, berm_height,
+                                 closure_depth, water_level)
+    match = grain_compatibility(native, borrow)
+    dwg.key(loc="lower left")
+    dwg.table(
+        [
+            ("Native d50", f"{match['phi_native']:.2f} phi"),
+            ("Borrow d50", f"{match['phi_borrow']:.2f} phi"),
+            ("A native", f"{dean_scale(native):.3f}"),
+            ("A borrow", f"{dean_scale(borrow):.3f}"),
+            ("", ""),
+            ("Profile type", result["kind"]),
+            ("Volume", f"{result['volume']:.0f} m3/m"),
+            ("Dry beach", f"{result['advance']:.1f} m"),
+            ("Critical volume", f"{result['critical_volume']:.0f} m3/m"),
+        ],
+        title="Design basis",
+    )
+    dwg.finish(xlim=xlim, zlim=zlim)
+    return dwg
+
+
+def nourishment_sheet(
+    result, native, borrow, berm_height: float, closure_depth: float,
+    water_level: float = 0.0,
+    project: str = "Beach management scheme",
+    title: str = "Nourishment design profile",
+    size: str = "A3",
+    exaggeration: float = 6.0,
+    file: str = "nourishment_sheet.py",
+    **titleblock,
+) -> Sheet:
+    """A drawing sheet of a nourishment profile, with its borrow notes."""
+    sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
+    view = sheet.viewport(rect=(0.0, 0.05, 0.70, 0.95), exaggeration=exaggeration)
+    xlim, zlim = draw_nourishment(view, result, native, borrow, berm_height,
+                                 closure_depth, water_level)
+    view.fit_scale(xlim, zlim, paper=size)
+    view.detail_bubble("A", title, view.scale_text, loc=(0.02, 0.05))
+    view.key(loc="lower left")
+
+    notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
+    notes.ax.set_xlim(0, 1)
+    notes.ax.set_ylim(0, 1)
+    notes.ax.set_aspect("auto")
+    text = nourishment_notes(result, native, borrow, berm_height, closure_depth)
+    if view.exaggeration_note:
+        text.insert(0, view.exaggeration_note.capitalize()
+                    + ". Slopes are not true angles on this drawing.")
+    notes.notes_block(text, title="NOTES", width=36, loc=(0.0, 1.0),
+                      fontsize=6.0)
+    notes.table(
+        [("VOLUME", f"{result['volume']:.0f} m3/m"),
+         ("DRY BEACH", f"{result['advance']:.1f} m"),
+         ("PROFILE", result["kind"].upper())],
+        title="SUMMARY", loc=(0.0, 0.0), align="left", fontsize=6.4,
+    )
+    sheet.set_scale_from(view)
+    return sheet

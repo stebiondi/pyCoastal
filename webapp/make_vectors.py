@@ -50,6 +50,16 @@ from pyCoastal.applications.seawall import (
     scour_depth_vertical_wall,
     toe_stone_size,
 )
+from pyCoastal.applications.nourishment import (
+    critical_volume,
+    dean_scale,
+    fill_volume_for_advance,
+    grain_compatibility,
+    phi_size,
+    profile_overfill_factor,
+    profile_width,
+    shoreline_advance,
+)
 from pyCoastal.applications.sediment import (
     bed_mobility,
     critical_shields,
@@ -57,6 +67,7 @@ from pyCoastal.applications.sediment import (
     earth_pressure_coefficient,
     fall_velocity,
     lateral_earth_force,
+    sediment,
     wave_shields,
 )
 from pyCoastal.applications.structures import (
@@ -293,6 +304,55 @@ def build() -> dict:
         case(f"pile scour KC={KC}",
              {"fn": "scourDepthPile", "args": [5.0, KC]},
              {"depth": got["depth"], "ratio": got["ratio"]})
+
+    # -- beach nourishment -------------------------------------------------
+    for key in ("very_fine_sand", "fine_sand", "medium_sand", "coarse_sand",
+                "fine_gravel"):
+        case(f"dean scale {key}",
+             {"fn": "deanScale", "args": [key]},
+             {"value": dean_scale(key)})
+        case(f"phi {key}",
+             {"fn": "phiSize", "args": [sediment(key).d50]},
+             {"value": phi_size(sediment(key).d50)})
+
+    native = dean_scale("medium_sand")
+    for key in ("very_fine_sand", "fine_sand", "medium_sand", "coarse_sand",
+                "fine_gravel"):
+        fill = dean_scale(key)
+        for volume in (120.0, 250.0, 900.0):
+            got = shoreline_advance(native, fill, volume, 2.0, 6.0)
+            case(f"shoreline advance {key} V={volume}",
+                 {"fn": "shorelineAdvance",
+                  "args": [native, fill, volume, 2.0, 6.0]},
+                 {"advance": got["advance"], "kind": got["kind"],
+                  "critical_volume": got["critical_volume"]})
+        case(f"critical volume {key}",
+             {"fn": "criticalVolume", "args": [native, fill, 2.0, 6.0]},
+             {"value": critical_volume(native, fill, 2.0, 6.0)})
+        got = grain_compatibility("medium_sand", key)
+        case(f"grain compatibility {key}",
+             {"fn": "grainCompatibility", "args": ["medium_sand", key]},
+             {"delta": got["delta"], "sorting_ratio": got["sorting_ratio"],
+              "coarser": got["coarser"], "verdict": got["verdict"]})
+        got = profile_overfill_factor("medium_sand", key, 2.0, 6.0, advance=40.0)
+        case(f"overfill factor {key}",
+             {"fn": "profileOverfillFactor",
+              "args": ["medium_sand", key, 2.0, 6.0, 40.0]},
+             {"factor": got["factor"], "borrow_volume": got["borrow_volume"],
+              "native_volume": got["native_volume"]})
+
+    for advance in (0.0, 15.0, 80.0):
+        got = fill_volume_for_advance(native, dean_scale("coarse_sand"),
+                                      advance, 2.0, 6.0)
+        case(f"fill volume a={advance}",
+             {"fn": "fillVolumeForAdvance",
+              "args": [native, dean_scale("coarse_sand"), advance, 2.0, 6.0]},
+             {"volume": got["volume"], "limit_depth": got["limit_depth"],
+              "intersects": got["intersects"]})
+
+    case("profile width",
+         {"fn": "profileWidth", "args": [0.141, 6.0]},
+         {"value": profile_width(0.141, 6.0)})
 
     # -- extremes ----------------------------------------------------------
     sample = [2.61, 3.04, 2.55, 4.12, 3.38, 2.90, 5.01, 3.71, 2.68, 3.15,
