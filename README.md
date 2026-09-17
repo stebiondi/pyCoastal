@@ -67,6 +67,10 @@ sheet.save("seawall.png")     # 1:200 @ A3, stated on the sheet
 sheet.to_dxf("seawall.dxf")   # geometry on named layers, for CAD
 ```
 
+The sheet carries a typical section and an enlarged toe detail, because the
+toe is the part that decides the section and the part a typical section is
+always too small to explain.
+
 Sections are drawn at a true scale by default, so a 1:2 slope looks like a
 1:2 slope. Where a true scale is unreadable, as it is for a channel six
 hundred metres wide and twenty deep, the exaggeration is applied

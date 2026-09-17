@@ -40,6 +40,7 @@ __all__ = [
     "draw_seawall",
     "seawall_section",
     "seawall_sheet",
+    "draw_seawall_toe_detail",
     "draw_rubble_mound",
     "rubble_mound_section",
     "rubble_mound_sheet",
@@ -414,14 +415,24 @@ def seawall_sheet(
     sheet = Sheet(
         _sheet_for(title, project, file, **titleblock), size=size,
     )
-    view = sheet.viewport(rect=(0.0, 0.05, 0.72, 0.95))
+
+    # View A: the typical section, showing where everything is.
+    view = sheet.viewport(rect=(0.0, 0.34, 0.72, 0.66))
     xlim, zlim = draw_seawall(view, d, sea_extent, land_extent)
     view.fit_scale(xlim, zlim, paper=size)
-    view.detail_bubble("A", title, view.scale_text, loc=(0.02, 0.04))
-    view.scale_bar(10.0, loc=(0.62, 0.04))
+    view.detail_bubble("A", "Typical cross-section", view.scale_text,
+                       loc=(0.02, 0.05))
+    view.scale_bar(10.0, loc=(0.62, 0.05))
     view.key(loc="upper left")
 
-    notes = sheet.viewport(rect=(0.72, 0.05, 0.28, 0.95), frame=False)
+    # View B: the toe, enlarged, showing what it is made of.
+    toe = sheet.viewport(rect=(0.0, 0.0, 0.72, 0.33))
+    txlim, tzlim = draw_seawall_toe_detail(toe, d)
+    toe.fit_scale(txlim, tzlim, paper=size)
+    toe.detail_bubble("B", "Toe detail", toe.scale_text, loc=(0.02, 0.06))
+    toe.key(loc="upper right", ncol=2)
+
+    notes = sheet.viewport(rect=(0.72, 0.0, 0.28, 1.0), frame=False)
     notes.ax.set_xlim(0, 1)
     notes.ax.set_ylim(0, 1)
     notes.ax.set_aspect("auto")
@@ -1030,3 +1041,76 @@ def draw_channel_detail(dwg: Section, design, width_in_beams: float = 0.35,
                   f"gross UKC {d.clearance['gross']:.2f}", side="left")
 
     return (-half, half), (level - 1.2, hull_top + 0.2)
+
+
+def draw_seawall_toe_detail(dwg: Section, design, annotate: bool = True
+                            ) -> tuple[tuple, tuple]:
+    """Enlarged detail of the toe, where the section is actually decided.
+
+    The typical section shows where everything is. This shows what the toe
+    is made of: the blinding under the heel, the founding level against the
+    scour allowance, the rock berm and its geotextile, and the seabed the
+    whole thing is sitting on. It is the part of a seawall that fails first
+    and the part a typical section is always too small to explain.
+    """
+    d = design
+    bed, found = d.seabed_level, d.founding_level
+    berm_face = 1.5 * d.toe_berm_thickness
+    blinding = 0.15
+
+    x0 = -(d.toe_berm_width + berm_face + 2.6)
+    x1 = 2.2 * d.stem_thickness + 1.0
+    floor = found - 1.8
+
+    dwg.material([[x0, floor], [x1, floor], [x1, bed], [x0, bed]],
+                 "subgrade", label="In-situ seabed", zorder=1.5)
+    dwg.water(x0, 0.0, d.still_water_level, bed=bed, zorder=1.2)
+
+    # The excavation the wall sits in, backfilled around the base.
+    dwg.material([[0.0, found - blinding], [x1, found - blinding],
+                  [x1, bed], [0.0, bed]], "granular",
+                 label="Granular surround", zorder=2.0)
+
+    dwg.material(
+        [[-d.toe_berm_width - berm_face, bed],
+         [-d.toe_berm_width, bed + d.toe_berm_thickness],
+         [0.0, bed + d.toe_berm_thickness], [0.0, bed]],
+        "toe",
+        label=f"Toe rock, Dn50 = {d.toe_Dn50:.2f} m ({d.toe_M50 / 1000:.2f} t)",
+        zorder=2.6,
+    )
+    dwg.material([[0.0, found - blinding], [x1, found - blinding],
+                  [x1, found], [0.0, found]], "blinding",
+                 label=f"Blinding, {blinding * 1000:.0f} mm", zorder=2.8)
+    dwg.material([[0.0, found], [x1, found],
+                  [x1, found + d.base_thickness], [0.0, found + d.base_thickness]],
+                 "reinforced", label="Reinforced concrete", zorder=3.0)
+
+    # Geotextile under the rock, drawn as the line it is on a drawing.
+    dwg.line([[-d.toe_berm_width - berm_face - 0.4, bed],
+              [0.0, bed]], weight="medium", style=(0, (2, 2)),
+             color="#8a2f24", zorder=3.4)
+
+    if annotate:
+        dwg.note((-0.5 * d.toe_berm_width, bed),
+                 "Geotextile filter,\n0.5 m lap minimum", offset=(-18, -34),
+                 ha="right")
+        dwg.level(x1 * 0.55, bed, f"Seabed {bed:+.2f} m CD", side="left")
+        dwg.level(x1 * 0.55, found, f"Founding {found:+.2f} m CD", side="left")
+        dwg.dim_v(found, bed, x0 + 0.35, f"embedment {d.embedment:.2f}",
+                  side="right")
+        dwg.dim_v(found - blinding, found, x1 - 0.25, f"{blinding:.2f}",
+                  side="left")
+        dwg.dim_h(-d.toe_berm_width, 0.0, bed + d.toe_berm_thickness + 0.55,
+                  f"{d.toe_berm_width:.1f}",
+                  extend_from=(bed + d.toe_berm_thickness,
+                               bed + d.toe_berm_thickness))
+        # Kept a clear metre from the embedment dimension: two rotated
+        # labels on top of each other is the usual way a detail becomes
+        # unreadable.
+        dwg.dim_v(bed, bed + d.toe_berm_thickness, x0 + 1.5,
+                  f"{d.toe_berm_thickness:.2f}", side="right")
+        dwg.slope((-d.toe_berm_width, bed + d.toe_berm_thickness), 1.5,
+                  rise=d.toe_berm_thickness, direction="left", label="1 : 1.5")
+
+    return (x0, x1), (floor, bed + d.toe_berm_thickness + 2.2)

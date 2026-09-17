@@ -16,6 +16,7 @@ from pyCoastal.applications.sections import (  # noqa: E402
     mound_layer_volumes,
     rubble_mound_section,
     draw_channel,
+    draw_seawall_toe_detail,
     rubble_mound_sheet,
     seawall_notes,
     seawall_section,
@@ -318,3 +319,30 @@ def test_channel_notes_name_the_governing_numbers(waterway):
     assert f"{waterway.dredge_level:+.2f}" in text
     assert "PIANC" in text
     assert "ICORELS" in text
+
+
+def test_seawall_toe_detail_covers_the_toe(wall):
+    from pyCoastal.applications.sections import draw_seawall_toe_detail
+
+    dwg = Section()
+    (x0, x1), (z0, z1) = draw_seawall_toe_detail(dwg, wall)
+    assert x0 < -wall.toe_berm_width
+    assert x1 > wall.stem_thickness
+    assert z0 < wall.founding_level
+    assert z1 > wall.seabed_level
+
+
+def test_seawall_toe_detail_is_an_enlargement(wall):
+    """The detail must be a smaller window than the typical section."""
+    section, detail = Section(), Section()
+    (sx0, sx1), _ = draw_seawall(section, wall)
+    (dx0, dx1), _ = draw_seawall_toe_detail(detail, wall)
+    assert (dx1 - dx0) < 0.4 * (sx1 - sx0)
+
+
+def test_seawall_sheet_carries_a_section_and_a_detail(wall):
+    sheet = seawall_sheet(wall, size="A3")
+    assert len(sheet.views) == 3          # section, toe detail, notes column
+    section, detail = sheet.views[0], sheet.views[1]
+    # The detail is drawn at a finer scale than the section it enlarges.
+    assert detail.scale < section.scale
