@@ -492,3 +492,129 @@ def test_breakwater_toe_scour_is_below_the_vertical_wall_value():
     wall = scour_depth_vertical_wall(4.0, conditions.Tm10, 12.0)
     assert scour["depth"] < wall
     assert scour["apron_width"] >= 2.0
+
+
+# ---------------------------------------------------------------------------
+# The roundhead
+# ---------------------------------------------------------------------------
+
+
+def test_head_carries_heavier_armour_than_the_trunk():
+    from pyCoastal.applications.structures import roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=5.42, Tp=9.2, depth=10.0)
+    trunk = design_rubble_mound(conditions, cot_alpha=1.5, armour="tetrapod")
+    head = roundhead(trunk)
+    assert head.Dn50 > trunk.Dn50
+    assert head.M50 > trunk.M50
+    assert head.section == "head"
+    assert trunk.section == "trunk"
+
+
+def test_head_mass_is_the_trunk_mass_over_the_kd_ratio():
+    """Hudson makes Dn50 go as KD^(-1/3), so the mass goes as 1/r."""
+    from pyCoastal.applications.structures import roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    trunk = design_rubble_mound(conditions, cot_alpha=2.0)
+    for ratio in (0.5, 0.65, 0.8, 1.0):
+        head = roundhead(trunk, kd_ratio=ratio)
+        assert head.M50 == pytest.approx(trunk.M50 / ratio)
+        assert head.Dn50 == pytest.approx(trunk.Dn50 / ratio ** (1 / 3))
+
+
+def test_a_kd_ratio_of_0_8_gives_a_quarter_more_stone():
+    """The step a real scheme lands on, sixteen tonnes to twenty."""
+    from pyCoastal.applications.structures import roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=5.42, Tp=9.2, depth=10.0)
+    trunk = design_rubble_mound(conditions, cot_alpha=1.5, armour="tetrapod")
+    head = roundhead(trunk, kd_ratio=0.8)
+    assert head.M50 / trunk.M50 == pytest.approx(1.25)
+
+
+def test_head_layer_follows_the_new_stone():
+    from pyCoastal.applications.structures import armour_layer, roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    trunk = design_rubble_mound(conditions, cot_alpha=2.0)
+    head = roundhead(trunk, kd_ratio=0.8)
+    assert head.layer["thickness"] == pytest.approx(
+        armour_layer(head.Dn50)["thickness"])
+
+
+def test_interlocking_units_lose_more_at_the_head_than_rock():
+    from pyCoastal.applications.structures import roundhead_kd_ratio
+
+    for cot in (1.5, 2.0, 3.0):
+        rock = roundhead_kd_ratio("rock_two_layer_permeable", cot)
+        tetrapod = roundhead_kd_ratio("tetrapod", cot)
+        dolos = roundhead_kd_ratio("dolos", cot)
+        assert dolos < tetrapod < rock
+
+
+def test_flatter_slopes_lose_more_at_the_head():
+    from pyCoastal.applications.structures import roundhead_kd_ratio
+
+    for armour in ("rock_two_layer_permeable", "tetrapod", "dolos"):
+        ratios = [roundhead_kd_ratio(armour, cot) for cot in (1.5, 2.0, 3.0)]
+        assert all(b < a for a, b in zip(ratios, ratios[1:]))
+
+
+def test_kd_ratio_interpolates_between_tabulated_slopes():
+    from pyCoastal.applications.structures import roundhead_kd_ratio
+
+    low = roundhead_kd_ratio("tetrapod", 1.5)
+    high = roundhead_kd_ratio("tetrapod", 2.0)
+    middle = roundhead_kd_ratio("tetrapod", 1.75)
+    assert high < middle < low
+    assert middle == pytest.approx(0.5 * (low + high))
+
+
+def test_kd_ratio_is_held_flat_outside_the_table():
+    """Better a tabulated value than an extrapolation nobody measured."""
+    from pyCoastal.applications.structures import roundhead_kd_ratio
+
+    assert roundhead_kd_ratio("tetrapod", 1.0) == roundhead_kd_ratio("tetrapod", 1.5)
+    assert roundhead_kd_ratio("tetrapod", 6.0) == roundhead_kd_ratio("tetrapod", 3.0)
+
+
+def test_head_crest_can_be_raised():
+    from pyCoastal.applications.structures import roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    trunk = design_rubble_mound(conditions, cot_alpha=2.0)
+    head = roundhead(trunk, raise_crest=0.5)
+    assert head.crest_freeboard == pytest.approx(trunk.crest_freeboard + 0.5)
+
+
+def test_head_refuses_a_ratio_that_makes_it_lighter():
+    from pyCoastal.applications.structures import roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    trunk = design_rubble_mound(conditions, cot_alpha=2.0)
+    with pytest.raises(ValueError):
+        roundhead(trunk, kd_ratio=1.4)
+    with pytest.raises(ValueError):
+        roundhead(trunk, kd_ratio=0.0)
+
+
+def test_head_summary_names_the_section():
+    from pyCoastal.applications.structures import roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    head = roundhead(design_rubble_mound(conditions, cot_alpha=2.0))
+    text = head.summary()
+    assert "head" in text
+    assert "KD ratio" in text
+
+
+def test_a_head_foundation_is_wider_than_the_trunk_one():
+    """Heavier armour means a bigger filter stone and a thicker blanket."""
+    from pyCoastal.applications.structures import mound_foundation, roundhead
+
+    conditions = DesignConditions.from_peak_period(Hm0=5.42, Tp=9.2, depth=10.0)
+    trunk = design_rubble_mound(conditions, cot_alpha=1.5, armour="tetrapod")
+    head = roundhead(trunk)
+    assert (mound_foundation(head, 10.0)["toe_Dn50"]
+            > mound_foundation(trunk, 10.0)["toe_Dn50"])

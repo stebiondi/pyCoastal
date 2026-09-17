@@ -1,6 +1,6 @@
 {
  "generated_from": "pyCoastal",
- "count": 105,
+ "count": 129,
  "cases": [
   {
    "name": "dispersion T=8.0 h=5.0",
@@ -1904,6 +1904,378 @@
     "parapet_top": 8.062291679382323,
     "total_width": 9.5,
     "concrete_m3_per_m": 32.12357004672185
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.95
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.8
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.7250000000000001
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.65
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.65
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.85
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.75
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.675
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.6
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.6
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.72
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.64
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.5700000000000001
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.5
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.5
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.65
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.58
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.515
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.45
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.45
+   }
+  },
+  {
+   "name": "roundhead tetrapod cot=1.5 r=None",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     null
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 2.3976601931656933,
+    "M50": 36526.559988697736,
+    "kd_ratio": 0.72,
+    "crest_freeboard": 7.61711329650879,
+    "layer_thickness": 4.795320386331387,
+    "section": "head"
+   }
+  },
+  {
+   "name": "roundhead rock_two_layer_permeable cot=2.0 r=None",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     null
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 2.0047755997777554,
+    "M50": 21352.22698257124,
+    "kd_ratio": 0.8,
+    "crest_freeboard": 8.018015995025635,
+    "layer_thickness": 4.009551199555511,
+    "section": "head"
+   }
+  },
+  {
+   "name": "roundhead tetrapod cot=1.5 r=0.8",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     0.8
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 2.3149154643929606,
+    "M50": 32873.903989827966,
+    "kd_ratio": 0.8,
+    "crest_freeboard": 7.61711329650879,
+    "layer_thickness": 4.629830928785921,
+    "section": "head"
+   }
+  },
+  {
+   "name": "roundhead dolos cot=3.0 r=0.5",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 3.0,
+      "armour": "dolos"
+     },
+     0.5
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 1.9145209918620614,
+    "M50": 18596.288348226295,
+    "kd_ratio": 0.5,
+    "crest_freeboard": 6.918958389282227,
+    "layer_thickness": 3.8290419837241227,
+    "section": "head"
    }
   },
   {

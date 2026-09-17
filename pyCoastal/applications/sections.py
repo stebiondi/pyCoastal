@@ -792,55 +792,91 @@ def rubble_mound_sheet(
     cot_land: float | None = None,
     crest_width: float | None = None,
     project: str = "Harbour protection works",
-    title: str = "Breakwater typical cross-section",
+    title: str = "Breakwater typical sections",
     size: str = "A3",
     margin: float = 12.0,
     file: str = "breakwater_sheet.py",
+    bed="medium_sand",
+    show_head: bool = True,
+    head_kd_ratio: float | None = None,
     **titleblock,
 ) -> Sheet:
-    """A full drawing sheet of a designed rubble mound, at a true scale."""
+    """A drawing sheet of a designed rubble mound, trunk and head.
+
+    Two sections, as a real set carries them: the trunk, and the roundhead
+    with the heavier armour its exposure needs. Set ``show_head`` False for
+    a trunk-only sheet.
+    """
+    from .structures import crown_wall, mound_foundation, roundhead
+
     d = design
+    depth = max(still_water_level - seabed_level, 0.5)
     sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
-    view = sheet.viewport(rect=(0.0, 0.05, 0.72, 0.95))
-    xlim, zlim = draw_rubble_mound(view, d, still_water_level, seabed_level,
-                                   cot_land, crest_width, margin)
-    view.fit_scale(xlim, zlim, paper=size)
-    view.detail_bubble("A", title, view.scale_text, loc=(0.02, 0.04))
-    view.scale_bar(20.0, loc=(0.62, 0.04))
-    view.key(loc="upper left")
 
-    from .structures import crown_wall, mound_foundation
+    head = roundhead(d, kd_ratio=head_kd_ratio) if show_head else None
+    sections = [("A", "Trunk section", d)]
+    if head is not None:
+        sections.append(("B", "Head section", head))
 
-    foundation = mound_foundation(d, max(still_water_level - seabed_level, 0.5))
+    height = 1.0 / len(sections)
+    views = []
+    for index, (bubble, label, section) in enumerate(sections):
+        bottom = 1.0 - (index + 1) * height
+        view = sheet.viewport(rect=(0.0, bottom, 0.70, height))
+        xlim, zlim = draw_rubble_mound(view, section, still_water_level,
+                                       seabed_level, cot_land, crest_width,
+                                       margin, bed=bed)
+        view.fit_scale(xlim, zlim, paper=size)
+        caption = f"{label}, armour {section.M50 / 1000:.1f} t"
+        view.detail_bubble(bubble, caption, view.scale_text, loc=(0.02, 0.05))
+        if index == 0:
+            view.key(loc="upper left")
+        views.append(view)
+
+    foundation = mound_foundation(d, depth, bed=bed)
     crown = crown_wall(d, still_water_level)
     base = seabed_level + foundation["bedding_thickness"]
     outer, under, core, crest, _, _, _ = _mound_geometry(
         d, still_water_level, base, cot_land, crest_width
     )
     areas = mound_layer_volumes([outer, under, core], base)
+    span = (outer.points(base)[-1, 0] - outer.points(base)[0, 0]
+            + 2 * foundation["bedding_extension"])
 
-    notes = sheet.viewport(rect=(0.72, 0.05, 0.28, 0.95), frame=False)
+    notes_text = rubble_mound_notes(d, still_water_level, base, cot_land,
+                                    crest_width, foundation=foundation,
+                                    crown=crown)
+    if head is not None:
+        notes_text.insert(2, (
+            f"Head section: armour Dn50 = {head.Dn50:.2f} m, "
+            f"M50 = {head.M50 / 1000:.1f} t, "
+            f"{head.M50 / d.M50:.2f} times the trunk mass, from a stability "
+            f"coefficient {head.kd_ratio:.2f} of the trunk value. A roundhead "
+            "is attacked from more directions, its convex face gives each "
+            "unit less support from its neighbours, and the run-down "
+            "concentrates where the flow turns the corner."
+        ))
+
+    notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
     notes.ax.set_xlim(0, 1)
     notes.ax.set_ylim(0, 1)
     notes.ax.set_aspect("auto")
-    notes.notes_block(
-        rubble_mound_notes(d, still_water_level, base, cot_land,
-                           crest_width, foundation=foundation, crown=crown),
-        title="NOTES", width=36, loc=(0.0, 1.0), fontsize=6.0,
-    )
-    notes.table(
-        [
-            ("ARMOUR", f"{areas[0]:.0f} m3/m"),
-            ("FILTER", f"{areas[1]:.0f} m3/m"),
-            ("CORE", f"{areas[2]:.0f} m3/m"),
-            ("BEDDING", f"{foundation['bedding_thickness'] * (outer.points(base)[-1, 0] - outer.points(base)[0, 0] + 2 * foundation['bedding_extension']):.0f} m3/m"),
-            ("TOE BERM", f"{2 * foundation['toe_width'] * foundation['toe_thickness']:.0f} m3/m"),
-            ("CROWN CONCRETE", f"{crown['concrete_m3_per_m']:.1f} m3/m"),
-        ],
-        title="QUANTITIES PER METRE RUN", loc=(0.0, 0.0), align="left",
-        fontsize=6.8,
-    )
-    sheet.set_scale_from(view)
+    notes.notes_block(notes_text, title="NOTES", width=36, loc=(0.0, 1.0),
+                      fontsize=5.6)
+    rows = [
+        ("ARMOUR, TRUNK", f"{areas[0]:.0f} m3/m"),
+        ("FILTER", f"{areas[1]:.0f} m3/m"),
+        ("CORE", f"{areas[2]:.0f} m3/m"),
+        ("BEDDING", f"{foundation['bedding_thickness'] * span:.0f} m3/m"),
+        ("TOE BERM",
+         f"{2 * foundation['toe_width'] * foundation['toe_thickness']:.0f} m3/m"),
+        ("CROWN CONCRETE", f"{crown['concrete_m3_per_m']:.1f} m3/m"),
+    ]
+    if head is not None:
+        rows.insert(1, ("  HEAD M50", f"{head.M50 / 1000:.1f} t"))
+    notes.table(rows, title="QUANTITIES PER METRE RUN", loc=(0.0, 0.0),
+                align="left", fontsize=6.2)
+    sheet.set_scale_from(views[0])
     return sheet
 
 

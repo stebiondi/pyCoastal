@@ -533,6 +533,10 @@ class BreakwaterDesign:
     layer: dict
     armour_type: str
     governing_limit: str | None
+    #: "trunk" or "head". The head carries heavier armour for the same wave.
+    section: str = "trunk"
+    #: KD_head / KD_trunk, set only on a head section.
+    kd_ratio: float | None = None
 
     def summary(self) -> str:
         """A short design report."""
@@ -542,6 +546,9 @@ class BreakwaterDesign:
             f"depth = {c.depth:.1f} m",
             f"Storm              {c.storm_duration / 3600:.1f} h, "
             f"N = {c.wave_count:.0f} waves",
+            f"Section            {self.section}"
+            + (f", KD ratio {self.kd_ratio:.2f} of the trunk"
+               if self.kd_ratio else ""),
             f"Slope              1 : {self.cot_alpha:g}",
             f"Armour             {self.armour_type}, Dn50 = {self.Dn50:.2f} m, "
             f"M50 = {self.M50 / 1000:.1f} t ({self.regime})",
@@ -874,3 +881,127 @@ def crown_wall(design, still_water_level: float, deck_width: float = 7.5,
         "concrete_m3_per_m": area,
         "concrete_t_per_m": area * 2.4,
     }
+
+
+# ---------------------------------------------------------------------------
+# The roundhead
+# ---------------------------------------------------------------------------
+
+#: Ratio of the roundhead stability coefficient to the trunk value,
+#: KD_head / KD_trunk. Indicative, and slope dependent: the Shore Protection
+#: Manual tabulates the two separately and the governing edition should be
+#: read rather than this table. The shape is what matters and is not in
+#: doubt: interlocking units lose more at the head than rough rock does,
+#: because their interlock depends on neighbours a curved surface cannot
+#: provide, and every unit loses more on a flatter slope.
+ROUNDHEAD_KD_RATIO = {
+    "rock": {1.5: 0.95, 2.0: 0.80, 3.0: 0.65},
+    "cubes": {1.5: 0.85, 2.0: 0.75, 3.0: 0.60},
+    "tetrapod": {1.5: 0.72, 2.0: 0.64, 3.0: 0.50},
+    "accropode": {1.5: 0.80, 2.0: 0.75, 3.0: 0.65},
+    "dolos": {1.5: 0.65, 2.0: 0.58, 3.0: 0.45},
+}
+
+#: Which family an armour type belongs to, for the table above.
+ARMOUR_FAMILY = {
+    "rock_one_layer_impermeable": "rock",
+    "rock_two_layer_impermeable": "rock",
+    "rock_two_layer_permeable": "rock",
+    "cubes_one_layer_flat": "cubes",
+    "cubes_two_layer_random": "cubes",
+    "antifer": "cubes",
+    "tetrapod": "tetrapod",
+    "accropode": "accropode",
+    "core_loc": "accropode",
+    "xbloc": "accropode",
+    "dolos": "dolos",
+    "smooth_concrete": "rock",
+    "grass": "rock",
+    "asphalt": "rock",
+}
+
+
+def roundhead_kd_ratio(armour: str, cot_alpha: float) -> float:
+    """KD_head / KD_trunk for an armour type on a given slope.
+
+    Linear in cot(alpha) between the tabulated slopes, and held flat outside
+    them rather than extrapolated into values nobody has measured.
+    """
+    family = ARMOUR_FAMILY.get(armour, "rock")
+    table = ROUNDHEAD_KD_RATIO[family]
+    slopes = sorted(table)
+    if cot_alpha <= slopes[0]:
+        return table[slopes[0]]
+    if cot_alpha >= slopes[-1]:
+        return table[slopes[-1]]
+    for low, high in zip(slopes, slopes[1:]):
+        if low <= cot_alpha <= high:
+            span = (cot_alpha - low) / (high - low)
+            return table[low] + span * (table[high] - table[low])
+    return table[slopes[-1]]
+
+
+def roundhead(design, kd_ratio: float | None = None,
+              raise_crest: float = 0.0) -> "BreakwaterDesign":
+    """The head section of a breakwater, armoured for its exposure.
+
+    A roundhead is attacked from a wider range of directions than the trunk,
+    the armour on a convex surface gets less support from its neighbours,
+    and the run-down concentrates where the flow turns the corner. Practice
+    handles all three by using a lower stability coefficient at the head.
+
+    Since Hudson makes the nominal diameter go as KD to the power minus a
+    third, a KD ratio of r gives::
+
+        Dn50_head = Dn50_trunk / r^(1/3)
+        M50_head  = M50_trunk  / r
+
+    so a ratio of 0.8 means a quarter more stone by mass, which is the step
+    from sixteen to twenty tonne units that a real scheme ends up with.
+
+    Parameters
+    ----------
+    kd_ratio : float, optional
+        KD_head / KD_trunk. Taken from :func:`roundhead_kd_ratio` for the
+        design's own armour and slope when not given.
+    raise_crest : float
+        Extra crest freeboard at the head [m]. Heads are often built higher
+        than the trunk, because the overtopping there lands on the part of
+        the structure people stand on and the navigation light sits on.
+
+    Returns
+    -------
+    BreakwaterDesign
+        The same design with head armour, its layer recomputed, and
+        ``section`` set to "head".
+
+    Notes
+    -----
+    Only the armour is rescaled. The filter follows it, because the layer
+    is recomputed from the new diameter, but the core grading, the crest
+    width and the overtopping are left as the trunk's. A real head is also
+    usually widened to give the plant somewhere to work and the light
+    somewhere to stand.
+    """
+    from dataclasses import replace
+
+    if kd_ratio is None:
+        kd_ratio = roundhead_kd_ratio(design.armour_type, design.cot_alpha)
+    if not 0.0 < kd_ratio <= 1.0:
+        raise ValueError(
+            f"KD ratio must be in (0, 1]; got {kd_ratio}. Above one would "
+            "make the head lighter than the trunk, which is backwards."
+        )
+    if raise_crest < 0:
+        raise ValueError(f"Crest rise must be non-negative, got {raise_crest}")
+
+    Dn50 = design.Dn50 / kd_ratio ** (1.0 / 3.0)
+    return replace(
+        design,
+        Dn50=Dn50,
+        M50=2650.0 * Dn50**3,
+        layer=armour_layer(Dn50),
+        crest_freeboard=design.crest_freeboard + raise_crest,
+        section="head",
+        kd_ratio=kd_ratio,
+    )

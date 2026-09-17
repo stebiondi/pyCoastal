@@ -64,6 +64,8 @@ from pyCoastal.applications.structures import (
     breakwater_toe_scour,
     crown_wall,
     mound_foundation,
+    roundhead,
+    roundhead_kd_ratio,
     design_rubble_mound,
     overtopping_sloped,
     overtopping_vertical,
@@ -407,6 +409,28 @@ def build() -> dict:
               "parapet_top": block["parapet_top"],
               "total_width": block["total_width"],
               "concrete_m3_per_m": block["concrete_m3_per_m"]})
+
+    # -- the roundhead -----------------------------------------------------
+    for armour in ("rock_two_layer_permeable", "cubes_two_layer_random",
+                   "tetrapod", "dolos"):
+        for cot in (1.5, 2.0, 2.5, 3.0, 4.0):
+            case(f"roundhead KD ratio {armour} cot={cot}",
+                 {"fn": "roundheadKdRatio", "args": [armour, cot]},
+                 {"value": roundhead_kd_ratio(armour, cot)})
+
+    for cot, armour, ratio in ((1.5, "tetrapod", None), (2.0, "rock_two_layer_permeable", None),
+                               (1.5, "tetrapod", 0.8), (3.0, "dolos", 0.5)):
+        c = DesignConditions.from_peak_period(Hm0=5.42, Tp=9.2, depth=10.0)
+        trunk = design_rubble_mound(c, cot_alpha=cot, armour=armour)
+        got = roundhead(trunk, kd_ratio=ratio)
+        case(f"roundhead {armour} cot={cot} r={ratio}",
+             {"fn": "roundhead", "conditions": [5.42, 9.2, 10.0, 6 * 3600.0],
+              "args": [{"cot_alpha": cot, "armour": armour}, ratio],
+              "design_first": True},
+             {"Dn50": got.Dn50, "M50": got.M50, "kd_ratio": got.kd_ratio,
+              "crest_freeboard": got.crest_freeboard,
+              "layer_thickness": got.layer["thickness"],
+              "section": got.section})
 
     # -- the whole seawall, with the backfill in play ----------------------
     for label, (fill, table) in {

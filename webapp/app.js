@@ -135,13 +135,17 @@ var MODULES = {
       { key: "bed", label: "Seabed material", type: "select",
         value: "medium_sand", options: ["silt", "very_fine_sand", "fine_sand", "medium_sand",
                   "coarse_sand", "fine_gravel", "coarse_gravel",
-                  "rock_fill", "soft_clay", "stiff_clay"] }
+                  "rock_fill", "soft_clay", "stiff_clay"] },
+      { key: "section", label: "Section", type: "select", value: "trunk",
+        options: ["trunk", "head"] }
     ],
     run: function (v) {
       var c = P.conditionsFromPeak(v.Hm0, v.Tp, v.depth, v.storm * 3600);
-      var d = P.designRubbleMound(c, {
+      var trunk = P.designRubbleMound(c, {
         cot_alpha: v.cot, damage: v.damage, tolerable_use: v.use, armour: v.armour
       });
+      var d = v.section === "head" ? P.roundhead(trunk) : trunk;
+      d._trunk = trunk;
       d._swl = 0.0;
       d._bed = -v.depth;
       d._foundation = P.moundFoundation(d, v.depth, { bed: v.bed });
@@ -174,11 +178,17 @@ var MODULES = {
           ok: d._foundation.bedding_extension >= 2 * d._scour.depth },
         { name: "Toe berm stone",
           value: (d._foundation.toe_M50 / 1000).toFixed(1) + " t",
-          target: "filter grade", ok: true, neutral: true }
+          target: "filter grade", ok: true, neutral: true },
+        { name: "Section", value: d.section || "trunk",
+          target: d.kd_ratio
+            ? "KD " + d.kd_ratio.toFixed(2) + " of trunk"
+            : "reference section",
+          ok: true, neutral: true }
       ];
     },
     report: function (d) {
-      return [
+      var rows = [
+        ["Section", d.section || "trunk"],
         ["Armour Dn50", d.Dn50.toFixed(2) + " m"],
         ["Armour M50", (d.M50 / 1000).toFixed(1) + " t"],
         ["Breaking regime", d.regime],
@@ -213,6 +223,13 @@ var MODULES = {
         ["Crown founded at", fmt(d._crown.base_level) + " m CD"],
         ["Crown concrete", d._crown.concrete_m3_per_m.toFixed(1) + " m3/m"]
       ];
+      if (d.section === "head") {
+        rows.splice(3, 0,
+          ["  trunk M50", (d._trunk.M50 / 1000).toFixed(1) + " t"],
+          ["  head / trunk", (d.M50 / d._trunk.M50).toFixed(2) + " x"],
+          ["  KD ratio", d.kd_ratio.toFixed(2)]);
+      }
+      return rows;
     }
   },
 

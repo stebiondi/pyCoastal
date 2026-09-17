@@ -1391,6 +1391,64 @@ function breakwaterToeScour(design, depth, bed, permeable) {
   return result;
 }
 
+var ROUNDHEAD_KD_RATIO = {
+  rock:      { 1.5: 0.95, 2.0: 0.80, 3.0: 0.65 },
+  cubes:     { 1.5: 0.85, 2.0: 0.75, 3.0: 0.60 },
+  tetrapod:  { 1.5: 0.72, 2.0: 0.64, 3.0: 0.50 },
+  accropode: { 1.5: 0.80, 2.0: 0.75, 3.0: 0.65 },
+  dolos:     { 1.5: 0.65, 2.0: 0.58, 3.0: 0.45 }
+};
+
+var ARMOUR_FAMILY = {
+  rock_one_layer_impermeable: "rock", rock_two_layer_impermeable: "rock",
+  rock_two_layer_permeable: "rock", cubes_one_layer_flat: "cubes",
+  cubes_two_layer_random: "cubes", antifer: "cubes", tetrapod: "tetrapod",
+  accropode: "accropode", core_loc: "accropode", xbloc: "accropode",
+  dolos: "dolos", smooth_concrete: "rock", grass: "rock", asphalt: "rock"
+};
+
+function roundheadKdRatio(armour, cotAlpha) {
+  var table = ROUNDHEAD_KD_RATIO[ARMOUR_FAMILY[armour] || "rock"];
+  var slopes = Object.keys(table).map(Number).sort(function (a, b) { return a - b; });
+  if (cotAlpha <= slopes[0]) return table[slopes[0]];
+  if (cotAlpha >= slopes[slopes.length - 1]) return table[slopes[slopes.length - 1]];
+  for (var i = 0; i < slopes.length - 1; i++) {
+    var low = slopes[i], high = slopes[i + 1];
+    if (cotAlpha >= low && cotAlpha <= high) {
+      var span = (cotAlpha - low) / (high - low);
+      return table[low] + span * (table[high] - table[low]);
+    }
+  }
+  return table[slopes[slopes.length - 1]];
+}
+
+/* The head takes heavier armour than the trunk: it is attacked from more
+   directions, its convex face gives each unit less support from its
+   neighbours, and the run-down concentrates where the flow turns. Hudson
+   puts Dn50 at KD to the minus a third, so a KD ratio r gives M50 / r. */
+function roundhead(design, kdRatio, raiseCrest) {
+  raiseCrest = raiseCrest || 0;
+  if (kdRatio === undefined || kdRatio === null) {
+    kdRatio = roundheadKdRatio(design.armour_type, design.cot_alpha);
+  }
+  if (!(kdRatio > 0 && kdRatio <= 1)) {
+    throw new Error("KD ratio must be in (0, 1]; got " + kdRatio +
+      ". Above one would make the head lighter than the trunk.");
+  }
+  if (raiseCrest < 0) throw new Error("Crest rise must be non-negative");
+
+  var Dn50 = design.Dn50 / Math.pow(kdRatio, 1 / 3);
+  var head = {};
+  for (var k in design) head[k] = design[k];
+  head.Dn50 = Dn50;
+  head.M50 = 2650.0 * Dn50 * Dn50 * Dn50;
+  head.layer = armourLayer(Dn50);
+  head.crest_freeboard = design.crest_freeboard + raiseCrest;
+  head.section = "head";
+  head.kd_ratio = kdRatio;
+  return head;
+}
+
 function moundFoundation(design, depth, opts) {
   opts = opts || {};
   var bed = opts.bed || "medium_sand";
@@ -1585,6 +1643,9 @@ var PYCOASTAL = {
   breakwaterToeScour: breakwaterToeScour,
   dredgedSideSlope: dredgedSideSlope,
   moundFoundation: moundFoundation,
+  roundhead: roundhead,
+  roundheadKdRatio: roundheadKdRatio,
+  ROUNDHEAD_KD_RATIO: ROUNDHEAD_KD_RATIO,
   crownWall: crownWall,
   lMoments: lMoments,
   fitGpd: fitGpd,
