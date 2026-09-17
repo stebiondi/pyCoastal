@@ -664,7 +664,12 @@ def design_seawall(
     # 4. Base width, iterated because the uplift grows with it.
     promenade_level = crest_level - promenade_freeboard
     base_top = founding_level + base_thickness
-    base_width = max(0.5 * (crest_level - founding_level), stem_thickness + 0.5)
+    # Start from a slender section and grow. Clamped so a hopeless site
+    # reports the limit it hit rather than a width it never tested.
+    base_width = min(
+        max(0.5 * (crest_level - founding_level), stem_thickness + 0.5),
+        max_base_width,
+    )
     pressures: dict = {}
     sliding = overturning = 0.0
     weight = uplift = wave_arm = 0.0

@@ -56,3 +56,21 @@ dwg = seawall_section(
 dwg.save("media/seawall_section.png")
 dwg.to_dxf("media/seawall_section.dxf")
 print("\nWrote media/seawall_section.png and media/seawall_section.dxf")
+
+# --- drawing sheet ---------------------------------------------------------
+# The same design, issued as a drawing: border, title block, notes, and a
+# true stated scale rather than plot axes.
+from pyCoastal.applications.sections import seawall_sheet
+
+sheet = seawall_sheet(
+    design,
+    project="Bayfront promenade protection",
+    title="Seawall typical cross-section",
+    client="Example Port Authority",
+    size="A3",
+    sea_extent=24.0,
+    land_extent=9.0,
+    file="examples/seawall_section.py",
+)
+sheet.save("media/seawall_sheet.png")
+print("Wrote media/seawall_sheet.png")
