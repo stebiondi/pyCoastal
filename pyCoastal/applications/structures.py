@@ -612,3 +612,131 @@ def design_rubble_mound(
         armour_type=armour,
         governing_limit=tolerable_use,
     )
+
+
+# ---------------------------------------------------------------------------
+# Toe scour
+# ---------------------------------------------------------------------------
+
+
+def reflection_coefficient(cot_alpha: float, surf_similarity: float,
+                           permeable: bool = True) -> float:
+    """Reflection coefficient of a rough slope, Seelig and Ahrens (1981).
+
+        Kr = a xi^2 / (b + xi^2)
+
+    with a = 0.6 and b = 6.6 for a permeable rubble mound, and a = 1.0,
+    b = 5.5 for a smooth impermeable slope. A vertical wall reflects almost
+    everything; a rubble mound dissipates most of it, which is why the
+    scour in front of the two is not the same problem.
+    """
+    if surf_similarity <= 0:
+        raise ValueError(f"Surf similarity must be positive, got {surf_similarity}")
+    a, b = (0.6, 6.6) if permeable else (1.0, 5.5)
+    xi2 = surf_similarity ** 2
+    return min(a * xi2 / (b + xi2), 1.0)
+
+
+def toe_scour(
+    bed,
+    Hs: float,
+    T: float,
+    depth: float,
+    reflection: float = 1.0,
+    coefficient: float = 0.4,
+    exponent: float = 1.35,
+) -> dict:
+    """Equilibrium scour depth at the toe of a marine structure [m].
+
+    The standing-wave form, as for a vertical wall::
+
+        S / Hs = coefficient * Kr / sinh(k h) ** exponent
+
+    Parameters
+    ----------
+    bed : Sediment or str
+        What the bed is made of. This decides whether there is any scour to
+        compute: a bed below its threshold of motion in the approach waves
+        is in the clear-water regime, where a live-bed relation overstates
+        the hole, and a cohesive bed is not governed by this at all.
+    reflection : float
+        Reflection coefficient Kr of the structure. 1.0 for a vertical
+        wall, which recovers Xie (1981) exactly; roughly 0.2 to 0.5 for a
+        rubble mound, from :func:`reflection_coefficient`.
+    coefficient : float
+        0.4 is Xie's value for fine sand under regular waves at a fully
+        reflecting wall, and is the usual design number.
+    exponent : float
+        1.35, from the same work.
+
+    Returns
+    -------
+    dict
+        The ``depth``, the mobility state of the bed, and whether the
+        relation is being applied inside the regime it came from.
+
+    Notes
+    -----
+    Scaling Xie's fully reflecting result by the reflection coefficient is
+    an engineering assumption, not a calibrated relation: it has the right
+    limits, going to Xie at a vertical wall and to nothing at a perfect
+    absorber, and it puts a rubble mound sensibly below a caisson. It is a
+    screening number. A scheme whose toe design turns on it wants a mobile
+    bed model or a physical model, and the returned dict says as much
+    through ``screening_only``.
+    """
+    from .sediment import bed_mobility, sediment as _lookup
+
+    grains = _lookup(bed) if isinstance(bed, str) else bed
+    if not 0.0 <= reflection <= 1.0:
+        raise ValueError(f"Reflection coefficient must be in [0,1], got {reflection}")
+    if coefficient < 0:
+        raise ValueError(f"Coefficient must be non-negative, got {coefficient}")
+
+    L = dispersion(T, depth)
+    kh = 2 * math.pi * depth / L
+    unlimited = coefficient * reflection * Hs / math.sinh(kh) ** exponent
+
+    mobility = bed_mobility(grains, Hs, T, depth)
+    note = mobility["note"]
+
+    if grains.cohesive:
+        return {
+            "depth": 0.0, "unlimited_depth": unlimited, "reflection": reflection,
+            "mobility": mobility, "applies": False, "screening_only": True,
+            "note": note,
+        }
+
+    # A bed that never moves does not scour to the live-bed depth. The
+    # structure still amplifies the flow locally, so this is not zero, but
+    # the live-bed number is an overstatement and is reported as such.
+    scour = unlimited if mobility["mobile"] else 0.5 * unlimited
+
+    return {
+        "depth": scour,
+        "unlimited_depth": unlimited,
+        "reflection": reflection,
+        "relative_depth": kh,
+        "mobility": mobility,
+        "applies": mobility["mobile"],
+        "screening_only": True,
+        "note": note,
+    }
+
+
+def breakwater_toe_scour(design, depth: float, bed="medium_sand",
+                         permeable: bool = True) -> dict:
+    """Toe scour in front of a designed rubble mound.
+
+    Takes the reflection from the slope and the surf similarity of the
+    design condition, so a flatter, rougher, more permeable mound is
+    correctly predicted to scour its own toe less than a steep one.
+    """
+    xi = design.conditions.breaker_parameter(design.cot_alpha)
+    Kr = reflection_coefficient(design.cot_alpha, xi, permeable)
+    result = toe_scour(bed, design.conditions.Hm0, design.conditions.Tm10,
+                       depth, reflection=Kr)
+    result["surf_similarity"] = xi
+    # The apron has to reach past the hole and be heavy enough to stay put.
+    result["apron_width"] = max(2.0 * result["depth"], 1.5 * design.Dn50, 2.0)
+    return result

@@ -55,6 +55,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from .sediment import Sediment, fall_velocity, sediment
+
 G = 9.81
 KNOT = 0.514444          # m/s
 
@@ -72,6 +74,7 @@ __all__ = [
     "ChannelDesign",
     "design_channel",
     "turning_basin_diameter",
+    "dredged_side_slope",
 ]
 
 
@@ -490,6 +493,41 @@ def underkeel_clearance(
     }
 
 
+def dredged_side_slope(bed, factor: float = 2.0) -> dict:
+    """Stable side slope for a dredged channel, from the bed material.
+
+        cot(beta) = factor / tan(phi')
+
+    The default factor of 2 on the tangent covers two things at once: the
+    partial factor on a submerged granular slope carrying no surcharge, and
+    the overcut and slumping that dredging adds on top of it. It lands on
+    the slopes that actually get built, roughly 1:2.6 in gravel and 1:3.8
+    in silt.
+
+    Notes
+    -----
+    Set ``factor`` to 1.5 for the geotechnical lower bound on its own, which
+    is the steepest the material will stand at and steeper than anything a
+    dredger will leave behind. A cohesive bed can stand far steeper in the
+    short term and is not covered by this at all; an exposed reach worked on
+    by waves ends up flatter than either number.
+    """
+    grains = sediment(bed) if isinstance(bed, str) else bed
+    if factor <= 0:
+        raise ValueError(f"Factor must be positive, got {factor}")
+    if grains.cohesive:
+        return {"cot_beta": 3.0, "governed_by": "cohesion",
+                "note": (f"{grains.name} is cohesive; a drained friction "
+                         "slope does not govern it. 1:3 is a placeholder "
+                         "pending an undrained stability analysis.")}
+    cot = factor / math.tan(math.radians(grains.friction_angle))
+    return {"cot_beta": cot, "governed_by": "friction",
+            "friction_angle": grains.friction_angle,
+            "note": (f"Steepest defensible slope in {grains.name} with a "
+                     f"factor of {factor:g} on tan(phi'). Construction "
+                     "practice normally flattens it.")}
+
+
 @dataclass
 class ChannelDesign:
     """A dimensioned approach channel."""
@@ -504,6 +542,7 @@ class ChannelDesign:
     width_result: dict
     side_slope: float
     speed: float
+    bed: "Sediment | None" = None
     existing_bed: float | None = None
     warnings: list[str] = field(default_factory=list)
 
@@ -591,7 +630,8 @@ def design_channel(
     siltation_allowance: float = 0.2,
     density_allowance: float = 0.0,
     squat_coefficient: float = 2.4,
-    side_slope: float = 5.0,
+    side_slope: float | None = None,
+    bed: "Sediment | str" = "medium_sand",
     existing_bed: float | None = None,
     **width_kwargs,
 ) -> ChannelDesign:
@@ -607,6 +647,20 @@ def design_channel(
         raise ValueError(f"Speed must be non-negative, got {speed}")
 
     warnings: list[str] = []
+    bed = sediment(bed) if isinstance(bed, str) else bed
+
+    # The side slope follows the bed unless the caller fixes it.
+    slope_advice = dredged_side_slope(bed)
+    if side_slope is None:
+        side_slope = slope_advice["cot_beta"]
+    elif side_slope < slope_advice["cot_beta"] - 1e-9:
+        warnings.append(
+            f"A 1:{side_slope:g} side slope is steeper than the "
+            f"1:{slope_advice['cot_beta']:.1f} this method gives for "
+            f"{bed.name}. It will slump into the channel and have to be "
+            "dredged again."
+        )
+
     waves = wave_response_allowance(Hs, wave_factor, Tp, vessel)
     if waves.get("near_resonant"):
         warnings.append(
@@ -676,6 +730,21 @@ def design_channel(
             f"Barrass screening gives {screening['squat']:.2f} m of squat "
             f"against the ICORELS {squat['squat']:.2f} m. Check which is "
             "appropriate for this channel before fixing the dredge level."
+        )
+
+    if bed.cohesive:
+        warnings.append(
+            f"{bed.name} is cohesive. Siltation will arrive as fluid mud "
+            "rather than a settled bed, and nautical depth rather than the "
+            "surveyed bed level may decide what the channel really offers."
+        )
+    elif bed.d50 > 0 and fall_velocity(bed) < 0.01:
+        warnings.append(
+            f"{bed.name} settles at {fall_velocity(bed) * 1000:.1f} mm/s. "
+            "Material this fine stays in suspension long enough to be "
+            "carried across the channel and deposit over its whole width, "
+            f"so the {siltation_allowance:.2f} m siltation allowance should "
+            "come from a sedimentation study rather than from a table."
         )
 
     width = channel_width(vessel, **width_kwargs)

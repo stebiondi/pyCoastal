@@ -395,3 +395,100 @@ def test_unknown_armour_or_use_is_refused(conditions):
 def test_every_roughness_factor_is_in_range():
     for name, value in ROUGHNESS_FACTORS.items():
         assert 0.0 < value <= 1.0, name
+
+
+# ---------------------------------------------------------------------------
+# Toe scour
+# ---------------------------------------------------------------------------
+
+
+def test_reflection_rises_with_surf_similarity():
+    from pyCoastal.applications.structures import reflection_coefficient
+
+    values = [reflection_coefficient(2.0, xi) for xi in (1.0, 2.0, 4.0, 8.0)]
+    assert all(b > a for a, b in zip(values, values[1:]))
+    assert all(0.0 < v <= 1.0 for v in values)
+
+
+def test_permeable_slope_reflects_less_than_smooth():
+    from pyCoastal.applications.structures import reflection_coefficient
+
+    rough = reflection_coefficient(2.0, 3.0, permeable=True)
+    smooth = reflection_coefficient(2.0, 3.0, permeable=False)
+    assert rough < smooth
+
+
+def test_toe_scour_at_a_vertical_wall_recovers_xie():
+    """Reflection of one must reproduce the vertical-wall relation exactly."""
+    from pyCoastal.applications.seawall import scour_depth_vertical_wall
+    from pyCoastal.applications.structures import toe_scour
+
+    result = toe_scour("fine_sand", 3.0, 12.0, 15.0, reflection=1.0)
+    assert result["unlimited_depth"] == pytest.approx(
+        scour_depth_vertical_wall(3.0, 12.0, 15.0)
+    )
+
+
+def test_toe_scour_scales_with_reflection():
+    from pyCoastal.applications.structures import toe_scour
+
+    full = toe_scour("fine_sand", 3.0, 12.0, 15.0, reflection=1.0)
+    half = toe_scour("fine_sand", 3.0, 12.0, 15.0, reflection=0.5)
+    assert half["unlimited_depth"] == pytest.approx(
+        0.5 * full["unlimited_depth"])
+
+
+def test_toe_scour_decays_with_depth():
+    from pyCoastal.applications.structures import toe_scour
+
+    depths = [8.0, 15.0, 25.0, 40.0]
+    scour = [toe_scour("fine_sand", 3.0, 12.0, h)["unlimited_depth"]
+             for h in depths]
+    assert all(b < a for a, b in zip(scour, scour[1:]))
+
+
+def test_toe_scour_is_not_computed_for_a_cohesive_bed():
+    from pyCoastal.applications.structures import toe_scour
+
+    result = toe_scour("soft_clay", 3.0, 12.0, 15.0)
+    assert result["depth"] == 0.0
+    assert result["applies"] is False
+
+
+def test_toe_scour_is_reduced_on_an_immobile_bed():
+    """A clear-water bed does not scour to the live-bed depth."""
+    from pyCoastal.applications.structures import toe_scour
+
+    result = toe_scour("coarse_gravel", 0.4, 6.0, 30.0)
+    assert result["mobility"]["mobile"] is False
+    assert result["depth"] == pytest.approx(0.5 * result["unlimited_depth"])
+
+
+def test_toe_scour_validates_its_reflection():
+    from pyCoastal.applications.structures import toe_scour
+
+    with pytest.raises(ValueError):
+        toe_scour("fine_sand", 3.0, 12.0, 15.0, reflection=1.5)
+
+
+def test_breakwater_toe_scour_is_smaller_for_a_flatter_mound():
+    """A flatter slope reflects less and therefore scours its toe less."""
+    from pyCoastal.applications.structures import breakwater_toe_scour
+
+    conditions = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    steep = design_rubble_mound(conditions, cot_alpha=1.5)
+    flat = design_rubble_mound(conditions, cot_alpha=3.5)
+    assert (breakwater_toe_scour(flat, 12.0)["depth"]
+            < breakwater_toe_scour(steep, 12.0)["depth"])
+
+
+def test_breakwater_toe_scour_is_below_the_vertical_wall_value():
+    from pyCoastal.applications.seawall import scour_depth_vertical_wall
+    from pyCoastal.applications.structures import breakwater_toe_scour
+
+    conditions = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    mound = design_rubble_mound(conditions, cot_alpha=2.0)
+    scour = breakwater_toe_scour(mound, 12.0)
+    wall = scour_depth_vertical_wall(4.0, conditions.Tm10, 12.0)
+    assert scour["depth"] < wall
+    assert scour["apron_width"] >= 2.0

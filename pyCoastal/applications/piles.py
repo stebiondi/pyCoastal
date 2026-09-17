@@ -388,7 +388,8 @@ def phase_sweep(diameter: float, H: float, T: float, depth: float,
 
 
 def scour_depth_pile(diameter: float, KC: float, current_only: bool = False,
-                     live_bed: bool = True) -> dict:
+                     live_bed: bool = True, bed=None, Hs: float | None = None,
+                     T: float | None = None, depth: float | None = None) -> dict:
     """Equilibrium scour depth at a vertical pile [m].
 
     Sumer, Fredsoe and Christiansen (1992), for waves::
@@ -420,7 +421,7 @@ def scour_depth_pile(diameter: float, KC: float, current_only: bool = False,
     else:
         ratio = 1.3 * (1.0 - math.exp(-0.03 * (KC - 6.0)))
 
-    return {
+    result = {
         "depth": ratio * diameter,
         "ratio": ratio,
         "KC": KC,
@@ -429,10 +430,29 @@ def scour_depth_pile(diameter: float, KC: float, current_only: bool = False,
         "live_bed": live_bed,
     }
 
+    # Sumer and Fredsoe's experiments are live-bed results. A bed that never
+    # reaches its threshold in the approach waves still scours locally,
+    # where the pile amplifies the flow, but not to the live-bed depth.
+    if bed is not None and None not in (Hs, T, depth):
+        from .sediment import bed_mobility
+
+        mobility = bed_mobility(bed, Hs, T, depth)
+        result["mobility"] = mobility
+        result["note"] = mobility["note"]
+        if mobility.get("regime") == "cohesive":
+            result["depth"] = 0.0
+            result["applies"] = False
+        elif not mobility["mobile"]:
+            result["depth"] *= 0.5
+            result["applies"] = False
+        else:
+            result["applies"] = True
+    return result
+
 
 def design_monopile(diameter: float, H: float, T: float, depth: float,
                     rough: bool = True, stretching: str = "wheeler",
-                    phases: int = 181) -> dict:
+                    phases: int = 181, bed=None) -> dict:
     """Worst-phase load, scour, and the numbers a foundation designer wants.
 
     Sweeps the phase for the worst moment rather than assuming the crest,
@@ -446,7 +466,8 @@ def design_monopile(diameter: float, H: float, T: float, depth: float,
                              stretching=stretching)
     crest = morison_pile_load(diameter, H, T, depth, phase=0.0, rough=rough,
                               stretching=stretching)
-    scour = scour_depth_pile(diameter, worst.KC)
+    scour = scour_depth_pile(diameter, worst.KC, bed=bed,
+                             Hs=H, T=T, depth=depth)
 
     missed = (abs(worst.moment) - abs(crest.moment)) / abs(worst.moment)
     if missed > 0.02:

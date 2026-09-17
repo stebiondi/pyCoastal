@@ -1,0 +1,586 @@
+<title>Coastal Design Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  /* Light is the ground state: a drawing office works on paper. The dark
+     theme darkens the room, not the sheet. */
+  :root {
+    --ink: #16181a;
+    --ink-soft: #54514b;
+    --ink-faint: #85817a;
+    --paper: #f2f0ea;
+    --panel: #fbfaf7;
+    --sheet: #ffffff;
+    --rule: #c9c7c0;
+    --rule-soft: #e2dfd8;
+    --sea: #1b6fa0;
+    --sea-deep: #0b3554;
+    --sea-wash: #dcebf2;
+    --pass: #2f6b46;
+    --warn: #a8641a;
+    --fail: #8a2f24;
+    --pass-wash: #e4efe8;
+    --warn-wash: #f6ecdd;
+    --fail-wash: #f5e3e0;
+    --shadow: 0 1px 2px rgba(22, 24, 26, 0.06), 0 8px 24px rgba(22, 24, 26, 0.05);
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --display: "Archivo", "IBM Plex Sans", system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eceae4;
+      --ink-soft: #a8a49b;
+      --ink-faint: #7d7973;
+      --paper: #16181b;
+      --panel: #1e2125;
+      --rule: #34383d;
+      --rule-soft: #282c31;
+      --sea: #63b2d8;
+      --sea-deep: #9fd0e6;
+      --sea-wash: #14313f;
+      --pass: #6fbf8e;
+      --warn: #d9a05b;
+      --fail: #e08a7c;
+      --pass-wash: #1a2c22;
+      --warn-wash: #2e2418;
+      --fail-wash: #2e1d1a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #eceae4;
+    --ink-soft: #a8a49b;
+    --ink-faint: #7d7973;
+    --paper: #16181b;
+    --panel: #1e2125;
+    --rule: #34383d;
+    --rule-soft: #282c31;
+    --sea: #63b2d8;
+    --sea-deep: #9fd0e6;
+    --sea-wash: #14313f;
+    --pass: #6fbf8e;
+    --warn: #d9a05b;
+    --fail: #e08a7c;
+    --pass-wash: #1a2c22;
+    --warn-wash: #2e2418;
+    --fail-wash: #2e1d1a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- masthead ---- */
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 16px 22px 14px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--panel);
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+  }
+  .lede {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 13px;
+    max-width: 58ch;
+  }
+  .spacer { flex: 1 1 auto; }
+  .verify {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .verify-pass { color: var(--pass); border-color: var(--pass); background: var(--pass-wash); }
+  .verify-fail { color: var(--fail); border-color: var(--fail); background: var(--fail-wash); }
+
+  /* ---- shell ---- */
+  .shell {
+    display: grid;
+    grid-template-columns: 124px 232px minmax(0, 1fr);
+    gap: 0;
+    min-height: calc(100vh - 66px);
+  }
+
+  #rail {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--rule);
+    background: var(--panel);
+    padding: 12px 0;
+  }
+  .rail-item {
+    appearance: none;
+    background: none;
+    border: 0;
+    border-left: 3px solid transparent;
+    color: var(--ink-soft);
+    font-family: var(--display);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+  .rail-item:hover { color: var(--ink); background: var(--rule-soft); }
+  .rail-item.active {
+    color: var(--sea);
+    border-left-color: var(--sea);
+    background: var(--sea-wash);
+  }
+
+  .column {
+    border-right: 1px solid var(--rule);
+    padding: 16px 16px 40px;
+    overflow-y: auto;
+    max-height: calc(100vh - 66px);
+  }
+
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 8px;
+  }
+  #module-note {
+    margin: 0 0 16px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  /* ---- inputs ---- */
+  .field { margin-bottom: 13px; }
+  .field-label {
+    display: block;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 3px;
+  }
+  .slider-row { display: flex; align-items: center; gap: 9px; }
+  input[type="range"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    accent-color: var(--sea);
+    height: 18px;
+  }
+  .readout {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    min-width: 74px;
+    text-align: right;
+  }
+  select {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 5px 6px;
+    color: var(--ink);
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+  }
+  .toggle-btn {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 5px 14px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--sheet);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .toggle-btn.on {
+    border-color: var(--sea);
+    color: var(--sea);
+    background: var(--sea-wash);
+  }
+  :focus-visible { outline: 2px solid var(--sea); outline-offset: 2px; }
+
+  /* ---- main ---- */
+  .main {
+    padding: 14px 16px 48px;
+    overflow-y: auto;
+    max-height: calc(100vh - 66px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .sheet-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: -6px;
+  }
+  #sheet-label { margin: 0; }
+  .ghost-btn {
+    appearance: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--panel);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .ghost-btn:hover { color: var(--sea); border-color: var(--sea); }
+
+  /* Enlarged: the drawing gets the window. The rail stays so modules can
+     still be switched, everything else stands down. */
+  body.focus .shell { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  body.focus #rail {
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+    padding: 0;
+  }
+  body.focus .rail-item { border-left: 0; border-bottom: 3px solid transparent; }
+  body.focus .rail-item.active { border-left: 0; border-bottom-color: var(--sea); }
+  body.focus .column,
+  body.focus .panes { display: none; }
+  body.focus .main { max-height: none; }
+  body.focus .sheet-wrap { overflow: auto; }
+  body.focus #sheet svg {
+    width: auto;
+    height: calc(100vh - 210px);
+    min-height: 420px;
+    min-width: 0;
+    margin: 0 auto;
+  }
+  .sheet-wrap {
+    background: var(--sheet);
+    min-height: 120px;
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  #sheet svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Below this the callouts stop being readable, so the wrapper scrolls
+       rather than shrinking the drawing into nothing. */
+    min-width: 640px;
+  }
+
+  #error {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--fail);
+    background: var(--fail-wash);
+    border: 1px solid var(--fail);
+    border-radius: 2px;
+    padding: 10px 12px;
+  }
+
+  .checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+    gap: 8px;
+  }
+  .check {
+    border: 1px solid var(--rule);
+    border-left-width: 3px;
+    border-radius: 2px;
+    padding: 7px 10px;
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .check-name {
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .check-value {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .check-target { font-family: var(--mono); font-size: 10.5px; color: var(--ink-soft); }
+  .check-pass { border-left-color: var(--pass); }
+  .check-pass .check-value { color: var(--pass); }
+  .check-fail { border-left-color: var(--fail); background: var(--fail-wash); }
+  .check-fail .check-value { color: var(--fail); }
+  .check-warn { border-left-color: var(--warn); background: var(--warn-wash); }
+  .check-warn .check-value { color: var(--warn); }
+  .check-neutral { border-left-color: var(--rule); }
+
+  .panes {
+    display: grid;
+    grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 1420px) {
+    .shell { grid-template-columns: 116px 214px minmax(0, 1fr); }
+    .panes { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* Below this the three columns leave the sheet too narrow to read, so the
+     drawing takes the full width and the controls go underneath it. An
+     artifact is often opened in a side panel; the drawing is the point, and
+     it must not be the thing that gets squeezed. */
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+    #rail {
+      flex-direction: row;
+      overflow-x: auto;
+      order: 1;
+      border-right: 0;
+      border-bottom: 1px solid var(--rule);
+      padding: 0;
+    }
+    .rail-item {
+      border-left: 0;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .rail-item.active { border-left: 0; border-bottom-color: var(--sea); }
+    .main { order: 2; max-height: none; }
+    .column { order: 3; max-height: none; border-right: 0; border-top: 1px solid var(--rule); }
+  }
+
+  .report-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 2px 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .report-value { font-variant-numeric: tabular-nums; font-weight: 500; }
+  #report hr { border: 0; border-top: 1px solid var(--rule); margin: 8px 0; }
+
+  .warning {
+    font-size: 12px;
+    color: var(--warn);
+    background: var(--warn-wash);
+    border-left: 3px solid var(--warn);
+    padding: 7px 10px;
+    margin: 0 0 7px;
+  }
+
+  /* ---- literature ---- */
+  #topics { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+  .topic-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--panel);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .topic-tab:hover { color: var(--ink); }
+  .topic-tab.active {
+    border-color: var(--sea);
+    color: var(--sea);
+    background: var(--sea-wash);
+  }
+  .topic-count {
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 6px;
+    background: var(--rule-soft);
+    color: var(--ink-faint);
+  }
+  .topic-tab.active .topic-count { background: var(--sea); color: var(--panel); }
+
+  .k-head h3 {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 15px;
+    letter-spacing: 0.02em;
+  }
+  .k-meta {
+    margin: 2px 0 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .k-desc { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-soft); max-width: 70ch; }
+
+  .k-section {
+    border-top: 1px solid var(--rule-soft);
+    padding: 8px 0;
+  }
+  .k-section > summary {
+    cursor: pointer;
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    list-style: none;
+  }
+  .k-section > summary::-webkit-details-marker { display: none; }
+  .k-section > summary::before { content: "▸ "; color: var(--sea); }
+  .k-section[open] > summary::before { content: "▾ "; }
+  .k-section > summary:hover { color: var(--ink); }
+  .k-section p { margin: 7px 0 0; font-size: 13px; max-width: 72ch; }
+
+  .claim, .eq {
+    border-left: 2px solid var(--rule);
+    padding: 6px 0 6px 11px;
+    margin-top: 10px;
+  }
+  .claim-text { margin: 0; font-size: 13px; max-width: 72ch; }
+  .regime {
+    margin: 4px 0 0 !important;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+    max-width: 72ch;
+  }
+  .eq-name {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .eq-latex {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    background: var(--panel);
+    border: 1px solid var(--rule-soft);
+    padding: 6px 8px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .cite {
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: baseline;
+  }
+  .cite-lead { font-weight: 600; color: var(--ink-soft); }
+  .cite-title { max-width: 52ch; }
+  .cite-journal { font-style: italic; }
+  .cite-doi { font-family: var(--mono); color: var(--sea); text-decoration: none; }
+  .cite-doi:hover { text-decoration: underline; }
+
+  .note {
+    font-size: 12px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule);
+    padding-top: 10px;
+    margin-top: 6px;
+    max-width: 74ch;
+  }
+  .note strong { color: var(--ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<header>
+  <h1>Coastal Design Bench</h1>
+  <p class="lede">
+    Size a structure with the pyCoastal relations, then read what the
+    literature says about the ground they stand on.
+  </p>
+  <span class="spacer"></span>
+  <span id="verify" class="verify" hidden></span>
+</header>
+
+<div class="shell">
+  <nav id="rail" aria-label="Design modules"></nav>
+
+  <section class="column" aria-label="Design inputs">
+    <p class="eyebrow">Inputs</p>
+    <p id="module-note"></p>
+    <div id="inputs"></div>
+    <p class="note">
+      Every relation here is the one in the Python package, transliterated
+      and then checked against it. The chip in the masthead is that check,
+      re-run in your browser.
+    </p>
+  </section>
+
+  <main class="main">
+    <div id="error" hidden></div>
+    <div class="sheet-head">
+      <p class="eyebrow" id="sheet-label">Section</p>
+      <button id="enlarge" class="ghost-btn" type="button" aria-pressed="false">
+        Enlarge
+      </button>
+    </div>
+    <div class="sheet-wrap"><div id="sheet"></div></div>
+    <div id="checks" class="checks"></div>
+    <div id="warnings" hidden></div>
+
+    <div class="panes">
+      <section aria-label="Design report">
+        <p class="eyebrow">Design report</p>
+        <div id="report"></div>
+      </section>
+
+      <section aria-label="Literature">
+        <p class="eyebrow">Literature · <span id="corpus-stat">loading the extract…</span></p>
+        <div id="topics"></div>
+        <div id="knowledge"></div>
+        <p class="note">
+          Claims, equations and synthesis come from <strong>CoastalWiki</strong>,
+          a provenance-first corpus of peer-reviewed coastal engineering.
+          Each entry carries the regime it was established in, because a
+          relation quoted outside its range is the most expensive kind of
+          mistake. Coverage is uneven by design: it records what has been
+          screened, not what exists.
+        </p>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="engine.js"></script>
+<script src="draw.js"></script>
+<script src="app.js"></script>
