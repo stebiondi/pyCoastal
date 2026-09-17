@@ -286,9 +286,12 @@ class Section:
             Polygon vertices in metres. It is closed automatically.
         kind : str
             Key into :data:`MATERIALS`.
-        label : str, optional
+        label : str or False, optional
             Overrides the material name in the key, for a size callout such
-            as "Rock armour, Dn50 = 1.45 m".
+            as "Rock armour, Dn50 = 1.45 m". Pass ``False`` to draw the
+            polygon but keep it out of the key: a field of five groynes or
+            six breakwater segments wants one entry, not six identical
+            ones.
         """
         from matplotlib.patches import Polygon
 
@@ -313,10 +316,11 @@ class Section:
         if spec.stones > 0:
             self._stone_texture(patch, pts, spec, zorder + 0.1)
 
-        key = label or spec.name
-        self._used.setdefault(
-            key, Material(key, spec.face, spec.edge, spec.hatch, spec.weight)
-        )
+        if label is not False:
+            key = label or spec.name
+            self._used.setdefault(
+                key, Material(key, spec.face, spec.edge, spec.hatch, spec.weight)
+            )
         self._dxf.append(("POLY", pts, kind.upper()))
         return patch
 
@@ -806,7 +810,7 @@ class Section:
                 f"H 1:{chosen:g}  V 1:{self.vertical_scale:g}{on}"
             )
             self.exaggeration_note = (
-                f"{self.exaggeration_axis} EXAGGERATION {e:g} : 1"
+                f"{self.exaggeration_axis} EXAGGERATION {e:.4g} : 1"
             )
         return self.scale
 

@@ -177,6 +177,85 @@ sheet, each at its own standard scale.
 Worked examples: `examples/nourishment_design.py`,
 `examples/nourishment_profile.py`
 
+### Groynes and detached breakwaters
+
+A nourishment adds sand. These add a constraint, and the shoreline
+rearranges itself around it.
+
+A groyne blocks the alongshore drift, and the linearized one-line equation
+has an exact solution for that, so the fillet, the impounded volume and the
+time to bypassing are all analytical:
+
+```python
+import math
+from pyCoastal.applications.groynes import (
+    LittoralCell, Groyne, design_groyne_field, fillet_geometry,
+)
+from pyCoastal.applications.nourishment import WaveClimate, SECONDS_PER_YEAR
+
+cell = LittoralCell(D=6.0, B=2.0, bed="medium_sand")
+climate = WaveClimate(Hb=1.0, T=7.0, alpha0=math.radians(4.0))
+
+field = design_groyne_field(cell, climate, length=60, spacing=150, count=5)
+field.spacing_ratio          # 2.5 groyne lengths
+field.outflanked             # does the bay rotate back past the root?
+field.downdrift_deficit      # sand taken off the coast downdrift
+field.planform(x, t)         # shoreline along the whole field
+```
+
+<p align="center">
+  <img src="media/groyne_field.png" alt="Groyne field shoreline response" width="820">
+</p>
+
+The drawing shows the erosion limb at the same weight as the fillet on
+purpose: it is the same size, it arrives at the same rate, and a scheme
+drawing that crops it is the reason groyne fields have the reputation they
+do. `prefill=True` is the difference between a scheme that takes its sand
+from the neighbours and one that pays for it.
+
+The field is modelled in three parts, not by superposing single groynes. A
+groyne is a zero-flux *boundary condition*, so a sum of single-barrier
+solutions satisfies zero flux at none of them and grows without bound along
+the field. Instead: the lone-groyne fillet updrift, a sealed **closed cell**
+in each bay that tilts at constant volume towards a sawtooth of slope
+`tan(alpha_b)`, and the mirrored erosion downdrift.
+
+Detached breakwaters have no comparable closed form. What there is, is
+classification rules on `Ls/X` that disagree with each other, so all three
+are reported side by side:
+
+```python
+from pyCoastal.applications.groynes import (
+    DetachedBreakwater, design_detached_scheme,
+)
+
+bw = DetachedBreakwater(length=120, offshore=90, gap=60, crest_level=1.5)
+scheme = design_detached_scheme(cell, climate, bw, frontage=900,
+                                Hs=2.0, period=8.0, Dn50=1.1)
+
+scheme.verdict                   # consensus, or "disputed"
+scheme.response["verdicts"]      # what each published rule says
+scheme.transmission["Kt"]        # d'Angremond et al. (1996)
+```
+
+<p align="center">
+  <img src="media/groyne_tradeoff.png" alt="Classification criteria and groyne impoundment" width="900">
+</p>
+
+The criteria part company over `Ls/X` from 0.8 to 2.0, which is the band
+most schemes are actually designed in. A split verdict is reported as
+`"disputed"` rather than averaged into a number that would look more
+certain than it is. Transmission matters for the same reason: those rules
+were fitted to emergent structures that block nearly everything, so a
+submerged sill passing half the wave height will not build what they
+promise, and `design_detached_scheme` says so in its notes.
+
+`parabolic_bay` gives the Hsu and Evans (1989) static equilibrium planform
+for when you want a real shoreline rather than the schematic bulge on the
+layout drawing.
+
+Worked example: `examples/groyne_field.py`
+
 ### Port layout
 
 Phase-resolved wave propagation into a harbour. Breakwaters are rasterized as

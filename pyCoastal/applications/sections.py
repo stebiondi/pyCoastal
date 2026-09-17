@@ -59,6 +59,17 @@ __all__ = [
     "nourishment_plan_section",
     "spreading_half_life",
     "plan_margin",
+    "trim_margin_to_rung",
+    "draw_groyne_field",
+    "fillet_state",
+    "groyne_field_notes",
+    "groyne_field_plan",
+    "groyne_field_sheet",
+    "RESPONSE_BULGE",
+    "draw_detached_scheme",
+    "detached_scheme_notes",
+    "detached_scheme_plan",
+    "detached_scheme_sheet",
 ]
 
 
@@ -1590,15 +1601,9 @@ def nourishment_sheet(
         # falling a couple of percent over a rung would waste half the
         # paper. Trim the discretionary margin instead, the way a drafter
         # would, but never by more than a sixth of the width.
-        margin = plan_margin(plan_design, plan_climate, plan_years)
-        width = plan_design.length + 2.0 * margin
-        pos = plan.ax.get_position()
-        paper_w = pos.width * plan.fig.get_size_inches()[0] * 0.0254
-        rungs = [c for c in plan.STANDARD_SCALES if c * paper_w >= 0.84 * width]
-        if rungs:
-            fits = rungs[0] * paper_w
-            if fits < width:
-                margin = max(0.0, 0.5 * (fits - plan_design.length))
+        margin = trim_margin_to_rung(
+            plan, plan_design.length,
+            plan_margin(plan_design, plan_climate, plan_years))
         px, py = draw_nourishment_plan(plan, plan_design, plan_climate,
                                        plan_years, margin=margin)
         plan.auto_exaggeration(px, py)
@@ -1630,6 +1635,48 @@ def nourishment_sheet(
 
 #: erfinv(1/2), to the precision the half-life deserves.
 _ERFINV_HALF = 0.4769362762044698733814
+
+def trim_margin_to_rung(view, core: float, margin: float,
+                        floor: float = 0.75) -> float:
+    """Shrink a discretionary drawing margin so the view holds a scale rung.
+
+    The standard scales are coarse once a drawing is kilometres wide
+    (1:2500, 1:5000, then 1:10000), and extents that overrun a rung by a
+    couple of percent get thrown onto the next one, which halves the
+    drawing and wastes most of the paper. A drafter trims the margin
+    instead, and so does this: never below ``floor`` of the natural width,
+    and never into the ``core`` geometry that has to be on the sheet.
+
+    The default floor allows a quarter of the width to go. That sounds
+    generous until you see what it buys: these margins are soft
+    definitions to begin with, usually "far enough out that the effect has
+    faded", and giving up a quarter of one is a far smaller loss than
+    drawing the whole scheme at 60% of the paper.
+
+    Parameters
+    ----------
+    core : float
+        Width that must be drawn whatever happens [m], such as the
+        structure or the fill itself.
+    margin : float
+        The natural margin either side [m], which may be reduced.
+
+    Returns
+    -------
+    float
+        The margin to draw with.
+    """
+    width = core + 2.0 * margin
+    pos = view.ax.get_position()
+    paper_w = pos.width * view.fig.get_size_inches()[0] * 0.0254
+    rungs = [c for c in view.STANDARD_SCALES if c * paper_w >= floor * width]
+    if not rungs:
+        return margin
+    fits = rungs[0] * paper_w
+    if fits >= width:
+        return margin
+    return max(0.0, 0.5 * (fits - core))
+
 
 def plan_margin(design, climate, years) -> float:
     """How far past the fill a planform has to be drawn, in metres.
@@ -1841,3 +1888,470 @@ def nourishment_plan_section(
     dwg.ax.set_xlabel("alongshore distance (m)")
     dwg.ax.set_ylabel("shoreline advance (m)")
     return dwg
+
+
+# ---------------------------------------------------------------------------
+# Groyne fields, in plan
+# ---------------------------------------------------------------------------
+
+
+def draw_groyne_field(dwg: Section, design, t: float | None = None,
+                      annotate: bool = True, samples: int = 1201,
+                      margin: float | None = None):
+    """Plan view of a groyne field and the shoreline it has built.
+
+    Draws what the Pelnard-Considere solution actually says: a fillet
+    against each groyne, and an equal and opposite erosion downdrift of the
+    last one. Both limbs are drawn at the same weight on purpose. A scheme
+    drawing that shows the accretion and quietly crops the erosion is the
+    reason groyne fields have the reputation they do.
+
+    Parameters
+    ----------
+    t : float, optional
+        Time since construction [s]. Defaults to the design horizon.
+    margin : float, optional
+        How far past the end groynes to draw [m]. Defaults to the reach of
+        the fillet, so the whole affected frontage is on the sheet.
+
+    Returns
+    -------
+    (xlim, ylim)
+        Extents in metres. Both axes are distance; see
+        :func:`groyne_field_plan` for the scale this is drawn at.
+    """
+    from .groynes import SECONDS_PER_YEAR
+
+    t = design.horizon if t is None else t
+    if t < 0:
+        raise ValueError(f"Time cannot be negative, got {t}")
+
+    state = fillet_state(design, t)
+    half = 0.5 * design.field_length
+    if margin is None:
+        margin = max(state["reach"], 1.5 * design.spacing, 150.0)
+
+    x0, x1 = -half - margin, half + margin
+    x = np.linspace(x0, x1, samples)
+    shore = design.planform(x, t)
+
+    length = design.groyne.length
+    root = 0.25 * length            # buried root, landward of the shoreline
+    y1 = max(length, float(shore.max())) * 1.35
+    y0 = min(-root * 2.0, float(shore.min())) * 1.35 - 0.05 * length
+
+    # The land is whatever sits behind the shoreline now, so the boundary
+    # of the fill *is* the answer; no separate line is needed to carry it.
+    land = ([[x0, y0]] + [[xi, yi] for xi, yi in zip(x, shore)] + [[x1, y0]])
+    dwg.material(land, "subgrade", label="Beach and dune", zorder=1.4)
+    dwg.material([[x0, y1], [x1, y1]]
+                 + [[xi, yi] for xi, yi in zip(x[::-1], shore[::-1])],
+                 "water", zorder=1.2)
+
+    # The sand that has actually moved: accreted seaward of the original
+    # line, lost landward of it.
+    gained = np.clip(shore, 0.0, None)
+    if gained.max() > 0:
+        dwg.material([[x0, 0.0]] + [[xi, yi] for xi, yi in zip(x, gained)]
+                     + [[x1, 0.0]], "sand", label="Accretion", zorder=1.6)
+
+    dwg.line([[x0, 0.0], [x1, 0.0]], weight="thin", style="--",
+             label=None, zorder=3.0)
+
+    # The groynes themselves.
+    width = max(0.006 * (x1 - x0), 1.0)
+    first = -half
+    for i in range(design.count):
+        xg = first + i * design.spacing
+        dwg.material([[xg - width, -root], [xg + width, -root],
+                      [xg + width, length], [xg - width, length]],
+                     "armour",
+                     label="Rock groyne" if i == 0 else False, zorder=4.0)
+
+    if not annotate:
+        return (x0, x1), (y0, y1)
+
+    dwg.dim_v(-root, length, first - 0.55 * design.spacing,
+              f"groyne {length:.0f} m")
+    if design.count > 1:
+        dwg.dim_h(first, first + design.spacing, -1.6 * root,
+                  f"spacing {design.spacing:.0f} m")
+
+    dwg.note((first - 0.05 * design.spacing, state["advance"]),
+             f"fillet {state['advance']:.0f} m", offset=(-30, 34), ha="right")
+
+    lost = float(shore.min())
+    at = float(x[int(np.argmin(shore))])
+    dwg.note((at, lost), f"downdrift erosion {abs(lost):.0f} m",
+             offset=(28, -30), ha="left")
+
+    dwg.note((x0 + 0.03 * (x1 - x0), 0.0), "original shoreline",
+             offset=(0, -26), ha="left")
+
+    if state["bypassing"]:
+        dwg.note((first, length), "bypassing", offset=(-18, 26), ha="right")
+
+    return (x0, x1), (y0, y1)
+
+
+def fillet_state(design, t: float) -> dict:
+    """The fillet at the updrift groyne of a field, at time ``t``."""
+    from .groynes import fillet_geometry
+
+    return fillet_geometry(design.groyne, design.cell, design.climate, t)
+
+
+def groyne_field_notes(design, t: float | None = None) -> list[str]:
+    """Drawing notes for a groyne field."""
+    from .groynes import SECONDS_PER_YEAR
+
+    t = design.horizon if t is None else t
+    state = fillet_state(design, t)
+    cell = design.cell
+    material = cell.material
+
+    notes = [
+        f"Beach: {material.name.lower()}, d50 = {material.d50 * 1000:.2f} mm. "
+        f"Active profile {cell.active_height:.1f} m, from the "
+        f"{cell.D:.1f} m closure depth to the {cell.B:.1f} m berm.",
+        f"Wave climate: Hb = {design.climate.Hb:.1f} m at "
+        f"{math.degrees(design.climate.alpha0):.1f} deg to the shoreline. "
+        f"Alongshore diffusivity "
+        f"{state['diffusivity'] * SECONDS_PER_YEAR / 1e3:.0f} thousand m2/yr.",
+        f"Littoral drift {state['transport_rate'] * SECONDS_PER_YEAR / 1e3:.0f} "
+        "thousand m3/yr, from the CERC formula linearized for small angles.",
+        f"{design.count} groynes at {design.spacing:.0f} m centres, "
+        f"{design.groyne.length:.0f} m seaward of the original shoreline. "
+        f"Spacing is {design.spacing_ratio:.1f} groyne lengths.",
+    ]
+    notes.extend(design.notes)
+    notes.append(
+        f"Shoreline shown at {t / SECONDS_PER_YEAR:.1f} years, from the "
+        "Pelnard-Considere (1956) solution for a complete littoral barrier.")
+    if not state["valid"]:
+        notes.append(state["note"])
+    notes.append(
+        "The solution assumes one wave condition, small wave angles and a "
+        "shoreline free to move. It gives the shape and the scale of the "
+        "response, not a survey.")
+    return notes
+
+
+def groyne_field_plan(design, t: float | None = None,
+                      title: str = "Groyne field, shoreline response",
+                      figsize: tuple[float, float] = (14.0, 6.0),
+                      exaggeration: float | None = None,
+                      ax=None) -> Section:
+    """A standalone plan of a groyne field.
+
+    Both axes are distance, so this is drawn 1:1 wherever it fits. A field
+    whose fillets are small against its length needs the cross-shore axis
+    stretched to be readable, and then the factor is stated, the same way a
+    section states its vertical exaggeration.
+    """
+    from .groynes import SECONDS_PER_YEAR
+
+    t = design.horizon if t is None else t
+
+    if exaggeration is None:
+        import matplotlib.pyplot as plt
+
+        probe = Section(figsize=figsize, ax=ax)
+        xlim, ylim = draw_groyne_field(probe, design, t, annotate=False)
+        exaggeration = round(probe.auto_exaggeration(xlim, ylim))
+        if ax is None:
+            plt.close(probe.fig)
+        else:
+            probe.fig.clear()
+
+    state = fillet_state(design, t)
+    stretched = ("" if exaggeration <= 1
+                 else f"  CROSS-SHORE EXAGGERATION {exaggeration:g}:1")
+    dwg = Section(
+        title,
+        subtitle=(
+            f"Pelnard-Considere (1956). {design.count} groynes, "
+            f"{design.groyne.length:.0f} m long at {design.spacing:.0f} m "
+            f"centres, at {t / SECONDS_PER_YEAR:.1f} years. Bypassing at "
+            f"{state['bypassing_time'] / SECONDS_PER_YEAR:.2f} yr." + stretched
+        ),
+        figsize=figsize,
+        exaggeration=exaggeration,
+        ax=ax,
+    )
+    dwg.exaggeration_axis = "CROSS-SHORE"
+    xlim, ylim = draw_groyne_field(dwg, design, t)
+    dwg.key(loc="lower right")
+    dwg.finish(xlim=xlim, zlim=ylim)
+    dwg.ax.set_xlabel("alongshore distance (m)")
+    dwg.ax.set_ylabel("shoreline offset (m)")
+    return dwg
+
+
+def groyne_field_sheet(design, t: float | None = None,
+                       project: str = "Coast protection scheme",
+                       title: str = "Groyne field layout",
+                       size: str = "A3",
+                       file: str = "groyne_field_sheet.py",
+                       **titleblock) -> Sheet:
+    """A drawing sheet of a groyne field, with its design notes."""
+    from .groynes import SECONDS_PER_YEAR
+
+    t = design.horizon if t is None else t
+    sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
+
+    view = sheet.viewport(rect=(0.0, 0.10, 0.70, 0.85))
+    view.exaggeration_axis = "CROSS-SHORE"
+    natural = max(fillet_state(design, t)["reach"], 1.5 * design.spacing, 150.0)
+    margin = trim_margin_to_rung(view, design.field_length, natural)
+    xlim, ylim = draw_groyne_field(view, design, t, margin=margin)
+    view.auto_exaggeration(xlim, ylim)
+    view.fit_scale(xlim, ylim, paper=size, round_vertical=True)
+    view.detail_bubble("A", title.upper(), view.scale_text, loc=(0.02, -0.11))
+    view.key(loc="upper right")
+
+    notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
+    notes.ax.set_xlim(0, 1)
+    notes.ax.set_ylim(0, 1)
+    notes.ax.set_aspect("auto")
+    text = groyne_field_notes(design, t)
+    if view.exaggeration_note:
+        text.insert(0, view.exaggeration_note.capitalize()
+                    + ". The fillets are steeper on this drawing than on "
+                      "the ground.")
+    notes.notes_block(text, title="NOTES", width=36, loc=(0.0, 1.0),
+                      fontsize=6.0)
+
+    state = fillet_state(design, t)
+    notes.table(
+        [("GROYNES", f"{design.count} @ {design.spacing:.0f} m"),
+         ("LENGTH", f"{design.groyne.length:.0f} m"),
+         ("FILLET", f"{min(state['advance'], design.groyne.length):.0f} m"),
+         ("BYPASS", f"{state['bypassing_time'] / SECONDS_PER_YEAR:.2f} yr"),
+         ("IMPOUNDS", f"{design.field_capacity / 1e3:.0f} k m3")],
+        title="SUMMARY", loc=(0.0, 0.0), align="left", fontsize=6.4)
+    sheet.set_scale_from(view)
+    return sheet
+
+
+# ---------------------------------------------------------------------------
+# Detached breakwaters, in plan
+# ---------------------------------------------------------------------------
+
+#: Shoreline bulge behind a segment, as a fraction of the distance
+#: offshore, for each classification verdict.
+#:
+#: This is a *schematic* scale for the drawing, not a prediction. A tombolo
+#: reaching the structure is definitional, so 1.0 is exact; the rest are
+#: illustrative amplitudes chosen to render the verdict legibly. There is
+#: no agreed formula for salient amplitude, and inventing one and drawing
+#: it to three figures would be worse than drawing nothing.
+RESPONSE_BULGE = {
+    "tombolo": 1.0,
+    "periodic tombolo": 0.75,
+    "salient": 0.45,
+    "no sinuosity": 0.08,
+    "disputed": 0.6,
+}
+
+
+def draw_detached_scheme(dwg: Section, design, annotate: bool = True,
+                         samples: int = 1601):
+    """Plan view of a detached breakwater scheme and the beach behind it.
+
+    The structures and the layout are drawn to scale and are real. The
+    shoreline behind them is a schematic bulge scaled from the
+    classification verdict, and the drawing says so: see
+    :data:`RESPONSE_BULGE` for why it is not a computed planform.
+    """
+    layout = design.layout
+    bw = design.breakwater
+    span = layout["span"]
+    pitch = layout["pitch"]
+
+    margin = max(0.12 * span, bw.offshore)
+    x0, x1 = -0.5 * span - margin, 0.5 * span + margin
+    y0 = -0.55 * bw.offshore
+    y1 = bw.offshore * 1.55
+
+    x = np.linspace(x0, x1, samples)
+
+    # A cosine bulge under each segment, zero at the gap centres.
+    amplitude = RESPONSE_BULGE[design.verdict] * bw.offshore
+    shore = np.zeros_like(x)
+    first = -0.5 * span + 0.5 * bw.length
+    for i in range(layout["count"]):
+        centre = first + i * pitch
+        local = np.abs(x - centre)
+        inside = local <= 0.5 * pitch
+        shore[inside] = np.maximum(
+            shore[inside],
+            amplitude * 0.5 * (1.0 + np.cos(2.0 * np.pi * local[inside] / pitch)))
+
+    land = [[x0, y0]] + [[xi, yi] for xi, yi in zip(x, shore)] + [[x1, y0]]
+    dwg.material(land, "subgrade", label="Beach", zorder=1.4)
+    dwg.material([[x0, y1], [x1, y1]]
+                 + [[xi, yi] for xi, yi in zip(x[::-1], shore[::-1])],
+                 "water", zorder=1.2)
+    if amplitude > 0:
+        dwg.material([[x0, 0.0]] + [[xi, yi] for xi, yi in zip(x, shore)]
+                     + [[x1, 0.0]], "sand",
+                     label="Shoreline response (schematic)",
+                     zorder=1.6)
+
+    dwg.line([[x0, 0.0], [x1, 0.0]], weight="thin", style="--", zorder=3.0)
+
+    # The structures.
+    thickness = max(0.035 * bw.offshore, 0.004 * (x1 - x0))
+    for i in range(layout["count"]):
+        centre = first + i * pitch
+        a, b = centre - 0.5 * bw.length, centre + 0.5 * bw.length
+        dwg.material([[a, bw.offshore - thickness], [b, bw.offshore - thickness],
+                      [b, bw.offshore + thickness], [a, bw.offshore + thickness]],
+                     "armour",
+                     label="Rock breakwater" if i == 0 else False, zorder=4.0)
+
+    if not annotate:
+        return (x0, x1), (y0, y1)
+
+    dwg.dim_h(first - 0.5 * bw.length, first + 0.5 * bw.length,
+              bw.offshore + 5.0 * thickness, f"Ls = {bw.length:.0f} m")
+    dwg.dim_v(0.0, bw.offshore, x0 + 0.06 * (x1 - x0),
+              f"X = {bw.offshore:.0f} m")
+    if bw.gap > 0 and layout["count"] > 1:
+        gap_centre = first + 0.5 * pitch
+        dwg.dim_h(gap_centre - 0.5 * bw.gap, gap_centre + 0.5 * bw.gap,
+                  bw.offshore - 6.0 * thickness, f"gap {bw.gap:.0f} m")
+
+    dwg.note((first, RESPONSE_BULGE[design.verdict] * bw.offshore),
+             f"Ls/X = {bw.ratio:.2f}\n{design.verdict}",
+             offset=(0, 30), ha="center")
+    dwg.note((x1 - 0.14 * (x1 - x0), bw.offshore),
+             f"Kt = {design.transmission['Kt']:.2f}", offset=(0, 34),
+             ha="center")
+    dwg.note((x0 + 0.03 * (x1 - x0), 0.0), "original shoreline",
+             offset=(0, -26), ha="left")
+
+    return (x0, x1), (y0, y1)
+
+
+def detached_scheme_notes(design) -> list[str]:
+    """Drawing notes for a detached breakwater scheme."""
+    bw = design.breakwater
+    cell = design.cell
+    material = cell.material
+    response = design.response
+
+    notes = [
+        f"Beach: {material.name.lower()}, d50 = {material.d50 * 1000:.2f} mm. "
+        f"Active profile {cell.active_height:.1f} m.",
+        f"{design.layout['count']} segments of {bw.length:.0f} m at "
+        f"{bw.offshore:.0f} m offshore, {bw.gap:.0f} m gaps, over a "
+        f"{design.layout['span']:.0f} m frontage. Crest "
+        f"{bw.crest_level:+.1f} m to the design water level.",
+    ]
+
+    for key, verdict in response["verdicts"].items():
+        from .groynes import RESPONSE_CRITERIA
+
+        notes.append(f"{RESPONSE_CRITERIA[key]['source']}: {verdict}, "
+                     f"at Ls/X = {response['ratio']:.2f}.")
+
+    notes.extend(design.notes)
+    notes.append(
+        "The shoreline drawn behind the structures is a schematic bulge "
+        "scaled from the classification above. It shows which response is "
+        "expected and roughly how far it reaches; it is not a computed "
+        "planform and should not be scaled off.")
+    notes.append(
+        "Wave transmission from d'Angremond, van der Meer and de Jong "
+        f"(1996) for Hs = {design.Hs:.1f} m, Tp = {design.period:.1f} s, "
+        f"crest width {design.crest_width:.1f} m, Dn50 = {design.Dn50:.2f} m.")
+    return notes
+
+
+def detached_scheme_plan(design,
+                         title: str = "Detached breakwaters, shoreline response",
+                         figsize: tuple[float, float] = (14.0, 6.0),
+                         exaggeration: float | None = None,
+                         ax=None) -> Section:
+    """A standalone plan of a detached breakwater scheme.
+
+    A detached breakwater scheme is a few hundred metres in both
+    directions, so unlike a nourishment planform it comes close to fitting
+    a sheet at a true scale, and often reaches it. A true scale is always
+    the better drawing when the geometry allows it, so the exaggeration is
+    whatever is needed and no more.
+    """
+    if exaggeration is None:
+        import matplotlib.pyplot as plt
+
+        probe = Section(figsize=figsize, ax=ax)
+        xlim, ylim = draw_detached_scheme(probe, design, annotate=False)
+        exaggeration = round(probe.auto_exaggeration(xlim, ylim))
+        if ax is None:
+            plt.close(probe.fig)
+        else:
+            probe.fig.clear()
+
+    response = design.response
+    stretched = ("" if exaggeration <= 1
+                 else f"  CROSS-SHORE EXAGGERATION {exaggeration:g}:1")
+    dwg = Section(
+        title,
+        subtitle=(
+            f"Ls/X = {response['ratio']:.2f}, verdict {design.verdict}. "
+            f"Kt = {design.transmission['Kt']:.2f}. Shoreline response is "
+            "schematic." + stretched
+        ),
+        figsize=figsize,
+        exaggeration=exaggeration,
+        ax=ax,
+    )
+    dwg.exaggeration_axis = "CROSS-SHORE"
+    xlim, ylim = draw_detached_scheme(dwg, design)
+    dwg.key(loc="lower right")
+    dwg.finish(xlim=xlim, zlim=ylim)
+    dwg.ax.set_xlabel("alongshore distance (m)")
+    dwg.ax.set_ylabel("distance offshore (m)")
+    return dwg
+
+
+def detached_scheme_sheet(design,
+                          project: str = "Coast protection scheme",
+                          title: str = "Detached breakwater layout",
+                          size: str = "A3",
+                          file: str = "detached_scheme_sheet.py",
+                          **titleblock) -> Sheet:
+    """A drawing sheet of a detached breakwater scheme."""
+    sheet = Sheet(_sheet_for(title, project, file, **titleblock), size=size)
+
+    view = sheet.viewport(rect=(0.0, 0.10, 0.70, 0.85))
+    view.exaggeration_axis = "CROSS-SHORE"
+    xlim, ylim = draw_detached_scheme(view, design)
+    view.auto_exaggeration(xlim, ylim)
+    view.fit_scale(xlim, ylim, paper=size, round_vertical=True)
+    view.detail_bubble("A", title.upper(), view.scale_text, loc=(0.02, -0.11))
+    view.key(loc="upper right")
+
+    notes = sheet.viewport(rect=(0.70, 0.0, 0.30, 1.0), frame=False)
+    notes.ax.set_xlim(0, 1)
+    notes.ax.set_ylim(0, 1)
+    notes.ax.set_aspect("auto")
+    text = detached_scheme_notes(design)
+    if view.exaggeration_note:
+        text.insert(0, view.exaggeration_note.capitalize() + ".")
+    notes.notes_block(text, title="NOTES", width=36, loc=(0.0, 1.0),
+                      fontsize=6.0)
+
+    bw = design.breakwater
+    notes.table(
+        [("SEGMENTS", f"{design.layout['count']} @ {bw.length:.0f} m"),
+         ("OFFSHORE", f"{bw.offshore:.0f} m"),
+         ("GAP", f"{bw.gap:.0f} m"),
+         ("Ls/X", f"{bw.ratio:.2f}"),
+         ("RESPONSE", design.verdict.upper()),
+         ("Kt", f"{design.transmission['Kt']:.2f}")],
+        title="SUMMARY", loc=(0.0, 0.0), align="left", fontsize=6.4)
+    sheet.set_scale_from(view)
+    return sheet
