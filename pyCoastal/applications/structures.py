@@ -533,6 +533,10 @@ class BreakwaterDesign:
     layer: dict
     armour_type: str
     governing_limit: str | None
+    #: "trunk" or "head". The head carries heavier armour for the same wave.
+    section: str = "trunk"
+    #: KD_head / KD_trunk, set only on a head section.
+    kd_ratio: float | None = None
 
     def summary(self) -> str:
         """A short design report."""
@@ -542,6 +546,9 @@ class BreakwaterDesign:
             f"depth = {c.depth:.1f} m",
             f"Storm              {c.storm_duration / 3600:.1f} h, "
             f"N = {c.wave_count:.0f} waves",
+            f"Section            {self.section}"
+            + (f", KD ratio {self.kd_ratio:.2f} of the trunk"
+               if self.kd_ratio else ""),
             f"Slope              1 : {self.cot_alpha:g}",
             f"Armour             {self.armour_type}, Dn50 = {self.Dn50:.2f} m, "
             f"M50 = {self.M50 / 1000:.1f} t ({self.regime})",
@@ -611,4 +618,390 @@ def design_rubble_mound(
         layer=armour_layer(stability["Dn50"]),
         armour_type=armour,
         governing_limit=tolerable_use,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Toe scour
+# ---------------------------------------------------------------------------
+
+
+def reflection_coefficient(cot_alpha: float, surf_similarity: float,
+                           permeable: bool = True) -> float:
+    """Reflection coefficient of a rough slope, Seelig and Ahrens (1981).
+
+        Kr = a xi^2 / (b + xi^2)
+
+    with a = 0.6 and b = 6.6 for a permeable rubble mound, and a = 1.0,
+    b = 5.5 for a smooth impermeable slope. A vertical wall reflects almost
+    everything; a rubble mound dissipates most of it, which is why the
+    scour in front of the two is not the same problem.
+    """
+    if surf_similarity <= 0:
+        raise ValueError(f"Surf similarity must be positive, got {surf_similarity}")
+    a, b = (0.6, 6.6) if permeable else (1.0, 5.5)
+    xi2 = surf_similarity ** 2
+    return min(a * xi2 / (b + xi2), 1.0)
+
+
+def toe_scour(
+    bed,
+    Hs: float,
+    T: float,
+    depth: float,
+    reflection: float = 1.0,
+    coefficient: float = 0.4,
+    exponent: float = 1.35,
+) -> dict:
+    """Equilibrium scour depth at the toe of a marine structure [m].
+
+    The standing-wave form, as for a vertical wall::
+
+        S / Hs = coefficient * Kr / sinh(k h) ** exponent
+
+    Parameters
+    ----------
+    bed : Sediment or str
+        What the bed is made of. This decides whether there is any scour to
+        compute: a bed below its threshold of motion in the approach waves
+        is in the clear-water regime, where a live-bed relation overstates
+        the hole, and a cohesive bed is not governed by this at all.
+    reflection : float
+        Reflection coefficient Kr of the structure. 1.0 for a vertical
+        wall, which recovers Xie (1981) exactly; roughly 0.2 to 0.5 for a
+        rubble mound, from :func:`reflection_coefficient`.
+    coefficient : float
+        0.4 is Xie's value for fine sand under regular waves at a fully
+        reflecting wall, and is the usual design number.
+    exponent : float
+        1.35, from the same work.
+
+    Returns
+    -------
+    dict
+        The ``depth``, the mobility state of the bed, and whether the
+        relation is being applied inside the regime it came from.
+
+    Notes
+    -----
+    Scaling Xie's fully reflecting result by the reflection coefficient is
+    an engineering assumption, not a calibrated relation: it has the right
+    limits, going to Xie at a vertical wall and to nothing at a perfect
+    absorber, and it puts a rubble mound sensibly below a caisson. It is a
+    screening number. A scheme whose toe design turns on it wants a mobile
+    bed model or a physical model, and the returned dict says as much
+    through ``screening_only``.
+    """
+    from .sediment import bed_mobility, sediment as _lookup
+
+    grains = _lookup(bed) if isinstance(bed, str) else bed
+    if not 0.0 <= reflection <= 1.0:
+        raise ValueError(f"Reflection coefficient must be in [0,1], got {reflection}")
+    if coefficient < 0:
+        raise ValueError(f"Coefficient must be non-negative, got {coefficient}")
+
+    L = dispersion(T, depth)
+    kh = 2 * math.pi * depth / L
+    unlimited = coefficient * reflection * Hs / math.sinh(kh) ** exponent
+
+    mobility = bed_mobility(grains, Hs, T, depth)
+    note = mobility["note"]
+
+    if grains.cohesive:
+        return {
+            "depth": 0.0, "unlimited_depth": unlimited, "reflection": reflection,
+            "mobility": mobility, "applies": False, "screening_only": True,
+            "note": note,
+        }
+
+    # A bed that never moves does not scour to the live-bed depth. The
+    # structure still amplifies the flow locally, so this is not zero, but
+    # the live-bed number is an overstatement and is reported as such.
+    scour = unlimited if mobility["mobile"] else 0.5 * unlimited
+
+    return {
+        "depth": scour,
+        "unlimited_depth": unlimited,
+        "reflection": reflection,
+        "relative_depth": kh,
+        "mobility": mobility,
+        "applies": mobility["mobile"],
+        "screening_only": True,
+        "note": note,
+    }
+
+
+def breakwater_toe_scour(design, depth: float, bed="medium_sand",
+                         permeable: bool = True) -> dict:
+    """Toe scour in front of a designed rubble mound.
+
+    Takes the reflection from the slope and the surf similarity of the
+    design condition, so a flatter, rougher, more permeable mound is
+    correctly predicted to scour its own toe less than a steep one.
+    """
+    xi = design.conditions.breaker_parameter(design.cot_alpha)
+    Kr = reflection_coefficient(design.cot_alpha, xi, permeable)
+    result = toe_scour(bed, design.conditions.Hm0, design.conditions.Tm10,
+                       depth, reflection=Kr)
+    result["surf_similarity"] = xi
+    # The apron has to reach past the hole and be heavy enough to stay put.
+    result["apron_width"] = max(2.0 * result["depth"], 1.5 * design.Dn50, 2.0)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# What the mound stands on
+# ---------------------------------------------------------------------------
+
+
+def mound_foundation(design, depth: float, bed="medium_sand",
+                     permeable: bool = True, bedding_material="coarse_sand",
+                     settlement_allowance: float = 0.0) -> dict:
+    """Bedding blanket, toe berm and geotextile under a rubble mound.
+
+    A trapezoid of rock does not sit straight on the seabed. Under it goes a
+    levelling blanket of graded sand and gravel, on a geotextile, carried
+    well past both toes so the scour hole forms in the apron rather than
+    under the structure. At the foot of the armour sits a berm of the same
+    stone as the filter layer, which is what stops the bottom of the
+    mantle unravelling.
+
+    Parameters
+    ----------
+    design : BreakwaterDesign
+        The sized mound.
+    depth : float
+        Water depth at the toe [m].
+    bed : Sediment or str
+        The natural seabed. Decides the scour, and therefore how far the
+        blanket has to reach.
+    bedding_material : Sediment or str
+        The blanket itself, normally a well graded sand and gravel.
+    settlement_allowance : float
+        Extra blanket thickness for consolidation of a soft seabed [m].
+
+    Returns
+    -------
+    dict
+        Every dimension the section needs, and the scour result behind it.
+
+    Notes
+    -----
+    Two rules are doing the work.
+
+    The toe berm takes the same stone as the filter layer rather than the
+    armour. It sits low, where the orbital velocities are much smaller than
+    at the waterline, and sizing it as armour is expensive without being
+    safer. This follows normal Italian and Rock Manual practice.
+
+    The blanket reaches past the toe by whichever is larger of the computed
+    scour apron and twice the predicted scour depth, with a floor of three
+    metres for something a dredger can actually place. Its job is to keep
+    the edge of the hole away from the toe, so it has to be wider than the
+    hole is deep.
+    """
+    from .sediment import sediment as _lookup
+
+    blanket = _lookup(bedding_material) if isinstance(bedding_material, str) \
+        else bedding_material
+    if settlement_allowance < 0:
+        raise ValueError(
+            f"Settlement allowance must be non-negative, got {settlement_allowance}"
+        )
+
+    scour = breakwater_toe_scour(design, depth, bed=bed, permeable=permeable)
+
+    # Filter stone, a tenth of the armour mass, is what the toe berm takes.
+    Dn_filter = design.Dn50 / 10.0 ** (1.0 / 3.0)
+    toe_thickness = 2.0 * Dn_filter
+    toe_width = max(3.0 * Dn_filter, 0.5 * design.conditions.Hm0, 2.0)
+
+    bedding_thickness = max(0.6, 1.5 * Dn_filter) + settlement_allowance
+    extension = max(scour["apron_width"], 2.0 * scour["depth"], 3.0)
+
+    return {
+        "scour": scour,
+        "toe_Dn50": Dn_filter,
+        "toe_M50": 2650.0 * Dn_filter**3,
+        "toe_width": toe_width,
+        "toe_thickness": toe_thickness,
+        "bedding": blanket,
+        "bedding_thickness": bedding_thickness,
+        "bedding_extension": extension,
+        "settlement_allowance": settlement_allowance,
+        "geotextile": True,
+    }
+
+
+def crown_wall(design, still_water_level: float, deck_width: float = 7.5,
+               parapet_width: float = 2.0, parapet_height: float | None = None,
+               base_below_crest: float | None = None) -> dict:
+    """A concrete crown block on the crest, in the usual stepped form.
+
+    A parapet on the seaward side to take the run-up, a deck behind it wide
+    enough to drive a lorry along for maintenance, and a base bedded into
+    the core below the armour crest.
+
+    Returns
+    -------
+    dict
+        Levels and widths for the block, and its concrete volume per metre
+        run at 2400 kg/m3.
+
+    Notes
+    -----
+    The block is proportioned here, not designed. Sliding and overturning
+    of a crown wall under wave impact are a separate calculation, and a
+    real one also has to survive the uplift that gets under it when the
+    core does not drain fast enough.
+    """
+    crest = still_water_level + design.crest_freeboard
+    if parapet_height is None:
+        # The parapet stands proud of the armour crest by enough to catch
+        # the run-up tongue without becoming a wave-reflecting wall.
+        parapet_height = max(0.3 * design.conditions.Hm0, 1.0)
+    if base_below_crest is None:
+        base_below_crest = design.layer["thickness"]
+    if deck_width <= 0 or parapet_width <= 0:
+        raise ValueError("Deck and parapet widths must be positive")
+
+    base_level = crest - base_below_crest
+    deck_level = crest
+    parapet_top = crest + parapet_height
+
+    area = (parapet_width * (parapet_top - base_level)
+            + deck_width * (deck_level - base_level))
+    return {
+        "base_level": base_level,
+        "deck_level": deck_level,
+        "parapet_top": parapet_top,
+        "parapet_width": parapet_width,
+        "deck_width": deck_width,
+        "total_width": parapet_width + deck_width,
+        "concrete_m3_per_m": area,
+        "concrete_t_per_m": area * 2.4,
+    }
+
+
+# ---------------------------------------------------------------------------
+# The roundhead
+# ---------------------------------------------------------------------------
+
+#: Ratio of the roundhead stability coefficient to the trunk value,
+#: KD_head / KD_trunk. Indicative, and slope dependent: the Shore Protection
+#: Manual tabulates the two separately and the governing edition should be
+#: read rather than this table. The shape is what matters and is not in
+#: doubt: interlocking units lose more at the head than rough rock does,
+#: because their interlock depends on neighbours a curved surface cannot
+#: provide, and every unit loses more on a flatter slope.
+ROUNDHEAD_KD_RATIO = {
+    "rock": {1.5: 0.95, 2.0: 0.80, 3.0: 0.65},
+    "cubes": {1.5: 0.85, 2.0: 0.75, 3.0: 0.60},
+    "tetrapod": {1.5: 0.72, 2.0: 0.64, 3.0: 0.50},
+    "accropode": {1.5: 0.80, 2.0: 0.75, 3.0: 0.65},
+    "dolos": {1.5: 0.65, 2.0: 0.58, 3.0: 0.45},
+}
+
+#: Which family an armour type belongs to, for the table above.
+ARMOUR_FAMILY = {
+    "rock_one_layer_impermeable": "rock",
+    "rock_two_layer_impermeable": "rock",
+    "rock_two_layer_permeable": "rock",
+    "cubes_one_layer_flat": "cubes",
+    "cubes_two_layer_random": "cubes",
+    "antifer": "cubes",
+    "tetrapod": "tetrapod",
+    "accropode": "accropode",
+    "core_loc": "accropode",
+    "xbloc": "accropode",
+    "dolos": "dolos",
+    "smooth_concrete": "rock",
+    "grass": "rock",
+    "asphalt": "rock",
+}
+
+
+def roundhead_kd_ratio(armour: str, cot_alpha: float) -> float:
+    """KD_head / KD_trunk for an armour type on a given slope.
+
+    Linear in cot(alpha) between the tabulated slopes, and held flat outside
+    them rather than extrapolated into values nobody has measured.
+    """
+    family = ARMOUR_FAMILY.get(armour, "rock")
+    table = ROUNDHEAD_KD_RATIO[family]
+    slopes = sorted(table)
+    if cot_alpha <= slopes[0]:
+        return table[slopes[0]]
+    if cot_alpha >= slopes[-1]:
+        return table[slopes[-1]]
+    for low, high in zip(slopes, slopes[1:]):
+        if low <= cot_alpha <= high:
+            span = (cot_alpha - low) / (high - low)
+            return table[low] + span * (table[high] - table[low])
+    return table[slopes[-1]]
+
+
+def roundhead(design, kd_ratio: float | None = None,
+              raise_crest: float = 0.0) -> "BreakwaterDesign":
+    """The head section of a breakwater, armoured for its exposure.
+
+    A roundhead is attacked from a wider range of directions than the trunk,
+    the armour on a convex surface gets less support from its neighbours,
+    and the run-down concentrates where the flow turns the corner. Practice
+    handles all three by using a lower stability coefficient at the head.
+
+    Since Hudson makes the nominal diameter go as KD to the power minus a
+    third, a KD ratio of r gives::
+
+        Dn50_head = Dn50_trunk / r^(1/3)
+        M50_head  = M50_trunk  / r
+
+    so a ratio of 0.8 means a quarter more stone by mass, which is the step
+    from sixteen to twenty tonne units that a real scheme ends up with.
+
+    Parameters
+    ----------
+    kd_ratio : float, optional
+        KD_head / KD_trunk. Taken from :func:`roundhead_kd_ratio` for the
+        design's own armour and slope when not given.
+    raise_crest : float
+        Extra crest freeboard at the head [m]. Heads are often built higher
+        than the trunk, because the overtopping there lands on the part of
+        the structure people stand on and the navigation light sits on.
+
+    Returns
+    -------
+    BreakwaterDesign
+        The same design with head armour, its layer recomputed, and
+        ``section`` set to "head".
+
+    Notes
+    -----
+    Only the armour is rescaled. The filter follows it, because the layer
+    is recomputed from the new diameter, but the core grading, the crest
+    width and the overtopping are left as the trunk's. A real head is also
+    usually widened to give the plant somewhere to work and the light
+    somewhere to stand.
+    """
+    from dataclasses import replace
+
+    if kd_ratio is None:
+        kd_ratio = roundhead_kd_ratio(design.armour_type, design.cot_alpha)
+    if not 0.0 < kd_ratio <= 1.0:
+        raise ValueError(
+            f"KD ratio must be in (0, 1]; got {kd_ratio}. Above one would "
+            "make the head lighter than the trunk, which is backwards."
+        )
+    if raise_crest < 0:
+        raise ValueError(f"Crest rise must be non-negative, got {raise_crest}")
+
+    Dn50 = design.Dn50 / kd_ratio ** (1.0 / 3.0)
+    return replace(
+        design,
+        Dn50=Dn50,
+        M50=2650.0 * Dn50**3,
+        layer=armour_layer(Dn50),
+        crest_freeboard=design.crest_freeboard + raise_crest,
+        section="head",
+        kd_ratio=kd_ratio,
     )

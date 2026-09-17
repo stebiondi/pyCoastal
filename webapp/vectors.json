@@ -1,0 +1,2372 @@
+{
+ "generated_from": "pyCoastal",
+ "count": 129,
+ "cases": [
+  {
+   "name": "dispersion T=8.0 h=5.0",
+   "call": {
+    "fn": "dispersion",
+    "args": [
+     8.0,
+     5.0
+    ]
+   },
+   "expect": {
+    "value": 53.08152249395467
+   }
+  },
+  {
+   "name": "dispersion T=12.0 h=30.0",
+   "call": {
+    "fn": "dispersion",
+    "args": [
+     12.0,
+     30.0
+    ]
+   },
+   "expect": {
+    "value": 177.042109494224
+   }
+  },
+  {
+   "name": "dispersion T=6.0 h=200.0",
+   "call": {
+    "fn": "dispersion",
+    "args": [
+     6.0,
+     200.0
+    ]
+   },
+   "expect": {
+    "value": 56.20715970233377
+   }
+  },
+  {
+   "name": "dispersion T=14.0 h=3.0",
+   "call": {
+    "fn": "dispersion",
+    "args": [
+     14.0,
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 75.16873213229401
+   }
+  },
+  {
+   "name": "vandermeer plunging",
+   "call": {
+    "fn": "rockArmourVanDerMeer",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     2.0
+    ]
+   },
+   "expect": {
+    "Dn50": 1.5916585331072473,
+    "M50": 10685.517986228515,
+    "xi": 3.1238097650660213,
+    "xi_cr": 3.768149273731115,
+    "regime": "plunging"
+   }
+  },
+  {
+   "name": "vandermeer surging",
+   "call": {
+    "fn": "rockArmourVanDerMeer",
+    "conditions": [
+     2.0,
+     16.0,
+     20.0,
+     21600.0
+    ],
+    "args": [
+     4.0
+    ]
+   },
+   "expect": {
+    "Dn50": 0.6345216244575862,
+    "M50": 676.994524541563,
+    "xi": 3.2128975534762763,
+    "xi_cr": 2.563829925428821,
+    "regime": "surging"
+   }
+  },
+  {
+   "name": "overtopping sloped Rc=2.0 cot=2.0",
+   "call": {
+    "fn": "overtoppingSloped",
+    "conditions": [
+     3.0,
+     9.0,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     2.0,
+     2.0,
+     0.4
+    ]
+   },
+   "expect": {
+    "q": 54.51488203659799,
+    "governing": "non-breaking"
+   }
+  },
+  {
+   "name": "overtopping sloped Rc=6.0 cot=2.0",
+   "call": {
+    "fn": "overtoppingSloped",
+    "conditions": [
+     3.0,
+     9.0,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     6.0,
+     2.0,
+     0.4
+    ]
+   },
+   "expect": {
+    "q": 0.0016000866952857373,
+    "governing": "non-breaking"
+   }
+  },
+  {
+   "name": "overtopping sloped Rc=3.0 cot=4.0",
+   "call": {
+    "fn": "overtoppingSloped",
+    "conditions": [
+     3.0,
+     9.0,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     3.0,
+     4.0,
+     0.4
+    ]
+   },
+   "expect": {
+    "q": 0.8098842322267087,
+    "governing": "breaking"
+   }
+  },
+  {
+   "name": "overtopping vertical Rc=2.0",
+   "call": {
+    "fn": "overtoppingVertical",
+    "conditions": [
+     3.0,
+     9.0,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     2.0
+    ]
+   },
+   "expect": {
+    "q": 127.38629519348125,
+    "h_star": 0.43055013148076227,
+    "impulsive": false
+   }
+  },
+  {
+   "name": "overtopping vertical Rc=5.0",
+   "call": {
+    "fn": "overtoppingVertical",
+    "conditions": [
+     3.0,
+     9.0,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     5.0
+    ]
+   },
+   "expect": {
+    "q": 2.0971680427616572,
+    "h_star": 0.43055013148076227,
+    "impulsive": false
+   }
+  },
+  {
+   "name": "design_rubble_mound cot=1.5",
+   "call": {
+    "fn": "designRubbleMound",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5
+     }
+    ]
+   },
+   "expect": {
+    "Dn50": 1.8378889650948682,
+    "M50": 16451.43116207899,
+    "crest_freeboard": 5.692427154541015,
+    "q_mean": 0.33331818361848004,
+    "regime": "plunging",
+    "layer_thickness": 3.6757779301897364
+   }
+  },
+  {
+   "name": "design_rubble_mound cot=2.0",
+   "call": {
+    "fn": "designRubbleMound",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0
+     }
+    ]
+   },
+   "expect": {
+    "Dn50": 1.5916585331072473,
+    "M50": 10685.517986228515,
+    "crest_freeboard": 5.692427154541015,
+    "q_mean": 0.33331818361848004,
+    "regime": "plunging",
+    "layer_thickness": 3.1833170662144945
+   }
+  },
+  {
+   "name": "design_rubble_mound cot=3.0",
+   "call": {
+    "fn": "designRubbleMound",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 3.0
+     }
+    ]
+   },
+   "expect": {
+    "Dn50": 1.2995837502865073,
+    "M50": 5816.459267464869,
+    "crest_freeboard": 5.692427154541015,
+    "q_mean": 0.33331818361848004,
+    "regime": "plunging",
+    "layer_thickness": 2.5991675005730146
+   }
+  },
+  {
+   "name": "goda deep",
+   "call": {
+    "fn": "godaPressures",
+    "args": [
+     {
+      "Hm0": 3.0,
+      "T": 10.0,
+      "depth": 12.0,
+      "wall_toe_depth": 12.0,
+      "crest_freeboard": 6.0,
+      "breaker_index": 0.0
+     }
+    ]
+   },
+   "expect": {
+    "p1": 46.05651359644027,
+    "p3": 35.43688649108543,
+    "pu": 35.32408498590311,
+    "F": 662.9516741117062,
+    "arm": 8.324202208360626,
+    "Hmax": 5.4,
+    "alpha1": 0.8455120284767449,
+    "alpha3": 0.7694218194975221
+   }
+  },
+  {
+   "name": "goda depth limited",
+   "call": {
+    "fn": "godaPressures",
+    "args": [
+     {
+      "Hm0": 4.0,
+      "T": 10.0,
+      "depth": 4.0,
+      "wall_toe_depth": 4.0,
+      "crest_freeboard": 4.0,
+      "breaker_index": 0.78
+     }
+    ]
+   },
+   "expect": {
+    "p1": 32.29904101892641,
+    "p3": 29.735628894916207,
+    "pu": 28.89886125310186,
+    "F": 198.05346797360212,
+    "arm": 3.66281690027635,
+    "Hmax": 3.12,
+    "alpha1": 1.0005660505400191,
+    "alpha3": 0.9206350392103559
+   }
+  },
+  {
+   "name": "goda oblique",
+   "call": {
+    "fn": "godaPressures",
+    "args": [
+     {
+      "Hm0": 3.0,
+      "T": 10.0,
+      "depth": 10.0,
+      "wall_toe_depth": 10.0,
+      "crest_freeboard": 5.0,
+      "beta_degrees": 40.0,
+      "breaker_index": 0.0
+     }
+    ]
+   },
+   "expect": {
+    "p1": 42.283899471480304,
+    "p3": 34.089270996741206,
+    "pu": 33.98427908321007,
+    "F": 519.3880799696605,
+    "arm": 6.972916272469235,
+    "Hmax": 5.4,
+    "alpha1": 0.8791786109409698,
+    "alpha3": 0.8061997928959647
+   }
+  },
+  {
+   "name": "scour wall Hm0=2.0 h=4.0",
+   "call": {
+    "fn": "scourDepthVerticalWall",
+    "args": [
+     2.0,
+     9.0,
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 2.169331603547331
+   }
+  },
+  {
+   "name": "scour wall Hm0=3.0 h=15.0",
+   "call": {
+    "fn": "scourDepthVerticalWall",
+    "args": [
+     3.0,
+     12.0,
+     15.0
+    ]
+   },
+   "expect": {
+    "value": 1.7569444887988914
+   }
+  },
+  {
+   "name": "toe stone",
+   "call": {
+    "fn": "toeStoneSize",
+    "args": [
+     3.0,
+     6.0,
+     10.0
+    ]
+   },
+   "expect": {
+    "Dn50": 0.5897606031559482,
+    "stability_number": 3.20934370550821,
+    "within_range": true
+   }
+  },
+  {
+   "name": "bearing central",
+   "call": {
+    "fn": "bearingPressures",
+    "args": [
+     600.0,
+     6.0,
+     1800.0
+    ]
+   },
+   "expect": {
+    "p_max": 100.0,
+    "p_min": 100.0,
+    "e": 0.0,
+    "middle_third": true
+   }
+  },
+  {
+   "name": "bearing middle third edge",
+   "call": {
+    "fn": "bearingPressures",
+    "args": [
+     600.0,
+     6.0,
+     1200.0
+    ]
+   },
+   "expect": {
+    "p_max": 200.0,
+    "p_min": 0.0,
+    "e": 1.0,
+    "middle_third": true
+   }
+  },
+  {
+   "name": "bearing outside",
+   "call": {
+    "fn": "bearingPressures",
+    "args": [
+     600.0,
+     6.0,
+     600.0
+    ]
+   },
+   "expect": {
+    "p_max": 400.0,
+    "p_min": 0.0,
+    "e": 2.0,
+    "middle_third": false
+   }
+  },
+  {
+   "name": "design_seawall promenade",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     2.8,
+     9.5,
+     8.5,
+     21600.0
+    ],
+    "args": [
+     2.9,
+     -5.6,
+     {
+      "tolerable_use": "trained_staff"
+     }
+    ]
+   },
+   "expect": {
+    "crest_level": 8.59077941131592,
+    "base_width": 15.050848798678029,
+    "founding_level": -7.1109181860401875,
+    "sliding_FoS": "inf",
+    "overturning_FoS": "inf",
+    "wave_force": 516.778042002266,
+    "toe_Dn50": 0.2729285787030593,
+    "impulsive": false,
+    "concrete": 32.56271615576974
+   }
+  },
+  {
+   "name": "design_seawall impulsive",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     2.2,
+     9.0,
+     3.6,
+     21600.0
+    ],
+    "args": [
+     2.9,
+     -0.7,
+     {
+      "tolerable_use": "pedestrians_aware"
+     }
+    ]
+   },
+   "expect": {
+    "crest_level": 8.222356231689453,
+    "base_width": 10.777876343006454,
+    "founding_level": -2.9333964543234927,
+    "sliding_FoS": "inf",
+    "overturning_FoS": "inf",
+    "wave_force": 132.05627805050943,
+    "toe_Dn50": 0.25126112955341284,
+    "impulsive": true,
+    "concrete": 22.889204297620694
+   }
+  },
+  {
+   "name": "design_seawall strict",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     2.8,
+     9.5,
+     8.5,
+     21600.0
+    ],
+    "args": [
+     2.9,
+     -5.6,
+     {
+      "tolerable_use": "pedestrians_unaware"
+     }
+    ]
+   },
+   "expect": {
+    "crest_level": 10.510827461242677,
+    "base_width": 16.710872823641417,
+    "founding_level": -7.1109181860401875,
+    "sliding_FoS": "inf",
+    "overturning_FoS": "inf",
+    "wave_force": 527.3730036061462,
+    "toe_Dn50": 0.2729285787030593,
+    "impulsive": false,
+    "concrete": 36.47479303565257
+   }
+  },
+  {
+   "name": "squat icorels 6.0 kn",
+   "call": {
+    "fn": "squatIcorels",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     6.0,
+     17.5
+    ]
+   },
+   "expect": {
+    "squat": 0.20192715862884694,
+    "froude": 0.23557859577231338,
+    "beyond_range": false
+   }
+  },
+  {
+   "name": "squat icorels 8.0 kn",
+   "call": {
+    "fn": "squatIcorels",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     8.0,
+     17.5
+    ]
+   },
+   "expect": {
+    "squat": 0.3674768048996395,
+    "froude": 0.3141047943630845,
+    "beyond_range": false
+   }
+  },
+  {
+   "name": "squat icorels 11.0 kn",
+   "call": {
+    "fn": "squatIcorels",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     11.0,
+     17.5
+    ]
+   },
+   "expect": {
+    "squat": 0.7313227944404227,
+    "froude": 0.43189409224924125,
+    "beyond_range": false
+   }
+  },
+  {
+   "name": "squat barrass",
+   "call": {
+    "fn": "squatBarrass",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     9.0,
+     17.5
+    ]
+   },
+   "expect": {
+    "squat": 0.5508000000000001
+   }
+  },
+  {
+   "name": "channel_width two_way=False",
+   "call": {
+    "fn": "channelWidth",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     {
+      "two_way": false,
+      "conditions": {
+       "crosswind": "moderate",
+       "crosscurrent": "low",
+       "waves": "moderate",
+       "depth_of_waterway": "shallow"
+      }
+     }
+    ]
+   },
+   "expect": {
+    "width": 183.16000000000003,
+    "lanes": 1,
+    "assumed": 5
+   }
+  },
+  {
+   "name": "channel_width two_way=True",
+   "call": {
+    "fn": "channelWidth",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     {
+      "two_way": true,
+      "conditions": {
+       "crosswind": "moderate",
+       "crosscurrent": "low",
+       "waves": "moderate",
+       "depth_of_waterway": "shallow"
+      }
+     }
+    ]
+   },
+   "expect": {
+    "width": 395.24,
+    "lanes": 2,
+    "assumed": 5
+   }
+  },
+  {
+   "name": "underkeel clearance",
+   "call": {
+    "fn": "underkeelClearance",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     0.4,
+     0.9,
+     {}
+    ]
+   },
+   "expect": {
+    "gross": 2.6,
+    "required_depth": 17.1
+   }
+  },
+  {
+   "name": "design_channel container",
+   "call": {
+    "fn": "designChannel",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     8.0,
+     1.2,
+     {
+      "Hs": 1.8,
+      "Tp": 9.0,
+      "net_clearance": 0.8,
+      "existing_bed": -11.5,
+      "conditions": {
+       "crosswind": "moderate",
+       "crosscurrent": "low",
+       "waves": "moderate",
+       "depth_of_waterway": "shallow"
+      },
+      "two_way": true
+     }
+    ]
+   },
+   "expect": {
+    "dredge_level": -16.366019843469044,
+    "required_depth": 17.566019843469043,
+    "width": 395.24,
+    "squat": 0.366019843469044,
+    "volume_per_km": 1996167.9873993022
+   }
+  },
+  {
+   "name": "design_channel calm",
+   "call": {
+    "fn": "designChannel",
+    "vessel": [
+     "Test",
+     336.0,
+     48.2,
+     14.5,
+     0.68
+    ],
+    "args": [
+     6.0,
+     0.5,
+     {
+      "Hs": 0.4,
+      "conditions": {
+       "crosswind": "moderate",
+       "crosscurrent": "low",
+       "waves": "moderate",
+       "depth_of_waterway": "shallow"
+      },
+      "two_way": true
+     }
+    ]
+   },
+   "expect": {
+    "dredge_level": -16.014355163787513,
+    "required_depth": 16.514355163787513,
+    "width": 395.24,
+    "squat": 0.214355163787512
+   }
+  },
+  {
+   "name": "KC D=0.8",
+   "call": {
+    "fn": "keuleganCarpenter",
+    "args": [
+     12.0,
+     13.0,
+     30.0,
+     0.8
+    ]
+   },
+   "expect": {
+    "value": 63.31928502877864
+   }
+  },
+  {
+   "name": "coefficients D=0.8",
+   "call": {
+    "fn": "dragInertiaCoefficients",
+    "args": [
+     63.31928502877864
+    ]
+   },
+   "expect": {
+    "Cd": 1.05,
+    "Cm": 1.5,
+    "regime": "drag dominated"
+   }
+  },
+  {
+   "name": "KC D=4.0",
+   "call": {
+    "fn": "keuleganCarpenter",
+    "args": [
+     12.0,
+     13.0,
+     30.0,
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 12.663857005755728
+   }
+  },
+  {
+   "name": "coefficients D=4.0",
+   "call": {
+    "fn": "dragInertiaCoefficients",
+    "args": [
+     12.663857005755728
+    ]
+   },
+   "expect": {
+    "Cd": 1.05,
+    "Cm": 1.613445719769771,
+    "regime": "mixed"
+   }
+  },
+  {
+   "name": "KC D=8.0",
+   "call": {
+    "fn": "keuleganCarpenter",
+    "args": [
+     12.0,
+     13.0,
+     30.0,
+     8.0
+    ]
+   },
+   "expect": {
+    "value": 6.331928502877864
+   }
+  },
+  {
+   "name": "coefficients D=8.0",
+   "call": {
+    "fn": "dragInertiaCoefficients",
+    "args": [
+     6.331928502877864
+    ]
+   },
+   "expect": {
+    "Cd": 1.05,
+    "Cm": 1.8667228598848855,
+    "regime": "mixed"
+   }
+  },
+  {
+   "name": "morison phase=0.000",
+   "call": {
+    "fn": "morisonPileLoad",
+    "args": [
+     8.0,
+     12.0,
+     13.0,
+     30.0,
+     {
+      "phase": 0.0,
+      "points": 400
+     }
+    ]
+   },
+   "expect": {
+    "force": 1437105.3266600978,
+    "moment": 29557040.481861226,
+    "arm": 20.567066264066543,
+    "inertia_fraction": 0.0
+   }
+  },
+  {
+   "name": "morison phase=0.785",
+   "call": {
+    "fn": "morisonPileLoad",
+    "args": [
+     8.0,
+     12.0,
+     13.0,
+     30.0,
+     {
+      "phase": 0.7853981633974483,
+      "points": 400
+     }
+    ]
+   },
+   "expect": {
+    "force": 4083545.6607287573,
+    "moment": 75672229.76041755,
+    "arm": 18.53101104957718,
+    "inertia_fraction": 0.8326434316635293
+   }
+  },
+  {
+   "name": "morison phase=1.571",
+   "call": {
+    "fn": "morisonPileLoad",
+    "args": [
+     8.0,
+     12.0,
+     13.0,
+     30.0,
+     {
+      "phase": 1.5707963267948966,
+      "points": 400
+     }
+    ]
+   },
+   "expect": {
+    "force": 4213071.24151266,
+    "moment": 67639262.17714559,
+    "arm": 16.05462103528551,
+    "inertia_fraction": 1.0
+   }
+  },
+  {
+   "name": "design_monopile D=0.8",
+   "call": {
+    "fn": "designMonopile",
+    "args": [
+     0.8,
+     12.0,
+     13.0,
+     30.0,
+     {
+      "phases": 73
+     }
+    ]
+   },
+   "expect": {
+    "max_moment": 2992345.96269159,
+    "max_force": 145919.3250048674,
+    "phase_of_max_moment": 0.08726646259971647,
+    "crest_underestimate": 0.012245213274907464,
+    "scour": 0.853692703666426
+   }
+  },
+  {
+   "name": "design_monopile D=8.0",
+   "call": {
+    "fn": "designMonopile",
+    "args": [
+     8.0,
+     12.0,
+     13.0,
+     30.0,
+     {
+      "phases": 73
+     }
+    ]
+   },
+   "expect": {
+    "max_moment": 77165704.82301125,
+    "max_force": 4383580.462350862,
+    "phase_of_max_moment": 0.9599310885968813,
+    "crest_underestimate": 0.6169666233250403,
+    "scour": 0.10304777399064617
+   }
+  },
+  {
+   "name": "pile scour KC=4.0",
+   "call": {
+    "fn": "scourDepthPile",
+    "args": [
+     5.0,
+     4.0
+    ]
+   },
+   "expect": {
+    "depth": 0.0,
+    "ratio": 0.0
+   }
+  },
+  {
+   "name": "pile scour KC=12.0",
+   "call": {
+    "fn": "scourDepthPile",
+    "args": [
+     5.0,
+     12.0
+    ]
+   },
+   "expect": {
+    "depth": 1.070743625826732,
+    "ratio": 0.21414872516534642
+   }
+  },
+  {
+   "name": "pile scour KC=60.0",
+   "call": {
+    "fn": "scourDepthPile",
+    "args": [
+     5.0,
+     60.0
+    ]
+   },
+   "expect": {
+    "depth": 5.213658455956505,
+    "ratio": 1.042731691191301
+   }
+  },
+  {
+   "name": "l_moments",
+   "call": {
+    "fn": "lMoments",
+    "args": [
+     [
+      2.61,
+      3.04,
+      2.55,
+      4.12,
+      3.38,
+      2.9,
+      5.01,
+      3.71,
+      2.68,
+      3.15,
+      4.44,
+      2.77,
+      3.92,
+      3.29,
+      2.83,
+      6.02,
+      3.55,
+      2.71,
+      4.8,
+      3.07
+     ],
+     4
+    ]
+   },
+   "expect": {
+    "l1": 3.5275,
+    "l2": 0.5130789473684212,
+    "l3": 0.16178070175438464,
+    "l4": 0.06384262125903817
+   }
+  },
+  {
+   "name": "fit_gpd",
+   "call": {
+    "fn": "fitGpd",
+    "args": [
+     [
+      0.11,
+      0.54,
+      0.05,
+      1.62,
+      0.88,
+      0.4,
+      2.51,
+      1.21,
+      0.18,
+      0.65,
+      1.94,
+      0.27,
+      1.42,
+      0.79,
+      0.33,
+      3.52,
+      1.05,
+      0.21,
+      2.3,
+      0.57
+     ]
+    ]
+   },
+   "expect": {
+    "scale": 1.0301877211878765,
+    "shape": -0.002615787044161877
+   }
+  },
+  {
+   "name": "gpd return 10.0",
+   "call": {
+    "fn": "gpdReturnValue",
+    "args": [
+     2.5,
+     1.0301877211878765,
+     -0.002615787044161877,
+     6.0,
+     10.0
+    ]
+   },
+   "expect": {
+    "value": 6.695436966695228
+   }
+  },
+  {
+   "name": "gev return 10.0",
+   "call": {
+    "fn": "gevReturnValue",
+    "args": [
+     3.4,
+     0.58,
+     -0.06,
+     10.0
+    ]
+   },
+   "expect": {
+    "value": 4.620932330000652
+   }
+  },
+  {
+   "name": "gpd return 100.0",
+   "call": {
+    "fn": "gpdReturnValue",
+    "args": [
+     2.5,
+     1.0301877211878765,
+     -0.002615787044161877,
+     6.0,
+     100.0
+    ]
+   },
+   "expect": {
+    "value": 9.035209054926352
+   }
+  },
+  {
+   "name": "gev return 100.0",
+   "call": {
+    "fn": "gevReturnValue",
+    "args": [
+     3.4,
+     0.58,
+     -0.06,
+     100.0
+    ]
+   },
+   "expect": {
+    "value": 5.73154067876777
+   }
+  },
+  {
+   "name": "gpd return, zero shape",
+   "call": {
+    "fn": "gpdReturnValue",
+    "args": [
+     3.0,
+     1.5,
+     0.0,
+     5.0,
+     100.0
+    ]
+   },
+   "expect": {
+    "value": 12.321912147633288
+   }
+  },
+  {
+   "name": "grain size silt",
+   "call": {
+    "fn": "dimensionlessGrainSize",
+    "args": [
+     "silt"
+    ]
+   },
+   "expect": {
+    "value": 0.6757835215772601
+   }
+  },
+  {
+   "name": "critical shields silt",
+   "call": {
+    "fn": "criticalShields",
+    "args": [
+     "silt"
+    ]
+   },
+   "expect": {
+    "value": 0.16639816332375384
+   }
+  },
+  {
+   "name": "fall velocity silt",
+   "call": {
+    "fn": "fallVelocity",
+    "args": [
+     "silt"
+    ]
+   },
+   "expect": {
+    "value": 0.0006193086027237047
+   }
+  },
+  {
+   "name": "grain size fine_sand",
+   "call": {
+    "fn": "dimensionlessGrainSize",
+    "args": [
+     "fine_sand"
+    ]
+   },
+   "expect": {
+    "value": 4.279962303322647
+   }
+  },
+  {
+   "name": "critical shields fine_sand",
+   "call": {
+    "fn": "criticalShields",
+    "args": [
+     "fine_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.053404234731483625
+   }
+  },
+  {
+   "name": "fall velocity fine_sand",
+   "call": {
+    "fn": "fallVelocity",
+    "args": [
+     "fine_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.021348046803006213
+   }
+  },
+  {
+   "name": "grain size medium_sand",
+   "call": {
+    "fn": "dimensionlessGrainSize",
+    "args": [
+     "medium_sand"
+    ]
+   },
+   "expect": {
+    "value": 8.559924606645295
+   }
+  },
+  {
+   "name": "critical shields medium_sand",
+   "call": {
+    "fn": "criticalShields",
+    "args": [
+     "medium_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.03526884760150689
+   }
+  },
+  {
+   "name": "fall velocity medium_sand",
+   "call": {
+    "fn": "fallVelocity",
+    "args": [
+     "medium_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.05418721278542829
+   }
+  },
+  {
+   "name": "grain size coarse_sand",
+   "call": {
+    "fn": "dimensionlessGrainSize",
+    "args": [
+     "coarse_sand"
+    ]
+   },
+   "expect": {
+    "value": 16.894588039431504
+   }
+  },
+  {
+   "name": "critical shields coarse_sand",
+   "call": {
+    "fn": "criticalShields",
+    "args": [
+     "coarse_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.029872061277531982
+   }
+  },
+  {
+   "name": "fall velocity coarse_sand",
+   "call": {
+    "fn": "fallVelocity",
+    "args": [
+     "coarse_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.09760130351424572
+   }
+  },
+  {
+   "name": "grain size fine_gravel",
+   "call": {
+    "fn": "dimensionlessGrainSize",
+    "args": [
+     "fine_gravel"
+    ]
+   },
+   "expect": {
+    "value": 135.15670431545203
+   }
+  },
+  {
+   "name": "critical shields fine_gravel",
+   "call": {
+    "fn": "criticalShields",
+    "args": [
+     "fine_gravel"
+    ]
+   },
+   "expect": {
+    "value": 0.053153633157520246
+   }
+  },
+  {
+   "name": "fall velocity fine_gravel",
+   "call": {
+    "fn": "fallVelocity",
+    "args": [
+     "fine_gravel"
+    ]
+   },
+   "expect": {
+    "value": 0.3171349484063353
+   }
+  },
+  {
+   "name": "K active phi=28.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     28.0,
+     "active"
+    ]
+   },
+   "expect": {
+    "value": 0.3610334834981831
+   }
+  },
+  {
+   "name": "K active phi=33.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     33.0,
+     "active"
+    ]
+   },
+   "expect": {
+    "value": 0.2948008917698645
+   }
+  },
+  {
+   "name": "K active phi=40.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     40.0,
+     "active"
+    ]
+   },
+   "expect": {
+    "value": 0.21744283205399909
+   }
+  },
+  {
+   "name": "K at_rest phi=28.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     28.0,
+     "at_rest"
+    ]
+   },
+   "expect": {
+    "value": 0.5305284372141092
+   }
+  },
+  {
+   "name": "K at_rest phi=33.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     33.0,
+     "at_rest"
+    ]
+   },
+   "expect": {
+    "value": 0.4553609649849729
+   }
+  },
+  {
+   "name": "K at_rest phi=40.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     40.0,
+     "at_rest"
+    ]
+   },
+   "expect": {
+    "value": 0.35721239031346075
+   }
+  },
+  {
+   "name": "K passive phi=28.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     28.0,
+     "passive"
+    ]
+   },
+   "expect": {
+    "value": 2.7698261953729078
+   }
+  },
+  {
+   "name": "K passive phi=33.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     33.0,
+     "passive"
+    ]
+   },
+   "expect": {
+    "value": 3.392119996640469
+   }
+  },
+  {
+   "name": "K passive phi=40.0",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     40.0,
+     "passive"
+    ]
+   },
+   "expect": {
+    "value": 4.598909932113389
+   }
+  },
+  {
+   "name": "K active with wall friction",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     33.0,
+     "active",
+     22.0
+    ]
+   },
+   "expect": {
+    "value": 0.264459211951707
+   }
+  },
+  {
+   "name": "K active with backslope",
+   "call": {
+    "fn": "earthPressureCoefficient",
+    "args": [
+     33.0,
+     "active",
+     0.0,
+     15.0
+    ]
+   },
+   "expect": {
+    "value": 0.32531785115929857
+   }
+  },
+  {
+   "name": "earth force saturated",
+   "call": {
+    "fn": "lateralEarthForce",
+    "args": [
+     "medium_sand",
+     10.0,
+     0.0,
+     0.0,
+     "active"
+    ]
+   },
+   "expect": {
+    "soil": 146.732685014962,
+    "water": 502.76249999999993,
+    "total": 649.4951850149619,
+    "arm": 3.3333125,
+    "K": 0.2948008917698645,
+    "water_fraction": 0.7740819510285026
+   }
+  },
+  {
+   "name": "earth force drained",
+   "call": {
+    "fn": "lateralEarthForce",
+    "args": [
+     "medium_sand",
+     10.0,
+     10.0,
+     0.0,
+     "active"
+    ]
+   },
+   "expect": {
+    "soil": 235.6615850240299,
+    "water": 0.0,
+    "total": 235.6615850240299,
+    "arm": 3.3333124999999995,
+    "K": 0.2948008917698645,
+    "water_fraction": 0.0
+   }
+  },
+  {
+   "name": "earth force surcharged",
+   "call": {
+    "fn": "lateralEarthForce",
+    "args": [
+     "coarse_sand",
+     7.0,
+     2.0,
+     25.0,
+     "at_rest"
+    ]
+   },
+   "expect": {
+    "soil": 213.99240284429987,
+    "water": 125.6909392265625,
+    "total": 339.6833420708624,
+    "arm": 2.408160520129545,
+    "K": 0.42642356364895395,
+    "water_fraction": 0.3700238535698984
+   }
+  },
+  {
+   "name": "earth force cohesive",
+   "call": {
+    "fn": "lateralEarthForce",
+    "args": [
+     "stiff_clay",
+     6.0,
+     6.0,
+     0.0,
+     "active"
+    ]
+   },
+   "expect": {
+    "soil": 0.0,
+    "water": 0.0,
+    "total": 0.0,
+    "arm": 0.0,
+    "K": 0.390461706955583,
+    "water_fraction": 0.0
+   }
+  },
+  {
+   "name": "wave shields fine_sand",
+   "call": {
+    "fn": "waveShields",
+    "args": [
+     "fine_sand",
+     1.5,
+     8.0,
+     10.0
+    ]
+   },
+   "expect": {
+    "shields": 0.49299962587173796,
+    "critical_shields": 0.053404234731483625,
+    "mobility": 9.231470656784785,
+    "mobile": true
+   }
+  },
+  {
+   "name": "side slope fine_sand",
+   "call": {
+    "fn": "dredgedSideSlope",
+    "args": [
+     "fine_sand"
+    ]
+   },
+   "expect": {
+    "cot_beta": 3.328558964701036
+   }
+  },
+  {
+   "name": "wave shields coarse_gravel",
+   "call": {
+    "fn": "waveShields",
+    "args": [
+     "coarse_gravel",
+     1.5,
+     8.0,
+     10.0
+    ]
+   },
+   "expect": {
+    "shields": 0.025208213944853963,
+    "critical_shields": 0.05536941109679606,
+    "mobility": 0.4552732898095178,
+    "mobile": false
+   }
+  },
+  {
+   "name": "side slope coarse_gravel",
+   "call": {
+    "fn": "dredgedSideSlope",
+    "args": [
+     "coarse_gravel"
+    ]
+   },
+   "expect": {
+    "cot_beta": 2.38350718518842
+   }
+  },
+  {
+   "name": "reflection cot=2.0 xi=3.0",
+   "call": {
+    "fn": "reflectionCoefficient",
+    "args": [
+     2.0,
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.34615384615384615
+   }
+  },
+  {
+   "name": "reflection cot=3.5 xi=1.8",
+   "call": {
+    "fn": "reflectionCoefficient",
+    "args": [
+     3.5,
+     1.8
+    ]
+   },
+   "expect": {
+    "value": 0.1975609756097561
+   }
+  },
+  {
+   "name": "toe scour fine_sand Kr=1.0",
+   "call": {
+    "fn": "toeScour",
+    "args": [
+     "fine_sand",
+     3.0,
+     12.0,
+     15.0,
+     1.0
+    ]
+   },
+   "expect": {
+    "depth": 1.7569444887988914,
+    "unlimited_depth": 1.7569444887988914,
+    "applies": true
+   }
+  },
+  {
+   "name": "toe scour medium_sand Kr=0.35",
+   "call": {
+    "fn": "toeScour",
+    "args": [
+     "medium_sand",
+     3.0,
+     12.0,
+     15.0,
+     0.35
+    ]
+   },
+   "expect": {
+    "depth": 0.6149305710796118,
+    "unlimited_depth": 0.6149305710796118,
+    "applies": true
+   }
+  },
+  {
+   "name": "toe scour coarse_gravel Kr=0.5",
+   "call": {
+    "fn": "toeScour",
+    "args": [
+     "coarse_gravel",
+     3.0,
+     12.0,
+     15.0,
+     0.5
+    ]
+   },
+   "expect": {
+    "depth": 0.43923612219972286,
+    "unlimited_depth": 0.8784722443994457,
+    "applies": false
+   }
+  },
+  {
+   "name": "toe scour soft_clay Kr=0.4",
+   "call": {
+    "fn": "toeScour",
+    "args": [
+     "soft_clay",
+     3.0,
+     12.0,
+     15.0,
+     0.4
+    ]
+   },
+   "expect": {
+    "depth": 0.0,
+    "unlimited_depth": 0.7027777955195567,
+    "applies": false
+   }
+  },
+  {
+   "name": "mound foundation cot=1.5 fine_sand",
+   "call": {
+    "fn": "moundFoundation",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     10.0,
+     {
+      "bed": "fine_sand"
+     }
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "toe_Dn50": 0.9974668361958925,
+    "toe_M50": 2629.9123191862377,
+    "toe_width": 2.9924005085876777,
+    "toe_thickness": 1.994933672391785,
+    "bedding_thickness": 1.4962002542938388,
+    "bedding_extension": 3.223465731085172
+   }
+  },
+  {
+   "name": "crown wall cot=1.5",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     0.0
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "base_level": 3.319158988395227,
+    "deck_level": 7.61711329650879,
+    "parapet_top": 9.24311329650879,
+    "total_width": 9.5,
+    "concrete_m3_per_m": 44.082565927078846
+   }
+  },
+  {
+   "name": "mound foundation cot=2.0 medium_sand",
+   "call": {
+    "fn": "moundFoundation",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     10.0,
+     {
+      "bed": "medium_sand"
+     }
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "toe_Dn50": 0.8638316195781344,
+    "toe_M50": 1708.1781586056984,
+    "toe_width": 2.71,
+    "toe_thickness": 1.7276632391562687,
+    "bedding_thickness": 1.2957474293672016,
+    "bedding_extension": 3.0
+   }
+  },
+  {
+   "name": "crown wall cot=2.0",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     0.0
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "base_level": 4.2958783798945195,
+    "deck_level": 8.018015995025635,
+    "parapet_top": 9.644015995025635,
+    "total_width": 9.5,
+    "concrete_m3_per_m": 38.6123073437456
+   }
+  },
+  {
+   "name": "mound foundation cot=3.0 coarse_gravel",
+   "call": {
+    "fn": "moundFoundation",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 3.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     10.0,
+     {
+      "bed": "coarse_gravel"
+     }
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "toe_Dn50": 0.7053155638828069,
+    "toe_M50": 929.8144174113148,
+    "toe_width": 2.71,
+    "toe_thickness": 1.4106311277656138,
+    "bedding_thickness": 1.0579733458242104,
+    "bedding_extension": 3.0
+   }
+  },
+  {
+   "name": "crown wall cot=3.0",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 3.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     0.0
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "base_level": 3.3971790428852864,
+    "deck_level": 6.4362916793823235,
+    "parapet_top": 8.062291679382323,
+    "total_width": 9.5,
+    "concrete_m3_per_m": 32.12357004672185
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.95
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.8
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.7250000000000001
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.65
+   }
+  },
+  {
+   "name": "roundhead KD ratio rock_two_layer_permeable cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "rock_two_layer_permeable",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.65
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.85
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.75
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.675
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.6
+   }
+  },
+  {
+   "name": "roundhead KD ratio cubes_two_layer_random cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "cubes_two_layer_random",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.6
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.72
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.64
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.5700000000000001
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.5
+   }
+  },
+  {
+   "name": "roundhead KD ratio tetrapod cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "tetrapod",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.5
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=1.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     1.5
+    ]
+   },
+   "expect": {
+    "value": 0.65
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=2.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     2.0
+    ]
+   },
+   "expect": {
+    "value": 0.58
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=2.5",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     2.5
+    ]
+   },
+   "expect": {
+    "value": 0.515
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=3.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     3.0
+    ]
+   },
+   "expect": {
+    "value": 0.45
+   }
+  },
+  {
+   "name": "roundhead KD ratio dolos cot=4.0",
+   "call": {
+    "fn": "roundheadKdRatio",
+    "args": [
+     "dolos",
+     4.0
+    ]
+   },
+   "expect": {
+    "value": 0.45
+   }
+  },
+  {
+   "name": "roundhead tetrapod cot=1.5 r=None",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     null
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 2.3976601931656933,
+    "M50": 36526.559988697736,
+    "kd_ratio": 0.72,
+    "crest_freeboard": 7.61711329650879,
+    "layer_thickness": 4.795320386331387,
+    "section": "head"
+   }
+  },
+  {
+   "name": "roundhead rock_two_layer_permeable cot=2.0 r=None",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     null
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 2.0047755997777554,
+    "M50": 21352.22698257124,
+    "kd_ratio": 0.8,
+    "crest_freeboard": 8.018015995025635,
+    "layer_thickness": 4.009551199555511,
+    "section": "head"
+   }
+  },
+  {
+   "name": "roundhead tetrapod cot=1.5 r=0.8",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     0.8
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 2.3149154643929606,
+    "M50": 32873.903989827966,
+    "kd_ratio": 0.8,
+    "crest_freeboard": 7.61711329650879,
+    "layer_thickness": 4.629830928785921,
+    "section": "head"
+   }
+  },
+  {
+   "name": "roundhead dolos cot=3.0 r=0.5",
+   "call": {
+    "fn": "roundhead",
+    "conditions": [
+     5.42,
+     9.2,
+     10.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 3.0,
+      "armour": "dolos"
+     },
+     0.5
+    ],
+    "design_first": true
+   },
+   "expect": {
+    "Dn50": 1.9145209918620614,
+    "M50": 18596.288348226295,
+    "kd_ratio": 0.5,
+    "crest_freeboard": 6.918958389282227,
+    "layer_thickness": 3.8290419837241227,
+    "section": "head"
+   }
+  },
+  {
+   "name": "design_seawall backfill saturated sand",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     2.8,
+     9.5,
+     8.5,
+     21600.0
+    ],
+    "args": [
+     2.9,
+     -5.6,
+     {
+      "tolerable_use": "trained_staff",
+      "backfill": "medium_sand",
+      "water_table": 0.0
+     }
+    ]
+   },
+   "expect": {
+    "base_width": 15.050848798678029,
+    "crest_level": 8.59077941131592,
+    "governing_case": "drawdown",
+    "earth_total": 1643.495239344283,
+    "earth_arm": 5.000345798429584,
+    "drawdown_sliding": 1.2032411401267964,
+    "drawdown_net": 1390.052663094283
+   }
+  },
+  {
+   "name": "design_seawall backfill drained sand",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     2.8,
+     9.5,
+     8.5,
+     21600.0
+    ],
+    "args": [
+     2.9,
+     -5.6,
+     {
+      "tolerable_use": "trained_staff",
+      "backfill": "medium_sand",
+      "water_table": 30.0
+     }
+    ]
+   },
+   "expect": {
+    "base_width": 7.8508487986780535,
+    "crest_level": 8.59077941131592,
+    "governing_case": "drawdown",
+    "earth_total": 853.7211894113502,
+    "earth_arm": 5.092680148458136,
+    "drawdown_sliding": 1.4963290973887213,
+    "drawdown_net": 600.2786131613502
+   }
+  },
+  {
+   "name": "design_seawall backfill gravel",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     2.8,
+     9.5,
+     8.5,
+     21600.0
+    ],
+    "args": [
+     2.9,
+     -5.6,
+     {
+      "tolerable_use": "trained_staff",
+      "backfill": "fine_gravel",
+      "water_table": 0.0
+     }
+    ]
+   },
+   "expect": {
+    "base_width": 14.450848798678031,
+    "crest_level": 8.59077941131592,
+    "governing_case": "drawdown",
+    "earth_total": 1591.1035972566062,
+    "earth_arm": 4.987552338172202,
+    "drawdown_sliding": 1.2021274520312233,
+    "drawdown_net": 1337.6610210066062
+   }
+  }
+ ]
+}

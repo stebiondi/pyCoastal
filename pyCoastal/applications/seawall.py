@@ -36,6 +36,7 @@ import math
 from dataclasses import dataclass, field
 
 from ..tools.wave import dispersion
+from .sediment import Sediment, lateral_earth_force, sediment
 from .structures import (
     DesignConditions,
     TOLERABLE_DISCHARGE,
@@ -59,6 +60,7 @@ __all__ = [
     "overturning_safety",
     "SeawallDesign",
     "design_seawall",
+    "hydrostatic_force",
 ]
 
 
@@ -395,6 +397,18 @@ def bearing_pressures(normal: float, base_width: float,
             "middle_third": False}
 
 
+def hydrostatic_force(depth: float, unit_weight: float = RHO_W * G / 1000.0) -> dict:
+    """Hydrostatic force on a vertical face and its lever arm [kN/m, m].
+
+    F = 0.5 gamma h^2, acting at h/3 above the bottom of the face. Used for
+    the water still standing in front of the wall when the trough passes,
+    which is the only thing resisting the backfill at that instant.
+    """
+    if depth < 0:
+        raise ValueError(f"Depth must be non-negative, got {depth}")
+    return {"force": 0.5 * unit_weight * depth ** 2, "arm": depth / 3.0}
+
+
 # ---------------------------------------------------------------------------
 # The whole section
 # ---------------------------------------------------------------------------
@@ -438,6 +452,15 @@ class SeawallDesign:
     sliding_FoS: float
     overturning_FoS: float
     bearing: dict
+
+    backfill: Sediment
+    retained_height: float
+    water_table: float
+    surcharge: float
+    earth_driving: dict
+    earth_resisting: dict
+    drawdown: dict
+    governing_case: str
 
     q_mean: float
     q_upper: float
@@ -516,8 +539,28 @@ class SeawallDesign:
             f"Wave force          {self.wave_force:.0f} kN/m at "
             f"{self.wave_arm:.2f} m above the base",
             f"Weight, uplift      {self.weight:.0f} kN/m, {self.uplift:.0f} kN/m",
-            f"Sliding FoS         {self.sliding_FoS:.2f}",
-            f"Overturning FoS     {self.overturning_FoS:.2f}",
+            "",
+            f"Backfill            {self.backfill.name}, phi' = "
+            f"{self.backfill.friction_angle:.0f} deg, retained "
+            f"{self.retained_height:.2f} m",
+            f"Water table         {self.water_table:.2f} m below the surface"
+            + (", saturated to the top" if self.water_table <= 0 else ""),
+            f"Earth pressure      {self.earth_driving['total']:.0f} kN/m at "
+            f"{self.earth_driving['arm']:.2f} m "
+            f"(K = {self.earth_driving['K']:.3f}, "
+            f"{self.earth_driving['soil']:.0f} soil + "
+            f"{self.earth_driving['water']:.0f} water)",
+            "",
+            "Load case 1, wave crest pushing landward",
+            f"   sliding          {self.sliding_FoS:.2f}",
+            f"   overturning      {self.overturning_FoS:.2f}",
+            "Load case 2, trough with the backfill pushing seaward",
+            f"   front water      {self.drawdown['front_force']:.0f} kN/m at "
+            f"{self.drawdown['trough_level']:+.2f} m CD",
+            f"   net seaward      {self.drawdown['net_force']:.0f} kN/m",
+            f"   sliding          {self.drawdown['sliding_FoS']:.2f}",
+            f"   overturning      {self.drawdown['overturning_FoS']:.2f}",
+            f"Governing case      {self.governing_case}",
             f"Bearing             p_max = {b['p_max']:.0f} kPa, "
             f"e = {b['e']:+.2f} m"
             + ("" if b["middle_third"] else "  (outside the middle third)"),
@@ -566,6 +609,13 @@ def design_seawall(
     scatter_factor: float = 3.0,
     max_base_width: float = 30.0,
     step: float = 0.1,
+    backfill: "Sediment | str" = "medium_sand",
+    water_table: float = 0.0,
+    surcharge: float = 10.0,
+    earth_pressure_driving: str = "at_rest",
+    earth_pressure_resisting: str = "active",
+    credit_earth_pressure: bool = True,
+    drawdown_level: float | None = None,
 ) -> SeawallDesign:
     """Size an L-shaped gravity seawall against a design condition.
 
@@ -610,6 +660,7 @@ def design_seawall(
         )
     if step <= 0:
         raise ValueError(f"Sizing step must be positive, got {step}")
+    backfill = sediment(backfill) if isinstance(backfill, str) else backfill
 
     warnings: list[str] = []
     depth = still_water_level - seabed_level
@@ -679,6 +730,32 @@ def design_seawall(
     bearing: dict = {}
     iterations = 0
 
+    # The backfill, once. Neither force depends on the base width, because
+    # both act on the virtual vertical plane through the rear of the heel;
+    # the soil sitting on the heel is already counted as weight.
+    retained_height = promenade_level - founding_level
+    earth_driving = lateral_earth_force(
+        backfill, retained_height, water_table, surcharge,
+        kind=earth_pressure_driving)
+    earth_resisting = lateral_earth_force(
+        backfill, retained_height, water_table, surcharge,
+        kind=earth_pressure_resisting)
+    if not credit_earth_pressure:
+        earth_resisting = dict(earth_resisting, soil=0.0, water=0.0,
+                               total=0.0, moment=0.0, arm=0.0)
+
+    # How far the sea drops at the trough. The backfill does not drain in
+    # the few seconds a wave takes, so this is the instant the wall is
+    # pushed seaward by soil and pore water with little water left to
+    # push back.
+    trough = min(drawdown_level if drawdown_level is not None
+                 else still_water_level - 0.5 * conditions.Hm0,
+                 still_water_level)
+    front_depth = max(trough - seabed_level, 0.0)
+    front = hydrostatic_force(front_depth)
+    front_arm = front["arm"] + embedment
+    drawdown: dict = {}
+
     for iterations in range(1, 2001):
         pressures = goda_pressures(
             Hm0=conditions.Hm0,
@@ -705,18 +782,64 @@ def design_seawall(
         ]
         weight = sum(w for w, _ in components)
         restoring = sum(w * (base_width - x) for w, x in components)
+        toe_moment = sum(w * x for w, x in components)
         uplift = pressures["U_per_width"] * base_width
 
-        sliding = sliding_safety(F, weight, uplift, friction)
-        overturning = overturning_safety(F, wave_arm, restoring, uplift,
-                                         base_width)
+        # -- case 1: the crest, pushing landward ---------------------------
+        # The backfill resists, so only the net drives the wall. Active
+        # pressure is credited rather than at-rest, because a wall moving
+        # into its backfill mobilises at least that much and crediting more
+        # would be optimistic.
+        net_wave = F - earth_resisting["total"]
+        if net_wave > 1e-6:
+            sliding = sliding_safety(net_wave, weight, uplift, friction)
+            overturning = (
+                (restoring - uplift * (2.0 / 3.0) * base_width
+                 + earth_resisting["moment"])
+                / (F * wave_arm)
+            )
+        else:
+            # The backfill alone outweighs the wave: this case cannot slide
+            # the wall landward at all.
+            sliding = float("inf")
+            overturning = float("inf")
         bearing = bearing_pressures(
             weight - uplift, base_width,
-            restoring - uplift * (2.0 / 3.0) * base_width - F * wave_arm,
+            restoring - uplift * (2.0 / 3.0) * base_width
+            - F * wave_arm + earth_resisting["moment"],
         )
+
+        # -- case 2: the trough, pushed seaward ----------------------------
+        # The classic seawall failure. The sea drops, the saturated backfill
+        # does not, and the wall is pushed out with only the remaining
+        # water in front to hold it.
+        net_seaward = earth_driving["total"] - front["force"]
+        if net_seaward > 1e-6:
+            sliding_out = friction * weight / net_seaward
+            driving_moment = earth_driving["moment"]
+            resisting_moment = toe_moment + front["force"] * front_arm
+            overturning_out = (resisting_moment / driving_moment
+                               if driving_moment > 0 else float("inf"))
+        else:
+            sliding_out = float("inf")
+            overturning_out = float("inf")
+        drawdown = {
+            "trough_level": trough,
+            "front_depth": front_depth,
+            "front_force": front["force"],
+            "front_arm": front_arm,
+            "earth_force": earth_driving["total"],
+            "earth_arm": earth_driving["arm"],
+            "net_force": net_seaward,
+            "sliding_FoS": sliding_out,
+            "overturning_FoS": overturning_out,
+        }
+
         passed = (
             sliding >= target_sliding
             and overturning >= target_overturning
+            and sliding_out >= target_sliding
+            and overturning_out >= target_overturning
             and (bearing["middle_third"] or not require_middle_third)
         )
         if passed:
@@ -724,8 +847,9 @@ def design_seawall(
         if base_width >= max_base_width:
             warnings.append(
                 f"Base width reached the {max_base_width:g} m limit with "
-                f"sliding FoS {sliding:.2f}, overturning FoS "
-                f"{overturning:.2f} and the resultant "
+                f"sliding FoS {sliding:.2f} landward and {sliding_out:.2f} "
+                f"seaward, overturning {overturning:.2f} and "
+                f"{overturning_out:.2f}, and the resultant "
                 + ("inside" if bearing["middle_third"] else "outside")
                 + " the middle third. A gravity wall is the wrong form for "
                 "these conditions; consider a piled or anchored wall, or a "
@@ -733,6 +857,36 @@ def design_seawall(
             )
             break
         base_width += step
+
+    # Which case actually sized the wall.
+    wave_margin = min(sliding / target_sliding, overturning / target_overturning)
+    out_margin = min(drawdown["sliding_FoS"] / target_sliding,
+                     drawdown["overturning_FoS"] / target_overturning)
+    governing_case = "wave crest" if wave_margin <= out_margin else "drawdown"
+
+    if earth_driving["water_fraction"] > 0.6:
+        warnings.append(
+            f"Pore water is {100 * earth_driving['water_fraction']:.0f}% of "
+            "the pressure on the back of the wall. Drainage is a structural "
+            "matter here, not a detail: a working drain would cut the total "
+            f"from {earth_driving['total']:.0f} to about "
+            f"{lateral_earth_force(backfill, retained_height, retained_height, surcharge, kind=earth_pressure_driving)['total']:.0f}"
+            " kN/m."
+        )
+    if governing_case == "drawdown":
+        warnings.append(
+            "The drawdown case governs, not the wave. The wall is sized by "
+            "the saturated backfill pushing it seaward at the trough, so the "
+            "backfill grading and the drainage detail matter more than the "
+            "design wave."
+        )
+    if backfill.cohesive:
+        warnings.append(
+            f"{backfill.name} is cohesive. The active pressure here uses the "
+            "drained parameters and cuts off the tension zone; an undrained "
+            "short-term check and a long-term swelling check are separate "
+            "and can both govern."
+        )
 
     return SeawallDesign(
         conditions=conditions,
@@ -760,6 +914,14 @@ def design_seawall(
         sliding_FoS=sliding,
         overturning_FoS=overturning,
         bearing=bearing,
+        backfill=backfill,
+        retained_height=retained_height,
+        water_table=water_table,
+        surcharge=surcharge,
+        earth_driving=earth_driving,
+        earth_resisting=earth_resisting,
+        drawdown=drawdown,
+        governing_case=governing_case,
         q_mean=band["q_mean"],
         q_upper=band["q_upper"],
         governing_limit=tolerable_use,

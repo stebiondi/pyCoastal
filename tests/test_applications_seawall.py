@@ -339,9 +339,85 @@ def test_heel_width_is_the_base_less_the_stem(wall):
 
 def test_summary_mentions_every_check(wall):
     text = wall.summary()
-    for phrase in ("Crest level", "Sliding FoS", "Overturning FoS", "Bearing",
-                   "Toe protection", "Overtopping", "Concrete"):
+    for phrase in ("Crest level", "Backfill", "Earth pressure",
+                   "Load case 1", "Load case 2", "Governing case",
+                   "Bearing", "Toe protection", "Overtopping", "Concrete"):
         assert phrase in text
+
+
+# ---------------------------------------------------------------------------
+# The backfill
+# ---------------------------------------------------------------------------
+
+
+def test_saturated_backfill_needs_a_wider_base(conditions):
+    """A blocked drain is a structural problem, not a maintenance one."""
+    drained = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+                             water_table=30.0)
+    saturated = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+                               water_table=0.0)
+    assert saturated.base_width > 1.5 * drained.base_width
+    assert saturated.earth_driving["total"] > 1.5 * drained.earth_driving["total"]
+
+
+def test_stronger_backfill_needs_a_narrower_base(conditions):
+    weak = design_seawall(conditions, 2.9, -5.6, backfill="fine_sand")
+    strong = design_seawall(conditions, 2.9, -5.6, backfill="fine_gravel")
+    assert strong.base_width < weak.base_width
+
+
+def test_drawdown_governs_a_saturated_backfill(conditions):
+    wall = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+                          water_table=0.0)
+    assert wall.governing_case == "drawdown"
+    assert any("drawdown case governs" in w for w in wall.warnings)
+
+
+def test_both_load_cases_meet_their_targets(conditions):
+    wall = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+                          target_sliding=1.2, target_overturning=1.5)
+    assert wall.sliding_FoS >= 1.2
+    assert wall.overturning_FoS >= 1.5
+    assert wall.drawdown["sliding_FoS"] >= 1.2
+    assert wall.drawdown["overturning_FoS"] >= 1.5
+
+
+def test_pore_water_dominates_a_saturated_backfill(conditions):
+    wall = design_seawall(conditions, 2.9, -5.6, water_table=0.0)
+    assert wall.earth_driving["water_fraction"] > 0.6
+    assert any("Pore water is" in w for w in wall.warnings)
+
+
+def test_surcharge_pushes_harder(conditions):
+    bare = design_seawall(conditions, 2.9, -5.6, surcharge=0.0)
+    loaded = design_seawall(conditions, 2.9, -5.6, surcharge=50.0)
+    assert loaded.earth_driving["total"] > bare.earth_driving["total"]
+    assert loaded.base_width >= bare.base_width
+
+
+def test_driving_uses_at_rest_and_resisting_uses_active(conditions):
+    """The asymmetry is deliberate: it is conservative in both directions."""
+    wall = design_seawall(conditions, 2.9, -5.6)
+    assert wall.earth_driving["kind"] == "at_rest"
+    assert wall.earth_resisting["kind"] == "active"
+    assert wall.earth_driving["total"] > wall.earth_resisting["total"]
+
+
+def test_earth_pressure_can_be_left_out_of_the_resisting_side(conditions):
+    credited = design_seawall(conditions, 2.9, -5.6, credit_earth_pressure=True)
+    ignored = design_seawall(conditions, 2.9, -5.6, credit_earth_pressure=False)
+    assert ignored.earth_resisting["total"] == 0.0
+    assert credited.earth_resisting["total"] > 0.0
+
+
+def test_cohesive_backfill_is_flagged(conditions):
+    wall = design_seawall(conditions, 2.9, -5.6, backfill="stiff_clay")
+    assert any("cohesive" in w for w in wall.warnings)
+
+
+def test_retained_height_runs_from_the_promenade_to_the_founding_level(wall):
+    assert wall.retained_height == pytest.approx(
+        wall.promenade_level - wall.founding_level)
 
 
 def test_summary_surfaces_warnings():
