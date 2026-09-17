@@ -26,7 +26,9 @@ Sources
 PIANC (2014), Harbour Approach Channels Design Guidelines, report 121.
     The concept design method reproduced here: the width components, the
     underkeel clearance components, and the squat formulations.
+
 ICORELS (1980), as given in PIANC. The squat formula used by default.
+
 Barrass, C. B. (1979), "A unified approach to squat calculations for
     ships". The screening formula.
 

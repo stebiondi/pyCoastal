@@ -28,8 +28,10 @@ Sources
 -------
 Hosking, J. R. M. and Wallis, J. R. (1997), Regional Frequency Analysis:
     An Approach Based on L-Moments. Cambridge University Press.
+
 Coles, S. (2001), An Introduction to Statistical Modeling of Extreme
     Values. Springer. Threshold selection, return level interpretation.
+
 Goda, Y. (2010), Random Seas and Design of Maritime Structures, ch. 11.
     Extreme wave statistics in coastal engineering practice.
 

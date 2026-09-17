@@ -8,7 +8,15 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "pyCoastal"
 author = "Stefano Biondi"
 copyright = f"{datetime.now().year}"
-release = "0.1.0"
+# Single source of truth is pyproject.toml, read through the installed
+# package metadata so the docs cannot drift from the release.
+try:
+    from importlib.metadata import version as _version
+
+    release = _version("pyCoastal")
+except Exception:                      # not installed, e.g. a bare checkout
+    release = "0.0.0"
+
 
 extensions = [
     "sphinx.ext.autodoc",

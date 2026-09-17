@@ -11,8 +11,11 @@ Sources
 -------
 Van der Meer (1988), "Rock slopes and gravel beaches under wave attack",
     Delft Hydraulics Publication 396. Rock armour stability.
+
 CIRIA/CUR/CETMEF (2007), The Rock Manual, 2nd ed. Armour layer geometry.
+
 Shore Protection Manual (1984), US Army CERC. Hudson formula.
+
 EurOtop (2018), Manual on wave overtopping of sea defences and related
     structures, 2nd ed. Overtopping discharge and tolerable limits.
 

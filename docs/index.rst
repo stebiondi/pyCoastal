@@ -10,7 +10,6 @@ Contents
    :maxdepth: 2
    :caption: Guide
 
-   installation
    usage
    api
 

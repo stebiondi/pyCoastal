@@ -22,13 +22,17 @@ Sources
 -------
 Morison, J. R., O'Brien, M. P., Johnson, J. W. and Schaaf, S. A. (1950),
     "The force exerted by surface waves on piles".
+
 Sarpkaya, T. (2010), Wave Forces on Offshore Structures. Drag and inertia
     coefficients, and their dependence on Keulegan-Carpenter number.
+
 DNV-RP-C205 (2010), Environmental Conditions and Environmental Loads.
     Coefficient guidance for smooth and rough cylinders.
+
 Wheeler, J. D. (1970), "Method for calculating forces produced by irregular
     waves". The stretching used to carry linear kinematics up to the
     instantaneous free surface.
+
 Sumer, B. M., Fredsoe, J. and Christiansen, N. (1992), "Scour around
     vertical pile in waves". The scour relation used here.
 

@@ -13,10 +13,13 @@ Sources
 Goda, Y. (1974, 2010), Random Seas and Design of Maritime Structures.
     Wave pressure distribution on a vertical wall, and the extension to
     impulsive conditions by Takahashi et al. (1994).
+
 EurOtop (2018), Manual on wave overtopping of sea defences, 2nd ed.
     Crest level for a tolerable mean discharge.
+
 Xie, S. L. (1981), Scouring patterns in front of vertical breakwaters,
     Delft University of Technology. Scour depth at a vertical wall.
+
 Van der Meer, J. W. (1998), in Rock Manual (CIRIA/CUR/CETMEF, 2007).
     Toe berm stone stability.
 
