@@ -95,6 +95,11 @@ class Sediment:
         the one most worth getting from a real site investigation.
     cohesion : float
         Effective cohesion c' [kPa]. Zero for anything granular.
+    phi_sorting : float
+        Standard deviation of the grading on the phi scale, sigma_phi.
+        Below about 0.5 is well sorted, above 1.0 poorly sorted. It is what
+        decides how much of a borrow source winnows away rather than staying
+        on the beach.
     d90 : float, optional
         Ninety per cent passing size [m]. Defaults to 2.5 d50, a reasonable
         ratio for a moderately graded marine sand.
@@ -108,6 +113,7 @@ class Sediment:
     porosity: float = 0.40
     friction_angle: float = 32.0
     cohesion: float = 0.0
+    phi_sorting: float = 0.6
     d90: float | None = None
     description: str = ""
 
@@ -120,6 +126,10 @@ class Sediment:
             )
         if not 0.0 < self.porosity < 0.8:
             raise ValueError(f"Porosity {self.porosity} is outside 0 to 0.8")
+        if self.phi_sorting <= 0:
+            raise ValueError(
+                f"Phi sorting must be positive, got {self.phi_sorting}"
+            )
         if not 0.0 <= self.friction_angle < 60.0:
             raise ValueError(
                 f"Friction angle {self.friction_angle} is outside 0 to 60 degrees"
@@ -183,35 +193,35 @@ SEDIMENTS: dict[str, Sediment] = {
     "soft_clay": Sediment(
         "Soft clay", d50=0.0, specific_gravity=2.70, porosity=0.55,
         friction_angle=22.0, cohesion=15.0,
-        description="normally consolidated, undrained strength governs"),
+        phi_sorting=2.0, description="normally consolidated, undrained strength governs"),
     "stiff_clay": Sediment(
         "Stiff clay", d50=0.0, specific_gravity=2.72, porosity=0.42,
         friction_angle=26.0, cohesion=40.0,
-        description="overconsolidated"),
+        phi_sorting=2.0, description="overconsolidated"),
     "silt": Sediment(
         "Silt", d50=0.03e-3, specific_gravity=2.65, porosity=0.48,
-        friction_angle=28.0, description="mobile at almost any wave"),
+        friction_angle=28.0, phi_sorting=1.6, description="mobile at almost any wave"),
     "very_fine_sand": Sediment(
         "Very fine sand", d50=0.09e-3, porosity=0.45, friction_angle=29.0,
-        description="suspends readily, high siltation"),
+        phi_sorting=0.55, description="suspends readily, high siltation"),
     "fine_sand": Sediment(
         "Fine sand", d50=0.19e-3, porosity=0.43, friction_angle=31.0,
-        description="the usual beach and nearshore sand"),
+        phi_sorting=0.45, description="the usual beach and nearshore sand"),
     "medium_sand": Sediment(
         "Medium sand", d50=0.38e-3, porosity=0.40, friction_angle=33.0,
-        description="typical dredged fill"),
+        phi_sorting=0.55, description="typical dredged fill"),
     "coarse_sand": Sediment(
         "Coarse sand", d50=0.75e-3, porosity=0.38, friction_angle=35.0,
-        description="good drained backfill"),
+        phi_sorting=0.7, description="good drained backfill"),
     "fine_gravel": Sediment(
         "Fine gravel", d50=6.0e-3, porosity=0.35, friction_angle=38.0,
-        description="free draining"),
+        phi_sorting=0.95, description="free draining"),
     "coarse_gravel": Sediment(
         "Coarse gravel", d50=30.0e-3, porosity=0.35, friction_angle=40.0,
-        description="shingle beach"),
+        phi_sorting=1.1, description="shingle beach"),
     "rock_fill": Sediment(
         "Quarry rock fill", d50=150.0e-3, porosity=0.37, friction_angle=42.0,
-        description="engineered granular backfill"),
+        phi_sorting=1.4, description="engineered granular backfill"),
 }
 
 

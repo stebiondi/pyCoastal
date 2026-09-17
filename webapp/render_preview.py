@@ -155,7 +155,8 @@ def main() -> int:
     args.out.mkdir(parents=True, exist_ok=True)
 
     problems = 0
-    for module in ("seawall", "breakwater", "channel", "monopile", "extremes"):
+    for module in ("seawall", "breakwater", "channel", "monopile",
+                   "nourishment", "extremes"):
         try:
             markup = render(module, args.width, args.height)
         except Exception as err:  # noqa: BLE001

@@ -1,6 +1,6 @@
 {
  "generated_from": "pyCoastal",
- "count": 129,
+ "count": 173,
  "cases": [
   {
    "name": "dispersion T=8.0 h=5.0",
@@ -1013,6 +1013,708 @@
    "expect": {
     "depth": 5.213658455956505,
     "ratio": 1.042731691191301
+   }
+  },
+  {
+   "name": "dean scale very_fine_sand",
+   "call": {
+    "fn": "deanScale",
+    "args": [
+     "very_fine_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.05137450625882577
+   }
+  },
+  {
+   "name": "phi very_fine_sand",
+   "call": {
+    "fn": "phiSize",
+    "args": [
+     9e-05
+    ]
+   },
+   "expect": {
+    "value": 3.473931188332412
+   }
+  },
+  {
+   "name": "dean scale fine_sand",
+   "call": {
+    "fn": "deanScale",
+    "args": [
+     "fine_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.09353892771513994
+   }
+  },
+  {
+   "name": "phi fine_sand",
+   "call": {
+    "fn": "phiSize",
+    "args": [
+     0.00019
+    ]
+   },
+   "expect": {
+    "value": 2.395928676331139
+   }
+  },
+  {
+   "name": "dean scale medium_sand",
+   "call": {
+    "fn": "deanScale",
+    "args": [
+     "medium_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.1409254402967
+   }
+  },
+  {
+   "name": "phi medium_sand",
+   "call": {
+    "fn": "phiSize",
+    "args": [
+     0.00038
+    ]
+   },
+   "expect": {
+    "value": 1.3959286763311392
+   }
+  },
+  {
+   "name": "dean scale coarse_sand",
+   "call": {
+    "fn": "deanScale",
+    "args": [
+     "coarse_sand"
+    ]
+   },
+   "expect": {
+    "value": 0.1825724630524099
+   }
+  },
+  {
+   "name": "phi coarse_sand",
+   "call": {
+    "fn": "phiSize",
+    "args": [
+     0.00075
+    ]
+   },
+   "expect": {
+    "value": 0.4150374992788438
+   }
+  },
+  {
+   "name": "dean scale fine_gravel",
+   "call": {
+    "fn": "deanScale",
+    "args": [
+     "fine_gravel"
+    ]
+   },
+   "expect": {
+    "value": 0.3066353416034394
+   }
+  },
+  {
+   "name": "phi fine_gravel",
+   "call": {
+    "fn": "phiSize",
+    "args": [
+     0.006
+    ]
+   },
+   "expect": {
+    "value": -2.584962500721156
+   }
+  },
+  {
+   "name": "shoreline advance very_fine_sand V=120.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.05137450625882577,
+     120.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 0.0,
+    "kind": "submerged",
+    "critical_volume": 2362.384855793033
+   }
+  },
+  {
+   "name": "shoreline advance very_fine_sand V=250.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.05137450625882577,
+     250.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 0.0,
+    "kind": "submerged",
+    "critical_volume": 2362.384855793033
+   }
+  },
+  {
+   "name": "shoreline advance very_fine_sand V=900.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.05137450625882577,
+     900.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 0.0,
+    "kind": "submerged",
+    "critical_volume": 2362.384855793033
+   }
+  },
+  {
+   "name": "critical volume very_fine_sand",
+   "call": {
+    "fn": "criticalVolume",
+    "args": [
+     0.1409254402967,
+     0.05137450625882577,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "value": 2362.384855793033
+   }
+  },
+  {
+   "name": "grain compatibility very_fine_sand",
+   "call": {
+    "fn": "grainCompatibility",
+    "args": [
+     "medium_sand",
+     "very_fine_sand"
+    ]
+   },
+   "expect": {
+    "delta": 3.7781863854568596,
+    "sorting_ratio": 1.0,
+    "coarser": false,
+    "verdict": "much finer than native, poorly suited"
+   }
+  },
+  {
+   "name": "overfill factor very_fine_sand",
+   "call": {
+    "fn": "profileOverfillFactor",
+    "args": [
+     "medium_sand",
+     "very_fine_sand",
+     2.0,
+     6.0,
+     40.0
+    ]
+   },
+   "expect": {
+    "factor": 8.382452674353228,
+    "borrow_volume": 2682.384855793033,
+    "native_volume": 320.0
+   }
+  },
+  {
+   "name": "shoreline advance fine_sand V=120.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.09353892771513994,
+     120.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 0.0,
+    "kind": "submerged",
+    "critical_volume": 566.2253884535743
+   }
+  },
+  {
+   "name": "shoreline advance fine_sand V=250.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.09353892771513994,
+     250.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 0.0,
+    "kind": "submerged",
+    "critical_volume": 566.2253884535743
+   }
+  },
+  {
+   "name": "shoreline advance fine_sand V=900.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.09353892771513994,
+     900.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 41.721839904785156,
+    "kind": "non-intersecting",
+    "critical_volume": 566.2253884535743
+   }
+  },
+  {
+   "name": "critical volume fine_sand",
+   "call": {
+    "fn": "criticalVolume",
+    "args": [
+     0.1409254402967,
+     0.09353892771513994,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "value": 566.2253884535743
+   }
+  },
+  {
+   "name": "grain compatibility fine_sand",
+   "call": {
+    "fn": "grainCompatibility",
+    "args": [
+     "medium_sand",
+     "fine_sand"
+    ]
+   },
+   "expect": {
+    "delta": 1.8181818181818181,
+    "sorting_ratio": 0.8181818181818181,
+    "coarser": false,
+    "verdict": "much finer than native, poorly suited"
+   }
+  },
+  {
+   "name": "overfill factor fine_sand",
+   "call": {
+    "fn": "profileOverfillFactor",
+    "args": [
+     "medium_sand",
+     "fine_sand",
+     2.0,
+     6.0,
+     40.0
+    ]
+   },
+   "expect": {
+    "factor": 2.7694543389174195,
+    "borrow_volume": 886.2253884535743,
+    "native_volume": 320.0
+   }
+  },
+  {
+   "name": "shoreline advance medium_sand V=120.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.1409254402967,
+     120.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 14.999961853027344,
+    "kind": "matched",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "shoreline advance medium_sand V=250.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.1409254402967,
+     250.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 31.249961853027344,
+    "kind": "matched",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "shoreline advance medium_sand V=900.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.1409254402967,
+     900.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 112.49996185302734,
+    "kind": "matched",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "critical volume medium_sand",
+   "call": {
+    "fn": "criticalVolume",
+    "args": [
+     0.1409254402967,
+     0.1409254402967,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "value": 0.0
+   }
+  },
+  {
+   "name": "grain compatibility medium_sand",
+   "call": {
+    "fn": "grainCompatibility",
+    "args": [
+     "medium_sand",
+     "medium_sand"
+    ]
+   },
+   "expect": {
+    "delta": 0.0,
+    "sorting_ratio": 1.0,
+    "coarser": false,
+    "verdict": "close to native, suitable"
+   }
+  },
+  {
+   "name": "overfill factor medium_sand",
+   "call": {
+    "fn": "profileOverfillFactor",
+    "args": [
+     "medium_sand",
+     "medium_sand",
+     2.0,
+     6.0,
+     40.0
+    ]
+   },
+   "expect": {
+    "factor": 1.0,
+    "borrow_volume": 320.0,
+    "native_volume": 320.0
+   }
+  },
+  {
+   "name": "shoreline advance coarse_sand V=120.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.1825724630524099,
+     120.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 31.586647033691406,
+    "kind": "intersecting",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "shoreline advance coarse_sand V=250.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.1825724630524099,
+     250.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 54.49207305908203,
+    "kind": "intersecting",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "shoreline advance coarse_sand V=900.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.1825724630524099,
+     900.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 139.32292938232422,
+    "kind": "non-intersecting",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "critical volume coarse_sand",
+   "call": {
+    "fn": "criticalVolume",
+    "args": [
+     0.1409254402967,
+     0.1825724630524099,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "value": 0.0
+   }
+  },
+  {
+   "name": "grain compatibility coarse_sand",
+   "call": {
+    "fn": "grainCompatibility",
+    "args": [
+     "medium_sand",
+     "coarse_sand"
+    ]
+   },
+   "expect": {
+    "delta": -1.783438503731446,
+    "sorting_ratio": 1.2727272727272725,
+    "coarser": true,
+    "verdict": "coarser than native, well suited"
+   }
+  },
+  {
+   "name": "overfill factor coarse_sand",
+   "call": {
+    "fn": "profileOverfillFactor",
+    "args": [
+     "medium_sand",
+     "coarse_sand",
+     2.0,
+     6.0,
+     40.0
+    ]
+   },
+   "expect": {
+    "factor": 0.5132262921146968,
+    "borrow_volume": 164.232413476703,
+    "native_volume": 320.0
+   }
+  },
+  {
+   "name": "shoreline advance fine_gravel V=120.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.3066353416034394,
+     120.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 37.359886169433594,
+    "kind": "intersecting",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "shoreline advance fine_gravel V=250.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.3066353416034394,
+     250.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 66.22241973876953,
+    "kind": "intersecting",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "shoreline advance fine_gravel V=900.0",
+   "call": {
+    "fn": "shorelineAdvance",
+    "args": [
+     0.1409254402967,
+     0.3066353416034394,
+     900.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "advance": 169.23328399658203,
+    "kind": "intersecting",
+    "critical_volume": 0.0
+   }
+  },
+  {
+   "name": "critical volume fine_gravel",
+   "call": {
+    "fn": "criticalVolume",
+    "args": [
+     0.1409254402967,
+     0.3066353416034394,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "value": 0.0
+   }
+  },
+  {
+   "name": "grain compatibility fine_gravel",
+   "call": {
+    "fn": "grainCompatibility",
+    "args": [
+     "medium_sand",
+     "fine_gravel"
+    ]
+   },
+   "expect": {
+    "delta": -7.237983958276899,
+    "sorting_ratio": 1.727272727272727,
+    "coarser": true,
+    "verdict": "coarser than native, well suited"
+   }
+  },
+  {
+   "name": "overfill factor fine_gravel",
+   "call": {
+    "fn": "profileOverfillFactor",
+    "args": [
+     "medium_sand",
+     "fine_gravel",
+     2.0,
+     6.0,
+     40.0
+    ]
+   },
+   "expect": {
+    "factor": 0.40855599622842664,
+    "borrow_volume": 130.73791879309653,
+    "native_volume": 320.0
+   }
+  },
+  {
+   "name": "fill volume a=0.0",
+   "call": {
+    "fn": "fillVolumeForAdvance",
+    "args": [
+     0.1409254402967,
+     0.1825724630524099,
+     0.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "volume": 0.0,
+    "limit_depth": 0.0,
+    "intersects": true
+   }
+  },
+  {
+   "name": "fill volume a=15.0",
+   "call": {
+    "fn": "fillVolumeForAdvance",
+    "args": [
+     0.1409254402967,
+     0.1825724630524099,
+     15.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "volume": 46.42598256089147,
+    "limit_depth": 1.8251091734323859,
+    "intersects": true
+   }
+  },
+  {
+   "name": "fill volume a=80.0",
+   "call": {
+    "fn": "fillVolumeForAdvance",
+    "args": [
+     0.1409254402967,
+     0.1825724630524099,
+     80.0,
+     2.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "volume": 427.4212435254773,
+    "limit_depth": 5.571275906780777,
+    "intersects": true
+   }
+  },
+  {
+   "name": "profile width",
+   "call": {
+    "fn": "profileWidth",
+    "args": [
+     0.141,
+     6.0
+    ]
+   },
+   "expect": {
+    "value": 277.5864140652946
    }
   },
   {

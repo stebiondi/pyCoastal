@@ -732,6 +732,113 @@ function hullSection(beam, draught, freeboard, centre) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Beach nourishment                                                   */
+/* ------------------------------------------------------------------ */
+
+function drawNourishment(host, r, w, h) {
+  var svg = newSheet(host, w, h);
+  var P = globalThis.PYCOASTAL;
+  var An = r.A_native, Af = r.A_fill;
+  var berm = r.berm_height, closure = r.closure_depth;
+  var advance = r.advance;
+  var waterLevel = 0;
+
+  var nativeEnd = P.profileWidth(An, closure);
+  var fillEnd = advance + P.profileWidth(Af, closure);
+  var offshore = Math.max(nativeEnd, fillEnd) * 1.12;
+  var landward = Math.max(40, 0.12 * offshore);
+  var x0 = -landward, x1 = offshore;
+  var zBed = waterLevel - closure;
+  var z0 = zBed - 3, z1 = waterLevel + berm + 3;
+
+  /* A beach profile is hundreds of metres long and a few deep, so it is a
+     line at a true scale. The exaggeration is chosen to fill the sheet and
+     is printed on it. */
+  var box = { x: 54, y: 16, w: w - 74, h: h - 66 };
+  var exaggeration = Math.max(1, Math.round(
+    ((x1 - x0) / (z1 - z0)) / (box.w / box.h)));
+
+  var body = el("g", null, svg);
+  var view = new View(box, [x0, x1], [z0, z1], exaggeration);
+  clipTo(svg, body, view.box);
+  var keys = [];
+
+  var steps = 260;
+  var nativePts = [];
+  for (var i = 0; i <= steps; i++) {
+    var y = offshore * i / steps;
+    nativePts.push([y, waterLevel - P.equilibriumProfile(An, y)]);
+  }
+
+  keys.push(view.poly(body,
+    [[x0, z0], [x0, waterLevel + berm], [0, waterLevel + berm]]
+      .concat(nativePts).concat([[offshore, z0]]),
+    "subgrade", "Native beach and seabed"));
+
+  keys.push(view.poly(body,
+    [[0, waterLevel]].concat(nativePts).concat([[offshore, waterLevel]]),
+    "water"));
+
+  if (advance > 0) {
+    var fillPts = [], nativeOn = [];
+    var end = Math.max(fillEnd, advance + 1e-6);
+    for (i = 0; i <= steps; i++) {
+      var yf = end * i / steps;
+      var zf = yf <= advance ? waterLevel + berm
+        : waterLevel - P.equilibriumProfile(Af, Math.max(yf - advance, 0));
+      fillPts.push([yf, zf]);
+      nativeOn.push([yf, waterLevel - P.equilibriumProfile(An, yf)]);
+    }
+    var last = -1;
+    for (i = 0; i < fillPts.length; i++) {
+      if (fillPts[i][1] > nativeOn[i][1] + 1e-9) last = i;
+    }
+    if (last > 0) {
+      var wedge = fillPts.slice(0, last + 1)
+        .concat(nativeOn.slice(0, last + 1).reverse());
+      keys.push(view.poly(body, wedge, "sand",
+        "Nourishment, " + r.borrow_name.toLowerCase() +
+        " (d50 = " + (r.borrow_d50 * 1000).toFixed(2) + " mm)"));
+    }
+    var drawnTo = r.meeting ? r.meeting : end;
+    var line = fillPts.filter(function (p) { return p[0] <= drawnTo; });
+    view.line(body, nativePts, { width: 1, dash: "6 3" });
+    view.line(body, line, { width: 2 });
+  } else {
+    view.line(body, nativePts, { width: 1, dash: "6 3" });
+  }
+
+  view.line(body, [[x0, zBed], [x1, zBed]],
+            { stroke: "#8a2f24", width: 0.9, dash: "2 3" });
+
+  view.level(body, x0 + 0.1 * landward, waterLevel, "MSL +0.00 m", "water");
+  view.level(body, x0 + 0.1 * landward, waterLevel + berm,
+             "Berm " + fmt(waterLevel + berm) + " m");
+  view.level(body, offshore * 0.30, zBed, "Closure " + fmt(zBed) + " m");
+
+  if (advance > 0) {
+    view.dimH(body, 0, advance, waterLevel + berm + 0.9 * (z1 - z0) * 0.06,
+              "dry beach " + advance.toFixed(1) + " m",
+              [waterLevel + berm, waterLevel + berm]);
+  }
+  view.pad(body, view.X(Math.max(advance, 6) * 0.5),
+           view.Y(waterLevel) - 8,
+           r.volume.toFixed(0) + " m3 per metre", "middle");
+  if (r.meeting) {
+    view.pad(body, view.X(r.meeting) + 12,
+             view.Y(waterLevel - r.meeting_depth) - 8,
+             "profiles meet, " + r.meeting.toFixed(0) + " m out");
+  }
+
+  legend(svg, keys, 62, h - 132);
+  sheetFrame(svg, w, h, {
+    bubble: "A", title: "Nourishment design profile",
+    scale: "vertical exaggeration " + exaggeration + " : 1"
+  });
+  return svg;
+}
+
+/* ------------------------------------------------------------------ */
 /* Charts, for the modules whose answer is a curve not a section       */
 /* ------------------------------------------------------------------ */
 
@@ -808,6 +915,7 @@ var DRAW = {
   drawSeawall: drawSeawall,
   drawBreakwater: drawBreakwater,
   drawChannel: drawChannel,
+  drawNourishment: drawNourishment,
   newSheet: newSheet,
   chartFrame: chartFrame,
   axis: axis,
