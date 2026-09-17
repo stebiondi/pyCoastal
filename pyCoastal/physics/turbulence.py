@@ -4,14 +4,14 @@ import numpy as np
 
 class SmagorinskyModel:
     """
-    Large‐eddy eddy‐viscosity: ν_t = (C_s Δ)^2 |S|
+    Large-eddy eddy viscosity: ``nu_t = (C_s * Delta)**2 * |S|``
     """
     def __init__(self, Cs: float = 0.17, filter_width: float = 1.0):
         self.Cs = Cs
         self.Δ  = filter_width
 
     def eddy_viscosity(self, u: np.ndarray, v: np.ndarray, grid=None):
-        """Strain-rate magnitude |S| = sqrt(2 S_ij S_ij).
+        """Strain-rate magnitude ``|S| = sqrt(2 S_ij S_ij)``.
 
         x is axis 0 and y is axis 1. Pass ``grid`` so the velocity
         gradients use the real cell spacing.

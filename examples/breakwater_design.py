@@ -118,3 +118,33 @@ ax2.grid(True, which="both", alpha=0.3)
 fig.tight_layout()
 fig.savefig("media/breakwater_design.png", dpi=600)
 print("\nWrote media/breakwater_design.png")
+
+# --- the same design, issued as a drawing ---------------------------------
+# The section is generated from the design object, so the armour drawn on the
+# paper is the armour the stability calculation sized.
+from pyCoastal.applications.sections import rubble_mound_section, rubble_mound_sheet
+from pyCoastal.drafting import use_crisp_style
+
+use_crisp_style()
+
+SWL = 1.10          # m CD, design still water level
+SEABED = -10.9      # m CD, giving the 12.0 m depth the design was run at
+
+section = rubble_mound_section(design, still_water_level=SWL,
+                               seabed_level=SEABED)
+section.save("media/breakwater_section.png")
+
+sheet = rubble_mound_sheet(
+    design,
+    still_water_level=SWL,
+    seabed_level=SEABED,
+    project="Harbour protection works",
+    title="Breakwater typical cross-section",
+    client="Example Port Authority",
+    size="A3",
+    file="examples/breakwater_design.py",
+)
+sheet.save("media/breakwater_sheet.png")
+sheet.to_dxf("media/breakwater_section.dxf")
+print("Wrote media/breakwater_section.png, media/breakwater_sheet.png "
+      "and media/breakwater_section.dxf")

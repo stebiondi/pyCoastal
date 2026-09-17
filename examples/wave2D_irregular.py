@@ -9,6 +9,8 @@ Uses pyCoastal:
   - YAML config for setup
 """
 
+from pathlib import Path
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -20,7 +22,11 @@ from pyCoastal.tools.wave import generate_irregular_wave
 # -------------------------------------------------------------------
 # 1) Load configuration
 # -------------------------------------------------------------------
-cfg = read_data("configs/waves2D_irregular.yaml")
+# The config sits beside this script, so the path is resolved from the
+# script rather than from the shell. The example then runs from the
+# repository root, which is where the README says to run it from.
+CONFIG = Path(__file__).resolve().parent / "configs"
+cfg = read_data(CONFIG / "waves2D_irregular.yaml")
 
 Nx, Ny = cfg["grid"]["nx"], cfg["grid"]["ny"]
 dx, dy = cfg["grid"]["dx"], cfg["grid"]["dy"]

@@ -11,6 +11,8 @@ water_drop.py
 - Animated circular wave propagation
 """
 
+from pathlib import Path
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -22,7 +24,12 @@ from pyCoastal.numerics.operators import laplacian
 # -------------------------------------------------------------------
 # 1) Load config
 # -------------------------------------------------------------------
-cfg = read_data("../configs/water_drop.yaml")
+# The config sits beside this script, so the path is resolved from the
+# script rather than from the shell. The example then runs from the
+# repository root, which is where the README says to run it from.
+CONFIG = Path(__file__).resolve().parent.parent / "configs"
+MEDIA = Path(__file__).resolve().parents[2] / "media"
+cfg = read_data(CONFIG / "water_drop.yaml")
 
 Nx = cfg["grid"]["Nx"]
 Ny = cfg["grid"]["Ny"]
@@ -97,7 +104,7 @@ plt.show()
 central_frame = nt // 2
 for frame in range(central_frame):
     update(frame)
-plt.imsave("water_drop_central.png", eta, cmap="RdBu_r", vmin=-0.5, vmax=0.5)
+plt.imsave(MEDIA / "water_drop_central.png", eta, cmap="RdBu_r", vmin=-0.5, vmax=0.5)
 
 # Save the whole plot with coordinates
-fig.savefig("water_drop_central_plot.png")
+fig.savefig(MEDIA / "water_drop_central_plot.png")

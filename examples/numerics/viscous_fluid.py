@@ -10,6 +10,8 @@ viscous_fluid.py
 - Real-time animation of speed field
 """
 
+from pathlib import Path
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -19,11 +21,17 @@ from pyCoastal.numerics.grid import UniformGrid
 from pyCoastal.numerics.boundary import BoundaryManager
 from pyCoastal.physics.navier_stokes import initialize_state, rhs
 
+# The config sits beside this script, so the path is resolved from the script
+# rather than from the shell. The example then runs from the repository root,
+# which is where the README says to run it from.
+CONFIG = Path(__file__).resolve().parent.parent / "configs"
+
+
 def main():
     # --------------------------------------------------------------
     # 1) Load configuration
     # --------------------------------------------------------------
-    cfg = read_data("../configs/viscous_fluid.yaml")
+    cfg = read_data(CONFIG / "viscous_fluid.yaml")
 
     Nx = cfg["grid"]["Nx"]
     Ny = cfg["grid"]["Ny"]

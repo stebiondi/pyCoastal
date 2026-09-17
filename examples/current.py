@@ -10,6 +10,8 @@ current.py
   - Parameters from YAML config
 """
 
+from pathlib import Path
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -21,7 +23,11 @@ from pyCoastal.numerics.boundary import DirichletBC, NeumannBC, BoundaryManager
 # -------------------------------------------------------------------
 # 1) Load config
 # -------------------------------------------------------------------
-cfg = read_data("configs/current.yaml")
+# The config sits beside this script, so the path is resolved from the
+# script rather than from the shell. The example then runs from the
+# repository root, which is where the README says to run it from.
+CONFIG = Path(__file__).resolve().parent / "configs"
+cfg = read_data(CONFIG / "current.yaml")
 
 Nx, Ny = cfg["grid"]["nx"], cfg["grid"]["ny"]
 dx, dy = cfg["grid"]["dx"], cfg["grid"]["dy"]

@@ -28,8 +28,11 @@ Sources
 -------
 Dean and Dalrymple (1991), Water Wave Mechanics for Engineers and Scientists.
     Wind setup and the bathystrophic storm tide.
+
 USACE Coastal Engineering Manual (2002), EM 1110-2-1100 Part II. Storm surge.
+
 Stockdon et al. (2006), Coastal Engineering 53, 573-588. Runup.
+
 FEMA (2005), Guidelines and Specifications for Flood Hazard Mapping Partners.
     Total water level and the treatment of wave effects.
 

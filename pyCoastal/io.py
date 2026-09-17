@@ -3,9 +3,12 @@
 import os, json, yaml
 from configparser import ConfigParser
 
-def read_data(path: str) -> dict:
+def read_data(path: "str | os.PathLike") -> dict:
     """
     Read a YAML, JSON or INI file and return a python dict.
+
+    Accepts a Path as well as a string, so a caller can resolve the file
+    relative to its own location rather than to the shell's directory.
     """
     ext = os.path.splitext(path)[1].lower()
     with open(path, 'r') as f:
