@@ -308,6 +308,52 @@ foundation level.
 
 Worked example: `examples/bridge_scour.py`
 
+### Backwater and flow distribution
+
+Open-channel hydraulics, mostly so that the flow fraction feeding
+contraction scour can be computed instead of assumed.
+
+```python
+from pyCoastal.applications.river import (
+    Channel, classify_slope, flow_distribution, gvf_profile, yarnell_afflux,
+)
+
+channel = Channel(width=30.0, side_slope=2.0, roughness="natural_clean")
+plain = Channel(width=120.0, side_slope=3.0, roughness="floodplain_trees")
+
+state = classify_slope(channel, 250.0, 0.0008)      # normal, critical, mild
+afflux = yarnell_afflux(channel, 250.0, state["normal"], blockage=0.18)
+profile = gvf_profile(channel, 250.0, 0.0008, afflux["upstream_depth"])
+
+profile.profile                 # "M1"
+profile.reach                   # how far it extends, on the stated criterion
+profile.depth_at(1500.0)        # depth 1.5 km upstream
+
+split = flow_distribution(channel, state["normal"], 0.0008, [(plain, 1.2)])
+split["main_fraction"]          # what the channel actually carries
+```
+
+<p align="center">
+  <img src="media/backwater.png" alt="Backwater profile and the extent convention" width="900">
+</p>
+
+**A backwater curve has no end.** It approaches normal depth
+asymptotically, so the extent of backwater is a convention rather than a
+measurement, and the number moves by a factor of nearly three between
+criteria a reasonable engineer might pick. `gvf_profile` takes the
+criterion as `approach` and says in its notes which one it used, because
+an extent quoted without one says nothing.
+
+**The flow split is not the width split.** In the example the channel is
+26% of the section and carries 84% of the flow, because conveyance goes as
+the roughness and the hydraulic radius, not the area. Feeding the computed
+fraction into `contraction_scour` gives 1.08 m where assuming all the flow
+goes through the opening gives 1.81 m. That assumption is the largest one
+in a scour calculation and it hides behind the most precise-looking number
+in the output.
+
+Worked example: `examples/backwater.py`
+
 ### Port layout
 
 Phase-resolved wave propagation into a harbour. Breakwaters are rasterized as
@@ -480,6 +526,58 @@ One judgement call, the fraction of the wave height taken as vertical vessel
 motion, moves the dredge level more than every tolerance put together.
 
 Worked example: `examples/navigation_channel.py`
+
+### Berthing energy and fenders
+
+A berth fails in three different ways and only one of them is about
+energy. The fender can be too small, and the ship reaches the quay. The
+panel can be too small, and the reaction dents the side shell even though
+the energy was absorbed perfectly. The fenders can be too far apart, and
+the hull touches the structure between them. All three are checked.
+
+```python
+from pyCoastal.applications.berthing import design_berth
+from pyCoastal.applications.channel import Vessel
+
+ship = Vessel(name="Post-Panamax container", length=366, beam=48.2,
+              draught=15.2, block_coefficient=0.68)
+feeder = Vessel(name="Feeder", length=140, beam=22.0, draught=8.5,
+                block_coefficient=0.68)
+
+design = design_berth(ship, velocity=0.15, vessel_class="container",
+                      configuration="open_piled", depth=17.0,
+                      smallest_vessel=feeder)
+
+design.energy                  # design energy, the abnormal one [kNm]
+design.fender["height"]        # the fender that absorbs it
+design.pressure["pressure"]    # what the panel hands to the side shell
+design.spacing["acceptable"]   # whether the hull clears between fenders
+design.adequate                # all three at once
+```
+
+<p align="center">
+  <img src="media/berth_energy.png" alt="Berthing energy chain and design levers" width="900">
+</p>
+
+**Three of the four PIANC factors reduce the energy and the abnormal
+allowance puts most of it back.** Added mass is the only one that makes the
+number bigger; eccentricity, softness and configuration all take from it,
+and then a factor between 1.25 and 2.0 is applied on top. Following the
+chain matters more than the individual coefficients, because the answer at
+the end is close to the kinetic energy you started with and it is easy to
+conclude the factors did not matter.
+
+**Velocity is squared, so it decides the fender** and it is the least
+well known quantity in the calculation. The berthing velocity tables are
+in the module rather than buried in the function, so the class assumed for
+a berth is visible and arguable.
+
+Spacing is checked against the *smallest* vessel that will use the berth,
+not the design one, and against the parallel midbody rather than the bow:
+a hull is straight amidships, so the geometry cannot bind there and the
+practical rule governs instead.
+
+Worked example: `examples/berth_fenders.py`
 
 ### Wave loads on piles
 
