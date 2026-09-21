@@ -1,7 +1,7 @@
 <title>Coastal Design Bench</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<!-- No webfont is fetched. The page is set in the faces the desktop
+     already has, which is the only way it renders correctly on the first
+     frame rather than reflowing once the network answers. -->
 
 <style>
   /* Light is the ground state: a drawing office works on paper. The dark
@@ -188,46 +188,6 @@
   }
 
 
-  /* The palette picker. Swatches rather than names: the whole point of a
-     palette is that you recognise it by eye, and a row of words would
-     make the reader translate back into colour anyway. */
-  .palettes {
-    display: flex;
-    align-items: center;
-    align-self: center;
-    gap: 6px;
-  }
-  .palettes .eyebrow { margin: 0 4px 0 0; }
-  .swatch {
-    appearance: none;
-    display: flex;
-    width: 34px;
-    height: 20px;
-    padding: 0;
-    overflow: hidden;
-    border: 1px solid var(--rule);
-    border-radius: 2px;
-    cursor: pointer;
-    background: none;
-    transition: transform 0.12s ease, border-color 0.12s ease;
-  }
-  .swatch span { flex: 1 1 auto; }
-  .swatch:hover { transform: translateY(-1px); }
-  .swatch:focus-visible {
-    outline: 2px solid var(--sea);
-    outline-offset: 2px;
-  }
-  .swatch[aria-pressed="true"] {
-    border-color: var(--ink);
-    box-shadow: inset 0 0 0 1px var(--panel);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .swatch { transition: none; }
-    .swatch:hover { transform: none; }
-  }
-
-
-
   /* ------------------------------------------------------------------
      Typeface pairings.
 
@@ -263,36 +223,6 @@
     --ui-leading: 1.40;
   }
 
-  /* Condensed drawing-office lettering: a title block, and dimension text. */
-  :root[data-fonts="titleblock"] {
-    --display: "Oswald", "Archivo Narrow", system-ui, sans-serif;
-    --sans: "Barlow", system-ui, -apple-system, sans-serif;
-    --mono: "Roboto Mono", ui-monospace, Menlo, monospace;
-  }
-
-  /* Swiss technical. Neutral to the point of having no opinion, which is
-     the opinion. */
-  :root[data-fonts="instrument"] {
-    --display: "Chivo", system-ui, sans-serif;
-    --sans: "Public Sans", system-ui, -apple-system, sans-serif;
-    --mono: "Roboto Mono", ui-monospace, Menlo, monospace;
-  }
-
-  /* A published report. The serif display is the real differentiator here:
-     it is the only pairing that does not look like software. */
-  :root[data-fonts="journal"] {
-    --display: "Source Serif 4", Georgia, "Times New Roman", serif;
-    --sans: "Source Sans 3", system-ui, -apple-system, sans-serif;
-    --mono: "Source Code Pro", ui-monospace, Menlo, monospace;
-  }
-
-  /* Industrial, in the manner of a technical manual or a rating plate. */
-  :root[data-fonts="machined"] {
-    --display: "Saira Condensed", system-ui, sans-serif;
-    --sans: "Saira Semi Condensed", system-ui, -apple-system, sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
-  }
-
   /* The drawings set their type as SVG presentation attributes, which these
      rules outrank. Matching on what draw.js asked for keeps the three roles
      it distinguishes, so a title block stays display type and a quantities
@@ -300,38 +230,6 @@
   #sheet svg text[font-family*="Archivo"] { font-family: var(--display); }
   #sheet svg text[font-family*="Plex Sans"] { font-family: var(--sans); }
   #sheet svg text[font-family*="Plex Mono"] { font-family: var(--mono); }
-
-  /* ---- the type picker ---- */
-  .fonts {
-    display: flex;
-    align-items: center;
-    align-self: center;
-    gap: 6px;
-  }
-  .fonts .eyebrow { margin: 0 4px 0 0; }
-  .face {
-    appearance: none;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    padding: 3px 9px;
-    border: 1px solid var(--rule);
-    border-radius: 2px;
-    background: var(--panel);
-    color: var(--ink-soft);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color 0.12s ease, color 0.12s ease;
-  }
-  .face:hover { color: var(--ink); border-color: var(--ink-faint); }
-  .face:focus-visible { outline: 2px solid var(--sea); outline-offset: 2px; }
-  .face[aria-pressed="true"] {
-    color: var(--sea);
-    border-color: var(--sea);
-    background: var(--sea-wash);
-  }
-  @media (prefers-reduced-motion: reduce) { .face { transition: none; } }
-
 
   /* ------------------------------------------------------------------
      Theory panel.
@@ -412,6 +310,14 @@
 
   * { box-sizing: border-box; }
 
+  /* An application frame rather than a document. The window is the page:
+     the masthead is fixed, the shell takes what is left, and each region
+     scrolls on its own. Nothing scrolls the whole thing, which is what
+     separates software from a web page and is the reason a desktop user
+     never loses the drawing while reading the report beside it.
+
+     Below the breakpoint the regions stack and the body scrolls normally;
+     there is no room for three panes on a narrow screen. */
   body {
     margin: 0;
     background: var(--paper);
@@ -420,6 +326,16 @@
     font-size: var(--ui-size);
     line-height: var(--ui-leading);
     -webkit-font-smoothing: antialiased;
+  }
+  @media (min-width: 1101px) {
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    header { flex: 0 0 auto; }
+    .shell { flex: 1 1 auto; min-height: 0; }
   }
 
   /* ---- masthead ---- */
@@ -461,9 +377,8 @@
   /* ---- shell ---- */
   .shell {
     display: grid;
-    grid-template-columns: 124px 232px minmax(0, 1fr);
+    grid-template-columns: 136px 240px minmax(0, 1fr);
     gap: 0;
-    min-height: calc(100vh - 66px);
   }
 
   #rail {
@@ -486,6 +401,7 @@
     text-transform: uppercase;
     text-align: left;
     padding: 10px 14px;
+    white-space: nowrap;
     cursor: pointer;
   }
   .rail-item:hover { color: var(--ink); background: var(--rule-soft); }
@@ -499,7 +415,7 @@
     border-right: 1px solid var(--rule);
     padding: 16px 16px 40px;
     overflow-y: auto;
-    max-height: calc(100vh - 66px);
+    min-height: 0;
   }
 
   .eyebrow {
@@ -571,10 +487,16 @@
   .main {
     padding: 14px 16px 48px;
     overflow-y: auto;
-    max-height: calc(100vh - 66px);
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 16px;
+  }
+  .sheet-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
   }
   .sheet-head {
     display: flex;
@@ -690,8 +612,51 @@
     align-items: start;
   }
   @media (max-width: 1420px) {
-    .shell { grid-template-columns: 116px 214px minmax(0, 1fr); }
+    .shell { grid-template-columns: 128px 214px minmax(0, 1fr); }
     .panes { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* On a wide monitor the report goes beside the drawing rather than under
+     it. Below this width it would take the sheet under its readable
+     minimum, and a squeezed drawing is worse than a scroll. */
+  @media (min-width: 1560px) {
+    /* Two scroll panes, not one. The report is read against the drawing,
+       so scrolling to the bottom of it must not take the drawing off the
+       screen. Both stretch to the frame and scroll inside it.
+
+       flex: 0 0 auto on the sheet is load-bearing. In a column flex box of
+       fixed height the default is to shrink, which would squeeze the
+       drawing to fit the window instead of letting the pane scroll. */
+    .main {
+      flex-direction: row;
+      align-items: stretch;
+      gap: 0;
+      overflow: hidden;
+      padding-bottom: 0;
+    }
+    .sheet-col {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      min-height: 0;
+      padding: 0 18px 40px 0;
+    }
+    .sheet-wrap { flex: 0 0 auto; }
+    .panes {
+      flex: 0 0 clamp(320px, 23vw, 420px);
+      overflow-y: auto;
+      min-height: 0;
+      padding: 0 0 40px 22px;
+      border-left: 1px solid var(--rule);
+    }
+  }
+
+  /* Past this the drawing has all the width it can use and the eye has to
+     travel too far across a full-bleed line of text. The extra goes to the
+     controls, which are the part that is actually cramped. */
+  @media (min-width: 1800px) {
+    .shell { grid-template-columns: 138px 282px minmax(0, 1fr); }
+    .main { padding: 16px 26px 48px; }
+    .column { padding: 18px 20px 40px; }
   }
 
   /* Below this the three columns leave the sheet too narrow to read, so the
@@ -863,19 +828,19 @@
 </style>
 
 <script>
-/* Ahead of paint, so the chosen palette is the first thing drawn rather
-   than a flash of the previous one. Survey is the default: cool neutral
-   greys with safety orange, the closest of the five to site instrumentation. */
+/* Ahead of paint, so the first frame is already the right one.
+
+   Survey palette: cool neutral greys with safety orange, the closest of
+   the five defined below to site instrumentation. Desktop type: Segoe UI
+   and Consolas, what ParaView and every other Qt application inherits
+   from Windows.
+
+   These are the design, not a preference. The page used to carry pickers
+   for both and no longer does; the alternates are kept as token blocks in
+   the stylesheet, so changing the look is changing one word here. */
 (function () {
-  var palette = "survey", fonts = "desktop";
-  try {
-    var p = window.localStorage.getItem("pycoastal.palette");
-    if (p !== null) palette = p;
-    var f = window.localStorage.getItem("pycoastal.fonts");
-    fonts = f === null ? "desktop" : f;
-  } catch (err) { /* private window, or site data blocked */ }
-  if (palette) document.documentElement.setAttribute("data-palette", palette);
-  if (fonts) document.documentElement.setAttribute("data-fonts", fonts);
+  document.documentElement.setAttribute("data-palette", "survey");
+  document.documentElement.setAttribute("data-fonts", "desktop");
 })();
 </script>
 
@@ -886,12 +851,6 @@
     literature says about the ground they stand on.
   </p>
   <span class="spacer"></span>
-  <div class="palettes" id="palettes" role="group" aria-label="Colour palette">
-    <p class="eyebrow">Palette</p>
-  </div>
-  <div class="fonts" id="fonts" role="group" aria-label="Typeface">
-    <p class="eyebrow">Type</p>
-  </div>
   <span id="verify" class="verify" hidden></span>
 </header>
 
@@ -910,20 +869,22 @@
   </section>
 
   <main class="main">
-    <div id="error" hidden></div>
-    <div class="sheet-head">
-      <p class="eyebrow" id="sheet-label">Section</p>
-      <button id="theory-open" class="ghost-btn" type="button"
-              aria-expanded="false" aria-controls="theory">
-        Theory &amp; sources
-      </button>
-      <button id="enlarge" class="ghost-btn" type="button" aria-pressed="false">
-        Enlarge
-      </button>
+    <div class="sheet-col">
+      <div id="error" hidden></div>
+      <div class="sheet-head">
+        <p class="eyebrow" id="sheet-label">Section</p>
+        <button id="theory-open" class="ghost-btn" type="button"
+                aria-expanded="false" aria-controls="theory">
+          Theory &amp; sources
+        </button>
+        <button id="enlarge" class="ghost-btn" type="button" aria-pressed="false">
+          Enlarge
+        </button>
+      </div>
+      <div class="sheet-wrap"><div id="sheet"></div></div>
+      <div id="checks" class="checks"></div>
+      <div id="warnings" hidden></div>
     </div>
-    <div class="sheet-wrap"><div id="sheet"></div></div>
-    <div id="checks" class="checks"></div>
-    <div id="warnings" hidden></div>
 
     <div class="panes">
       <section aria-label="Design report">
@@ -959,187 +920,3 @@
 <script src="engine.js"></script>
 <script src="draw.js"></script>
 <script src="app.js"></script>
-<script>
-/* Palette selection. Stored per viewer, so the choice survives a reload
-   without reaching anyone else. Every storage touch is guarded: a private
-   window, a thumbnailer, or a browser set to block site data all throw
-   here rather than returning empty. */
-(function () {
-  var PALETTES = [
-    { id: "", name: "Drafting paper", chips: ["#f2f0ea", "#1b6fa0", "#16181a"] },
-    { id: "blueprint", name: "Blueprint", chips: ["#0c2942", "#74c2e8", "#e6f0f7"] },
-    { id: "survey", name: "Survey", chips: ["#eaedf0", "#c2501c", "#191d21"] },
-    { id: "graphite", name: "Graphite", chips: ["#191b1d", "#4fb3a4", "#e7e9eb"] },
-    { id: "admiralty", name: "Admiralty chart", chips: ["#eae2d0", "#a3307a", "#2c6a49"] }
-  ];
-  var KEY = "pycoastal.palette";
-  var host = document.getElementById("palettes");
-  if (!host) return;
-
-  function apply(id) {
-    if (id) document.documentElement.setAttribute("data-palette", id);
-    else document.documentElement.removeAttribute("data-palette");
-    Array.prototype.forEach.call(host.querySelectorAll(".swatch"), function (b) {
-      b.setAttribute("aria-pressed", String(b.dataset.palette === id));
-    });
-  }
-
-  // Survey is the default, and must agree with the pre-paint script above
-  // or the page would snap back to drafting paper on load. An empty string
-  // is a real stored choice (drafting paper), so only a missing key falls
-  // back to the default.
-  var saved = "survey";
-  try {
-    var stored = window.localStorage.getItem(KEY);
-    if (stored !== null) saved = stored;
-  } catch (err) { /* default stands */ }
-  if (!PALETTES.some(function (p) { return p.id === saved; })) saved = "survey";
-
-  PALETTES.forEach(function (p) {
-    var button = document.createElement("button");
-    button.type = "button";
-    button.className = "swatch";
-    button.dataset.palette = p.id;
-    button.title = p.name;
-    button.setAttribute("aria-label", p.name);
-    p.chips.forEach(function (colour) {
-      var chip = document.createElement("span");
-      chip.style.background = colour;
-      button.appendChild(chip);
-    });
-    button.addEventListener("click", function () {
-      apply(p.id);
-      try { window.localStorage.setItem(KEY, p.id); } catch (err) { /* fine */ }
-    });
-    host.appendChild(button);
-  });
-
-  apply(saved);
-})();
-</script>
-
-<script>
-/* Typeface pairings.
- *
- * Three roles, because the page has three jobs for type: a display face for
- * the masthead and the drawing title blocks, a text face for prose and
- * controls, and a monospace for anything with digits that line up.
- *
- * Stylesheets are injected on demand. Five pairings is fourteen families,
- * and downloading thirteen unused ones to render one is not a trade worth
- * making; hovering a button preloads it, so a click is already warm.
- */
-(function () {
-  var BASE = "https://fonts.googleapis.com/css2?";
-  var PAIRINGS = [
-    {
-      id: "desktop", name: "Desktop",
-      note: "Segoe UI and Consolas, as ParaView and every other Qt application",
-      display: "'Segoe UI Semibold', 'Segoe UI', system-ui, sans-serif",
-      href: null
-    },
-    {
-      id: "", name: "Plex",
-      note: "the original pairing",
-      display: "'Archivo', system-ui, sans-serif",
-      sans: "'IBM Plex Sans', system-ui, sans-serif",
-      mono: "'IBM Plex Mono', ui-monospace, monospace",
-      href: null
-    },
-    {
-      id: "titleblock", name: "Title block",
-      note: "condensed drawing-office lettering",
-      display: "'Oswald', 'Archivo Narrow', system-ui, sans-serif",
-      sans: "'Barlow', system-ui, sans-serif",
-      mono: "'Roboto Mono', ui-monospace, monospace",
-      href: BASE + "family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap"
-    },
-    {
-      id: "instrument", name: "Instrument",
-      note: "Swiss technical, neutral",
-      display: "'Chivo', system-ui, sans-serif",
-      sans: "'Public Sans', system-ui, sans-serif",
-      mono: "'Roboto Mono', ui-monospace, monospace",
-      href: BASE + "family=Chivo:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap"
-    },
-    {
-      id: "journal", name: "Journal",
-      note: "a published report",
-      display: "'Source Serif 4', Georgia, serif",
-      sans: "'Source Sans 3', system-ui, sans-serif",
-      mono: "'Source Code Pro', ui-monospace, monospace",
-      href: BASE + "family=Source+Serif+4:wght@600;700&family=Source+Sans+3:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&display=swap"
-    },
-    {
-      id: "machined", name: "Machined",
-      note: "industrial, technical manual",
-      display: "'Saira Condensed', system-ui, sans-serif",
-      sans: "'Saira Semi Condensed', system-ui, sans-serif",
-      mono: "'JetBrains Mono', ui-monospace, monospace",
-      href: BASE + "family=Saira+Condensed:wght@500;600;700&family=Saira+Semi+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
-    }
-  ];
-  var KEY = "pycoastal.fonts";
-  var host = document.getElementById("fonts");
-  if (!host) return;
-
-  var loaded = {};
-  function load(pairing) {
-    if (!pairing.href || loaded[pairing.id]) return;
-    loaded[pairing.id] = true;
-    var link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = pairing.href;
-    document.head.appendChild(link);
-  }
-
-  function apply(pairing) {
-    load(pairing);
-    // The stacks are CSS, keyed off this attribute, so setting it is the
-    // whole of applying a pairing. Script is only needed to fetch.
-    if (pairing.id) document.documentElement.setAttribute("data-fonts", pairing.id);
-    else document.documentElement.removeAttribute("data-fonts");
-    Array.prototype.forEach.call(host.querySelectorAll(".face"), function (b) {
-      b.setAttribute("aria-pressed", String(b.dataset.fonts === pairing.id));
-    });
-  }
-
-  // Desktop is the default, and must agree with the pre-paint script above.
-  // An empty string is a real stored choice (Plex), so only a missing key
-  // falls back.
-  var saved = "desktop";
-  try {
-    var stored = window.localStorage.getItem(KEY);
-    if (stored !== null) saved = stored;
-  } catch (err) { /* default stands */ }
-  var current = PAIRINGS.filter(function (f) { return f.id === saved; })[0]
-    || PAIRINGS[0];
-
-  PAIRINGS.forEach(function (pairing) {
-    var button = document.createElement("button");
-    button.type = "button";
-    button.className = "face";
-    button.dataset.fonts = pairing.id;
-    button.textContent = pairing.name;
-    button.title = pairing.note;
-    button.setAttribute("aria-label", pairing.name + ", " + pairing.note);
-    // Set in its own face, so the button is its own specimen.
-    if (pairing.display) button.style.fontFamily = pairing.display;
-    button.addEventListener("mouseenter", function () { load(pairing); });
-    button.addEventListener("focus", function () { load(pairing); });
-    button.addEventListener("click", function () {
-      apply(pairing);
-      try { window.localStorage.setItem(KEY, pairing.id); } catch (err) { /* fine */ }
-    });
-    host.appendChild(button);
-  });
-
-  // Every button is its own specimen, so they all want their faces present.
-  // Done after first paint, and only once the page is otherwise settled.
-  function warm() { PAIRINGS.forEach(load); }
-  if ("requestIdleCallback" in window) window.requestIdleCallback(warm, { timeout: 3000 });
-  else window.setTimeout(warm, 1200);
-
-  apply(current);
-})();
-</script>
