@@ -75,3 +75,33 @@ Draw it over a field with a solid colour map so breakwaters read as
 material rather than as an extreme value of the field.
 ```
 
+## `panel_labels`
+
+```python
+def panel_labels(axes, labels=None, loc: str='upper left', fontsize: float=10.0, offset: float=0.02)
+```
+
+```text
+Label each panel of a multi-panel figure with (a), (b), (c), ...
+
+The figures in ``examples/`` carry no titles. Panel letters identify the
+panels, and the caption of the figure states what each one shows.
+
+Parameters
+----------
+axes : sequence of matplotlib Axes
+    Panels in reading order. A 2D array from ``plt.subplots`` is
+    flattened.
+labels : sequence of str, optional
+    Replacement labels. Defaults to "(a)", "(b)", ...
+loc : {"upper left", "upper right", "lower left", "lower right"}
+    Corner of the panel, in axes coordinates.
+offset : float
+    Inset from the corner, as a fraction of the panel.
+
+Returns
+-------
+list
+    The created text artists.
+```
+

@@ -143,7 +143,7 @@ specification.
 ## `seawall_section`
 
 ```python
-def seawall_section(design, title: str='Vertical seawall, typical cross-section', sea_extent: float=22.0, land_extent: float=8.0, figsize: tuple[float, float]=(14.5, 8.5), show_scour: bool=True, ax=None) -> Section
+def seawall_section(design, title: str='', sea_extent: float=22.0, land_extent: float=8.0, figsize: tuple[float, float]=(14.5, 8.5), show_scour: bool=True, ax=None) -> Section
 ```
 
 ```text
@@ -215,7 +215,7 @@ Specification notes generated from a rubble-mound design.
 ## `rubble_mound_section`
 
 ```python
-def rubble_mound_section(design, still_water_level: float, seabed_level: float, cot_land: float | None=None, crest_width: float | None=None, title: str='Rubble-mound breakwater, typical cross-section', figsize: tuple[float, float]=(14.5, 8.0), margin: float=12.0, ax=None) -> Section
+def rubble_mound_section(design, still_water_level: float, seabed_level: float, cot_land: float | None=None, crest_width: float | None=None, title: str='', figsize: tuple[float, float]=(14.5, 8.0), margin: float=12.0, ax=None) -> Section
 ```
 
 ```text
@@ -284,7 +284,7 @@ Specification notes generated from a channel design.
 ## `channel_section`
 
 ```python
-def channel_section(design, title: str='Navigation channel, typical cross-section', figsize: tuple[float, float]=(14.5, 8.0), margin: float=60.0, exaggeration: float=8.0, ax=None) -> Section
+def channel_section(design, title: str='', figsize: tuple[float, float]=(14.5, 8.0), margin: float=60.0, exaggeration: float=8.0, ax=None) -> Section
 ```
 
 ```text
@@ -377,7 +377,7 @@ Specification notes generated from a nourishment design.
 ## `nourishment_section`
 
 ```python
-def nourishment_section(result, native, borrow, berm_height: float, closure_depth: float, water_level: float=0.0, title: str='Beach nourishment, design profile', figsize: tuple[float, float]=(14.0, 7.0), exaggeration: float | None=None, ax=None) -> Section
+def nourishment_section(result, native, borrow, berm_height: float, closure_depth: float, water_level: float=0.0, title: str='', figsize: tuple[float, float]=(14.0, 7.0), exaggeration: float | None=None, ax=None) -> Section
 ```
 
 ```text
@@ -483,7 +483,7 @@ the spreading does; it is not the numerical solver.
 ## `nourishment_plan_section`
 
 ```python
-def nourishment_plan_section(design, climate, years=None, title: str='Beach nourishment, planform evolution', figsize: tuple[float, float]=(14.0, 6.5), exaggeration: float | None=None, ax=None) -> Section
+def nourishment_plan_section(design, climate, years=None, title: str='', figsize: tuple[float, float]=(14.0, 6.5), exaggeration: float | None=None, ax=None) -> Section
 ```
 
 ```text
@@ -555,7 +555,7 @@ Drawing notes for a pier scour assessment.
 ## `pier_scour_section`
 
 ```python
-def pier_scour_section(design, title: str='Pier scour, estuary', figsize: tuple[float, float]=(11.0, 7.0), protected: bool=False, exaggeration: float=1.0, ax=None) -> Section
+def pier_scour_section(design, title: str='', figsize: tuple[float, float]=(11.0, 7.0), protected: bool=False, exaggeration: float=1.0, ax=None) -> Section
 ```
 
 ```text
@@ -629,7 +629,7 @@ Drawing notes for a bridge scour assessment.
 ## `bridge_scour_section`
 
 ```python
-def bridge_scour_section(design, title: str='Bridge scour, total', figsize: tuple[float, float]=(13.0, 7.0), exaggeration: float | None=None, ax=None) -> Section
+def bridge_scour_section(design, title: str='', figsize: tuple[float, float]=(13.0, 7.0), exaggeration: float | None=None, ax=None) -> Section
 ```
 
 ```text
