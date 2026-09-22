@@ -14,7 +14,7 @@ one (@tbl:agent-files).
 | Where everything is | this manual, `README.md` | `AGENTS.md`, `llms.txt` |
 | Theory and usage | `pyCoastal manual.pdf` | `docs/manual/chapters/*.md` |
 | API | the source | `docs/reference/*.md`, one file per module |
-| Worked examples | Part IV | `examples/*.py`, `docs/examples.md` |
+| Worked examples | Part III | `examples/*.py`, `docs/examples.md` |
 | Literature | PyCoaPedia explorer | `pycoapedia.sqlite`, `pedia/topics/*.md`, `python -m pyCoastal.pedia --json` |
 
 ## Entry points

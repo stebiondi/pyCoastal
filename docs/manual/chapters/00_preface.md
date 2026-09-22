@@ -23,15 +23,18 @@ stands on, through PyCoaPedia, the package's knowledge base of the coastal
 and ocean engineering literature.
 
 This manual documents all of it. Part I gets the package installed and
-running. Parts II and III describe the numerical framework and the
-standalone engineering formulae. Part IV is the core of the book: one
-chapter per design application, each with its theory, its interface, a
-worked example with the output the code actually prints, and the limits of
-the method. Part V covers drawings and deliverables and Part VI the
-PyCoaTools browser app. Part VII explains PyCoaPedia, how it is built and
-how to navigate it from a browser, from Python, from the shell and in SQL,
-and how the repository is laid out for AI agents. Part VIII describes the
-test suite that keeps all of it honest.
+running, and Part II describes the standalone engineering formulae the rest
+builds on. Part III is the core of the book: one chapter per design
+application, in the order of the design chain, each with its theory, its
+interface, a worked example with the output the code actually prints, and
+the limits of the method. Part IV covers drawings and deliverables and Part
+V the PyCoaTools browser app. Part VI explains PyCoaPedia, how it is built
+and how to navigate it from a browser, from Python, from the shell and in
+SQL, and how the repository is laid out for AI agents. Part VII is the
+numerical framework, the subject of the first edition of this manual:
+grids, operators, time integration, boundary conditions, the governing
+equations, and the simulation examples. Part VIII describes the test suite
+that keeps all of it honest.
 
 I do not expect pyCoastal to be the tool behind groundbreaking discoveries,
 although I hope it may contribute to them, or at least serve as a starting

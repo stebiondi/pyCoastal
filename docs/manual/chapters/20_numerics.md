@@ -1,4 +1,4 @@
-# Part II. Numerical framework {.part .unnumbered}
+# Part VII. Numerical framework {.part .unnumbered}
 
 # Grids, operators, and time integration {#sec:numerics}
 

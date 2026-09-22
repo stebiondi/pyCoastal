@@ -1,4 +1,4 @@
-# Part VII. PyCoaPedia and agentic retrieval {.part .unnumbered}
+# Part VI. PyCoaPedia and agentic retrieval {.part .unnumbered}
 
 # PyCoaPedia: the knowledge base {#sec:pedia}
 

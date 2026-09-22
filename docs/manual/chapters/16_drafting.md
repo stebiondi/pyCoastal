@@ -1,4 +1,4 @@
-# Part V. Drawings and deliverables {.part .unnumbered}
+# Part IV. Drawings and deliverables {.part .unnumbered}
 
 # Drawings, sections, and sheets {#sec:drafting}
 
@@ -128,7 +128,7 @@ underkeel allowances, and the seawall toe.
 
 ## The drawing sheets
 
-The worked examples of Part IV issue these sheets; they are collected here
+The worked examples of Part III issue these sheets; they are collected here
 as the deliverables of the design chain.
 
 ![Seawall typical cross-section with toe detail (`seawall_sheet`).](media/seawall_sheet.png){#fig:sheet-seawall}

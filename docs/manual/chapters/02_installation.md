@@ -89,13 +89,15 @@ its docstring says so.
 **Coordinates.** `x` and `y` span the horizontal plane and `z` is elevation,
 positive upward. In 2D arrays `x` is axis 0 and `y` is axis 1, matching
 `UniformGrid`, which builds its coordinates with `indexing="ij"` and
-flattens as `i*ny + j`. The design applications and the operators follow
-this. Two older pieces do not, and they say so where they are used:
-`numerics.domain.Mesh2D` builds its coordinate arrays with NumPy's default
-`indexing="xy"`, so they are shaped (ny, nx), and the solvers in
-`physics.poisson` take their right-hand side in that same (ny, nx) form. In cross-shore work `x` is the chainage and in
+flattens as `i*ny + j`. In cross-shore work `x` is the chainage, and in
 alongshore work (the one-line model) `x` is alongshore and `y` is the
 cross-shore shoreline offset, positive seaward.
+
+The design applications and the operators follow that axis order. Two older
+pieces of the numerical framework do not, and this manual says so where they
+appear: `numerics.domain.Mesh2D` builds its coordinate arrays with NumPy's
+default `indexing="xy"`, so they are shaped (ny, nx), and the solvers in
+`physics.poisson` take their right-hand side in that same (ny, nx) form.
 
 **Units.** SI throughout: meters, seconds, kilograms, newtons. Forces on
 walls and walls' weights are kN per meter run; overtopping discharges are
@@ -163,6 +165,7 @@ The numerical examples read their parameters from YAML files in
   and `pyCoastal.io.write_vtk(grid, filename)` writes a VTK grid object to
   a legacy `.vtk` file (needs the `vtk` extra).
 
+These are used by the simulation examples of @sec:simulations.
 `pyCoastal.numerics.domain.Domain(cfg)` builds a `Mesh1D` or `Mesh2D` from a
 `domain:` block with `dimension`, `x0`, `x1`, `nx` (and `y0`, `y1`, `ny` in
 2D).

@@ -70,7 +70,8 @@ should always be able to see which assumption to argue with.
 
 ## Before the math
 
-A few terms recur throughout the numerical parts of this manual. A *field*
+A few terms recur wherever this manual discusses the numerical
+framework of Part VII. A *field*
 is any variable defined over the domain, such as water depth, velocity, or
 pressure. A *grid* divides the domain into cells where these variables are
 stored; in pyCoastal the values live at cell centers. A *stencil* is the
@@ -91,17 +92,19 @@ block, and specification notes.
 
 - **Part I** covers installation, the repository layout, conventions, and a
   quick start.
-- **Part II** describes the numerical framework and the governing equations,
-  with the simulation examples that exercise them.
-- **Part III** documents the standalone engineering formulae in
-  `pyCoastal.tools`.
-- **Part IV** has one chapter per design application.
-- **Part V** covers the drafting layer: sections, sheets, and DXF export.
-- **Part VI** describes PyCoaTools, the browser version of the design
+- **Part II** documents the standalone engineering formulae in
+  `pyCoastal.tools`, which the design modules build on.
+- **Part III** is the core of the book: one chapter per design application,
+  in the order of the design chain.
+- **Part IV** covers the drafting layer: sections, sheets, and DXF export.
+- **Part V** describes PyCoaTools, the browser version of the design
   modules.
-- **Part VII** describes PyCoaPedia, the knowledge base of the coastal and
+- **Part VI** describes PyCoaPedia, the knowledge base of the coastal and
   ocean engineering literature, how to navigate it, and how the repository
   serves AI agents.
+- **Part VII** describes the numerical framework and the governing
+  equations, with the simulation examples that exercise them. The design
+  modules do not depend on it; it stands on its own.
 - **Part VIII** describes the test suite and the verification of the browser
   engine against the Python.
 - **Appendices** give a list of symbols and the engineering references.

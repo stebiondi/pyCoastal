@@ -1,4 +1,4 @@
-# Part VI. PyCoaTools {.part .unnumbered}
+# Part V. PyCoaTools {.part .unnumbered}
 
 # The browser app {#sec:webapp}
 
@@ -40,7 +40,7 @@ fetches no web font, so the first frame is correct.
 ## Modules and inputs
 
 The app has six modules. Each input is a slider with a range, a select, or a
-toggle, and the defaults follow the worked examples of Part IV.
+toggle, and the defaults follow the worked examples of Part III.
 
 <!-- webapp-inputs -->
 

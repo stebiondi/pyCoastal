@@ -1,11 +1,11 @@
-# Part III. Engineering tools {.part .unnumbered}
+# Part II. Engineering tools {.part .unnumbered}
 
 # Standalone formulae: `pyCoastal.tools` {#sec:tools}
 
 `pyCoastal.tools` collects standalone coastal engineering formulae. Every
 function takes its parameters explicitly, with no hidden hard-coded values,
 so defaults can be set or overridden from a case file. These are the first
-checks an engineer runs; the design applications of Part IV build full
+checks an engineer runs; the design applications of Part III build full
 design chains on top of the same relations, with validity checks and
 reporting. Where a tool and an application overlap, prefer the
 application for design.
