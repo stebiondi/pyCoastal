@@ -3,12 +3,11 @@
 *Module:* `pyCoastal.applications.river`. *Example:*
 `examples/backwater.py`.
 
-The foundation the fluvial side of a crossing stands on. Everything a bridge
-does to a river it does by changing the depth: it squeezes the flow, the
-water backs up, and that backwater reaches upstream for a distance nobody
-guesses correctly by eye. The module also exists for one number in the
-scour chain: the fraction of the discharge that actually goes through a
-bridge opening, which is a conveyance calculation, not a guess.
+The module provides the open-channel hydraulics of a river crossing. A
+bridge contracts the flow, which raises the upstream water level and
+produces a backwater profile extending upstream from the structure. The
+module also supplies one input to the scour chain: the fraction of the
+discharge passing through the bridge opening, computed from conveyance.
 
 ## The channel
 
@@ -45,15 +44,14 @@ approach=0.99)` integrates the direct step method (@eq:direct-step),
 
 $$ \Delta x = \frac{\Delta E}{S_0 - S_f},\qquad S_f = \left(\frac{Qn}{AR^{2/3}}\right)^2, $$ {#eq:direct-step}
 
-away from the control. The depths are chosen and the distances computed,
-which is exact for a prismatic channel and never iterates. The integration
-stops as the depth approaches normal depth, because it gets there only
-asymptotically: a backwater curve has no end, and the extent of backwater
-is always a convention. `approach` sets the one used (0.99 of the way to
-normal depth by default; 0.95 gives a noticeably shorter and equally
-defensible reach), and the notes of the returned `BackwaterResult` say
-which. The result carries `distance`, `depth`, `water_surface`,
-`bed_level`, `profile`, `reach`, and `depth_at(distance)`.
+away from the control. Depths are prescribed and distances computed, which
+is exact for a prismatic channel and requires no iteration. The profile
+approaches normal depth asymptotically, so the integration terminates at a
+prescribed fraction of the approach to normal depth. `approach` sets that
+fraction, default 0.99; a value of 0.95 returns a shorter reach. The
+criterion used is recorded in the notes of the returned `BackwaterResult`,
+which also carries `distance`, `depth`, `water_surface`, `bed_level`,
+`profile`, `reach` and `depth_at(distance)`.
 
 ## Afflux at bridge piers
 
@@ -64,9 +62,10 @@ $$ \Delta H = K(K + 5Fr^2 - 0.6)(a + 15a^4)Fr^2\,y, $$ {#eq:yarnell}
 with $a$ the fraction of the area blocked by the piers, $Fr$ the downstream
 Froude number, and $K$ the pier shape coefficient (`PIER_SHAPE`: 0.9
 semicircular nose to 2.5 for a ten-pile trestle). The fourth power on the
-blockage is what makes it bite. Yarnell's tests were in a rectangular flume
-at blockages up to about 0.4 with the flow class unchanged; where a bridge
-chokes the flow to critical, use the HEC-RAS energy or momentum methods.
+blockage gives a strongly nonlinear dependence on pier area. Yarnell's tests
+were in a rectangular flume at blockages up to about 0.4 with the flow class
+unchanged through the bridge. Where a bridge chokes the flow to critical,
+the energy or momentum methods of HEC-RAS apply.
 `yarnell_afflux(channel, discharge, downstream_depth, blockage,
 shape="semicircular_nose")` returns the afflux and the upstream depth.
 
@@ -77,11 +76,11 @@ depth), ...])` splits the discharge by conveyance (@eq:flow-split),
 
 $$ \frac{Q_i}{Q} = \frac{K_i}{\sum_j K_j}. $$ {#eq:flow-split}
 
-This is the number `scour.BridgeOpening` calls `flow_fraction`. A wooded
-floodplain can be half the width of the section and carry a tenth of the
-flow; guessing the fraction is the largest assumption in a contraction
-scour calculation, and it hides behind the most precise-looking number in
-the output.
+The result is the `flow_fraction` input of `scour.BridgeOpening`. Conveyance
+depends on the roughness and the hydraulic radius, so a wooded floodplain
+occupying half the section width can carry a tenth of the discharge. An
+assumed flow fraction propagates directly into the contraction scour
+depth.
 
 ```python
 from pyCoastal.applications.river import (
@@ -104,9 +103,8 @@ split["main_fraction"]
 
 <!-- output: backwater -->
 
-![The backwater profile and the extent convention. Depth, not level, is plotted, because the bed rises 4 m over the reach while the depth changes by 7 cm.](media/backwater.png){#fig:backwater}
+![The backwater profile and the extent convention. The plotted variable is depth. Over this reach the bed rises 4 m while the depth changes by 7 cm.](media/backwater.png){#fig:backwater}
 
-In the example the channel is 26% of the section and carries 84% of the
-flow, because conveyance goes as the roughness and the hydraulic radius, not
-the area. Feeding the computed fraction into `contraction_scour` gives
-1.08 m, where assuming all the flow goes through the opening gives 1.81 m.
+In the example the channel occupies 26% of the section width and carries
+84% of the discharge. The computed fraction gives a contraction scour of
+1.08 m in `contraction_scour`; a flow fraction of 1.0 gives 1.81 m.

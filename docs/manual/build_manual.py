@@ -655,6 +655,14 @@ def pandoc_latex(markdown: str, pandoc: str, crossref: str | None) -> Path:
     return out
 
 
+def style_findings() -> int:
+    """Count departures from docs/manual/STYLE.md in the chapters."""
+    sys.path.insert(0, str(HERE))
+    import style_check
+
+    return sum(len(style_check.check(p)) for p in sorted(CHAPTERS.glob("*.md")))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--run-examples", action="store_true",
@@ -669,6 +677,10 @@ def main() -> None:
     if args.run_examples:
         print("Running examples")
         run_examples()
+
+    findings = style_findings()
+    if findings:
+        print(f"  style: {findings} findings, run docs/manual/style_check.py")
 
     print("Writing the API reference and the example index")
     write_reference()

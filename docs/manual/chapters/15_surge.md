@@ -24,10 +24,11 @@ predicted), any sea-level rise, and three setups:
 
   $$ \eta_w = \frac{nkW^2F\cos\theta}{gd}, $$ {#eq:wind-setup}
 
-  (`wind_setup`). Because setup goes as $1/d$ it is dominated by the
-  shallowest part of the shelf, so `wind_setup_profile(depths, dx, ...)`
-  integrates across a real shelf, carrying the accumulated setup into the
-  local depth $d + \eta$, which damps further setup.
+  (`wind_setup`). The setup varies as $1/d$ and is therefore controlled by
+  the shallowest part of the shelf. `wind_setup_profile(depths, dx, ...)`
+  integrates across a measured shelf profile and carries the accumulated
+  setup into the local depth $d + \eta$, which reduces the further
+  increment.
 - **Wave setup** in the surf zone, from the breaking height
   (`surf_zone_setup(breaking_height, gamma=0.8)`).
 
@@ -35,9 +36,10 @@ Runup is added on top for the total water level, from Stockdon et al. (2006) (@e
 
 $$ R_{2\%} = 1.1\left(0.35\beta\sqrt{H_0L_0} + \frac{\sqrt{H_0L_0(0.563\beta^2 + 0.004)}}{2}\right), $$ {#eq:stockdon}
 
-returned as setup and swash separately (`stockdon_runup`). Runup is a swash
-oscillation, not a sustained level, so flood extent is taken from the still
-water level and the wave hazard at the shoreline from the total.
+with the setup and swash components returned separately
+(`stockdon_runup`). Runup is a swash oscillation with a period of the order
+of the wave period. Flood extent is therefore computed from the still water
+level, and the shoreline wave hazard from the total water level.
 
 `StormConditions(wind_speed=40, central_pressure=95000, tide=0, Hm0=6,
 Tp=12, fetch=100e3, shelf_depth=20, wind_angle=0, sea_level_rise=0)` is the

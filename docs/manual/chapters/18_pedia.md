@@ -2,15 +2,12 @@
 
 # PyCoaPedia: the knowledge base {#sec:pedia}
 
-Every design relation in pyCoastal names a source and states where it stops
-being valid. PyCoaPedia holds the same shape of information for the wider
-literature, as data: the peer-reviewed coastal and ocean engineering
-literature distilled into a tree of topics, each with a curated synthesis,
-atomic claims that carry the regime they were established in, equations with
-their variables, and structured extractions of each paper, every piece
-traceable to a DOI. A relation quoted outside its range is the most
-expensive kind of mistake, and PyCoaPedia exists so that the range is always
-one query away.
+PyCoaPedia is the knowledge base distributed with pyCoastal. It holds the
+peer-reviewed coastal and ocean engineering literature as structured data: a
+tree of topics, a curated synthesis per topic, atomic claims with the regime
+in which each was established, equations with their variables and regime,
+and structured extractions of each paper. Every record is traceable to a
+DOI. The validity range of a relation is therefore available by query.
 
 ## What is in it
 
@@ -34,9 +31,8 @@ confidence class (a direct finding, a literature review statement, an
 inferred relationship, or a proposed hypothesis), the kind of evidence
 (field, experimental, numerical, analytical, mixed, or review), the location
 in the paper, and the paper itself. Claims are linked to each other where
-one supports, contradicts, extends, validates, or compares against another,
-which is how disagreement in the literature becomes something that can be
-queried rather than remembered.
+one supports, contradicts, extends, validates or compares against another.
+Disagreement in the literature is therefore queryable.
 
 **Papers** carry their bibliographic record and abstract, the topics they
 are classified under, and a structured extraction: the research question,
@@ -93,11 +89,11 @@ $\downarrow$ \texttt{pedia/build\_pedia.py} (one snapshot, one pass)\\[1mm]
 ## Navigating the knowledge
 
 The same knowledge can be reached five ways, and they suit different
-readers. A typical workflow runs from the design question to the evidence:
-start from the pyCoastal module you are using, read the synthesis of its
-topics (above all the validated ranges and the disagreements), then drill
-into the claims whose regime matches the case, and from a claim to its paper
-and the paper's quantitative findings.
+readers. The workflow from a design question to the supporting evidence
+is: select the pyCoastal module in use, read the synthesis of its topics,
+in particular the validated ranges and the disagreements, select the claims
+whose regime matches the case, and follow each claim to its paper and the
+quantitative findings recorded there.
 
 ### In the browser: the PyCoaPedia explorer
 
@@ -184,18 +180,16 @@ pages read on GitHub and suit tools that search files.
 ## The design modules and their topics
 
 Each design module of pyCoastal, and of PyCoaTools, is mapped to the topics
-whose literature bears on it (@tbl:pedia-modules). The mapping is
-deliberately generous, because a design relation sits where several topics
-meet: an engineer setting a crest level wants the overtopping topic and the
-runup topic, not one of them.
+whose literature applies to it (@tbl:pedia-modules). The mapping is
+inclusive: a design relation draws on several topics. A crest-level
+calculation maps to both the overtopping topic and the runup topic.
 
 <!-- pedia-modules -->
 
 ## Coverage and its limits
 
-Coverage is uneven by design: PyCoaPedia records what has been screened,
-not what exists. A topic with few claims is a topic that has not yet been
-read closely, not one where nothing is known, and the paper counts say how
-much of each branch has been screened. Claims are extracted from papers and
-checked, but a claim is only as good as the regime attached to it, and it is
-the regime that should be read first.
+Coverage follows the screening process. PyCoaPedia records the literature
+that has been screened; the paper count of each topic gives the extent of
+that screening. A low claim count indicates limited screening of the topic.
+Each claim carries the regime in which it was established, which defines its
+range of application.

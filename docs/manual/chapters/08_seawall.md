@@ -3,12 +3,12 @@
 *Module:* `pyCoastal.applications.seawall`. *Example:*
 `examples/seawall_section.py`. *Browser:* Seawall.
 
-The full chain for an L-shaped gravity seawall: crest level from EurOtop,
-founding level from scour, Goda wave pressures on the wetted face, earth and
-water pressure from the backfill, then the base width grown until sliding,
-overturning, and the base pressure all pass under every load case.
-`applications.sections` turns the result into a drawing and a bill of
-quantities (@sec:drafting).
+The module sizes an L-shaped gravity seawall: crest level from EurOtop,
+founding level from the scour allowance, Goda wave pressures on the wetted
+face, earth and water pressure from the backfill, and a base width
+incremented until sliding, overturning and base pressure satisfy their
+criteria under each load case. `applications.sections` converts the result
+into a drawing and a bill of quantities (@sec:drafting).
 
 ## Goda pressures
 
@@ -69,9 +69,9 @@ follows:
 
 1. **Crest level** from EurOtop, set so the upper bound of the overtopping
    scatter meets the tolerable limit.
-2. **Founding level** from the scour allowance, bracketed by
-   `minimum_embedment` and `maximum_embedment` (deeper is a piling question,
-   not a gravity-wall one).
+2. **Founding level** from the scour allowance, bounded by
+   `minimum_embedment` and `maximum_embedment`. Embedment beyond that bound
+   is outside the scope of a gravity wall.
 3. **Goda pressures** on the wetted face, from the still water level down to
    the seabed.
 4. **Earth pressure** from the backfill (`backfill="medium_sand"`,
@@ -82,11 +82,13 @@ follows:
    cases: the wave crest pushing landward, and the trough with the
    saturated backfill pushing seaward against only the water left in front
    (the drawdown case, `drawdown_level`).
-6. **Toe stone** from the Van der Meer toe formula, iterated because the
-   berm thickness changes the depth over the berm.
+6. **Toe stone** from the Van der Meer toe formula. The calculation is
+   iterated: the berm thickness changes the water depth over the berm, which
+   is an input to the formula.
 
-Full Goda uplift is applied under the base even when it is embedded, which
-is deliberately on the safe side. The result is a `SeawallDesign` with
+Full Goda uplift is applied under the base including the embedded part.
+Attenuation of wave pressure through the soil is not credited. The result is
+a `SeawallDesign` with
 every level and dimension, the pressures and forces, both load cases,
 `governing_case`, the overtopping, `warnings`, `summary()`, and
 `quantities()` (concrete, backfill, toe rock, excavation per meter run).
@@ -95,12 +97,12 @@ every level and dimension, the pressures and forces, both load cases,
 
 <!-- output: seawall_section -->
 
-Two warnings in this output are the point of the example. Pore water is 66%
-of the pressure on the back of the wall, and the drawdown case governs,
-not the wave: the wall is sized by the saturated backfill pushing it
-seaward at the trough, so the backfill grading and the drainage detail
-matter more than the design wave. The toe depth ratio is also just outside
-the calibration range of the toe formula, and the output says so.
+The output carries two warnings. Pore water accounts for 66% of the
+pressure on the back of the wall. The drawdown case governs: the base width
+is set by the saturated backfill acting seaward at the wave trough, which
+makes the backfill grading and the drainage detail the controlling inputs
+for this case. The toe depth ratio $h_t/h = 0.94$ lies outside the 0.4 to
+0.9 calibration range of the toe formula, and the result reports it.
 
 ![The seawall drawing sheet: typical section at a true stated scale, an enlarged toe detail, the design parameter block, and specification notes generated from the design.](media/seawall_sheet.png){#fig:seawall-sheet}
 

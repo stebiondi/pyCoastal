@@ -2,21 +2,19 @@
 
 # Standalone formulae: `pyCoastal.tools` {#sec:tools}
 
-`pyCoastal.tools` collects standalone coastal engineering formulae. Every
-function takes its parameters explicitly, with no hidden hard-coded values,
-so defaults can be set or overridden from a case file. These are the first
-checks an engineer runs; the design applications of Part III build full
-design chains on top of the same relations, with validity checks and
-reporting. Where a tool and an application overlap, prefer the
-application for design.
+`pyCoastal.tools` provides standalone coastal engineering formulae. Every
+parameter is an explicit argument, so defaults can be set or overridden from
+a case file. The design applications of Part III build on the same relations
+and add validity checks and reporting. Where a tool and an application
+implement the same relation, the application is the design interface.
 
 ## Waves: `tools.wave` {#sec:tools-wave}
 
 ### Linear dispersion and derived numbers
 
-Under linear (small-amplitude) theory, frequency, wavenumber, and depth are
-linked by the dispersion relation, which sets the phase and group speeds and
-underpins most coastal scalings:
+Under linear (small-amplitude) theory, frequency, wavenumber and depth are
+related by the dispersion relation, which defines the phase and group
+speeds:
 
 $$ \omega^2 = g k\tanh(kh),\qquad c = \frac{\omega}{k},\qquad c_g = \frac{c}{2}\left(1 + \frac{2kh}{\sinh 2kh}\right). $$ {#eq:dispersion}
 
@@ -40,10 +38,10 @@ $\bar\eta = \tfrac{5}{16}\gamma H_b$.
 
 ### Spectral synthesis
 
-A wave spectrum describes how the energy of a sea state is distributed over
-frequency. To drive a numerical flume with irregular seas, a surface
-elevation record is synthesized by random-phase superposition consistent
-with a target spectrum (@eq:synthesis):
+A wave spectrum gives the distribution of sea-state energy over frequency.
+For irregular-sea forcing, a surface elevation record is synthesized by
+random-phase superposition consistent with a target spectrum
+(@eq:synthesis):
 
 $$ \eta(t) = \sum_{i=1}^{N}\sqrt{2S(f_i)\,\Delta f}\,\cos(2\pi f_i t + \varphi_i),\qquad \varphi_i \sim U[0, 2\pi]. $$ {#eq:synthesis}
 
@@ -88,8 +86,8 @@ $U_{cr} = 0.19\,d_{50}^{0.1}\log(12h/3d_{50})$ and $s = \rho_s/\rho$.
 - `vandermeer_dn50(Hs, Delta, P, N, alpha, xi_m, damage=2.0, safety=1.0)`:
   Van der Meer (1988), plunging and surging branches (@eq:vdm-plunging and
   @eq:vdm-surging in @sec:structures), with the wave count saturating at
-  7500. The surf similarity must be supplied, because it depends on the
-  period.
+  7500. The surf similarity is a required argument; it depends on the wave
+  period, which this function does not receive.
 - `hunt_runup(beta, H, L)`: $R \approx H\tan\beta/\sqrt{H/L}$ (Hunt 1959).
 - `stockdon_runup(H, L, beta)`: the Stockdon et al. (2006) 2% runup.
 - `goda_wave_force(H, T, h, beta)`: a screening estimate of the Goda
@@ -101,7 +99,7 @@ $U_{cr} = 0.19\,d_{50}^{0.1}\log(12h/3d_{50})$ and $s = \rho_s/\rho$.
 
 ## One-line shoreline model: `tools.shoreline` {#sec:tools-oneline}
 
-The one-line model treats the shoreline position $y(x, t)$ as the only
+The one-line model takes the shoreline position $y(x, t)$ as the only
 morphological variable and conserves sediment alongshore:
 
 $$ \frac{\partial y}{\partial t} = -\frac{1}{(1-p)D}\frac{\partial Q_{ls}}{\partial x},\qquad

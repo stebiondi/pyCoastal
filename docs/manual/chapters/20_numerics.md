@@ -2,12 +2,9 @@
 
 # Grids, operators, and time integration {#sec:numerics}
 
-Computational coastal engineering connects governing equations with the
-numerical choices that approximate them. `pyCoastal.numerics` exposes those
-choices one brick at a time: a grid, the finite-difference operators that
-act on it, the integrators that march it in time, and the boundary
-conditions that close it. Every choice is visible in the code and can be
-changed one at a time.
+`pyCoastal.numerics` provides grid definitions, finite-difference
+operators, explicit time integrators and boundary-condition classes. Each
+component is separate and can be replaced independently.
 
 ## Grids
 
@@ -31,9 +28,9 @@ grid.boundary_indices["west"]    # flat indices of the west boundary cells
 ```
 
 `UniformGrid(shape, spacing, origin=None)` works in one and two dimensions.
-A three-dimensional shape raises `NotImplementedError` on construction,
-because the boundary indices are built there and are defined for 1D and 2D
-only. Cell centers sit at $x_i = x_0 + (i + \tfrac12)\Delta x$. In 2D the
+A three-dimensional shape raises `NotImplementedError` on construction: the
+boundary indices are built in the constructor and are defined for 1D and 2D
+only. Cell centers are at $x_i = x_0 + (i + \tfrac12)\Delta x$. In 2D the
 flat index of cell $(i, j)$ is $i\,n_y + j$, so that `x` is axis 0 and `y`
 is axis 1 in every array. The grid precomputes, for each side (`"west"`,
 `"east"`, `"south"`, `"north"`), the flat indices of the boundary cells in
@@ -48,24 +45,24 @@ case file. `Mesh1D(x0, x1, nx)` stores cell centers `x` and spacing `dx`;
 `Mesh2D(x0, x1, nx, y0, y1, ny)` stores 2D center arrays `x`, `y` and
 spacings `dx`, `dy`. `Domain(cfg)` reads a `domain:` block with
 `dimension: 1` or `2` and instantiates the right mesh; `Domain.info()`
-prints a summary. Note the axis order: `Mesh2D` builds its arrays with
-NumPy's default `indexing="xy"`, so they are shaped (ny, nx), the other way
-round from `UniformGrid`. Mixing the two in one script is the easiest
-mistake to make here.
+prints a summary. `Mesh2D` builds its arrays with NumPy's default
+`indexing="xy"`, giving shape (ny, nx), which is the transpose of the
+`UniformGrid` convention. `UniformGrid` and `Mesh2D` use different axis
+conventions and should not be combined without explicit dimension
+handling.
 
 **Indexing and memory layout.** Arrays follow NumPy C order, so the
 last index is contiguous. Spacings $\Delta x$, $\Delta y$ are constant.
 
 ## Finite differences
 
-Finite differences approximate derivatives with algebraic expressions built
-from nearby grid values. On a uniform grid, a first derivative at a cell
-center can be estimated by a centered difference, which samples one point
-on either side to keep symmetry and second-order accuracy. Higher
-derivatives and one-sided formulas follow the same idea. The approach turns
-differential equations into systems of algebraic equations, which is why it
-remains a common choice for structured-grid problems in fluid mechanics and
-wave modeling.
+Finite differences approximate derivatives by algebraic expressions in
+neighboring grid values. On a uniform grid a first derivative at a cell
+center is approximated by a centered difference, which samples one point on
+each side and is second-order accurate. Higher derivatives and one-sided
+formulas follow the same construction. The discretization converts the
+differential equations into a system of algebraic equations on a structured
+grid.
 
 ### Centered operators
 
@@ -162,7 +159,8 @@ u^{n+1} &= \tfrac13 u^n + \tfrac23\left[u^{(2)} + \Delta t\,\mathrm{RHS}(u^{(2)}
 \end{aligned}
 $$ {#eq:ssprk3}
 
-SSP RK3 is the recommended all-rounder for wave and transport demonstrations.
+SSP RK3 is the default choice for the advection-dominated cases in
+@sec:simulations.
 
 **Adams-Bashforth 2** (second order, multistep) reuses the previous
 right-hand side, and needs one starting step from another method (@eq:numerics-4):
@@ -190,14 +188,13 @@ boundary conditions, takes one step through the integrator, and calls
 `initialize_state(grid)`, `rhs(state, t, grid=..., bc=...)` and a `dt`, and
 a `bc` object with `apply(state, t)`.
 
-It is a scaffold rather than the way this package is driven, and two things
-have to be adapted before it runs. `BoundaryManager` exposes
-`apply_all(fields, grid, t)`, not `apply(state, t)`, so it has to be wrapped;
-and `physics.navier_stokes.rhs` takes `bc_mgr`, not the `bc` keyword the
-solver passes. Every example in `examples/` writes its own time loop
-instead, which is also the clearer way to see what a scheme does, and the
-design applications that march in time (the port solver of @sec:port, the
-one-line model of @sec:tools-oneline) carry their own loops.
+Two adaptations are required before the class runs with the components of
+this package. `BoundaryManager` exposes `apply_all(fields, grid, t)` and has
+to be wrapped to provide `apply(state, t)`. `physics.navier_stokes.rhs`
+takes the keyword `bc_mgr`, while the solver passes `bc`. The examples in
+`examples/` implement their own time loops, as do the design applications
+that march in time: the port solver of @sec:port and the one-line model of
+@sec:tools-oneline.
 
 ### Stability
 

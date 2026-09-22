@@ -40,8 +40,9 @@ with what it demonstrates and how to run it.
 
 ## Querying the literature
 
-For literature questions an agent should use the database rather than read
-Markdown pages one by one. A good pattern is search, then open, then cite:
+For literature questions, query the database. The Markdown pages carry the
+same content in a form suited to file search. The sequence is search, open,
+cite:
 
 ```bash
 python -m pyCoastal.pedia --json search "toe scour vertical wall" --limit 20

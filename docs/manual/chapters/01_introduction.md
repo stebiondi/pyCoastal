@@ -2,109 +2,96 @@
 
 # Introduction {#sec:intro}
 
-Coastal zones concentrate people, infrastructure, and ecosystems in
-environments that are energetic and constantly changing. Waves, tides,
-surges, and currents interact with complex shorelines to drive erosion,
-flooding, sediment transport, and loads on structures. Anticipating these
-processes is essential for safe navigation, coastal protection, habitat
-conservation, and climate adaptation.
+Coastal zones concentrate population, infrastructure and ecosystems in
+energetic, time-varying environments. Waves, tides, surges and currents
+interact with the shoreline and drive erosion, flooding, sediment transport
+and loads on structures. Quantifying these processes supports navigation,
+coastal protection, habitat conservation and climate adaptation.
 
-pyCoastal is a Python toolbox for coastal, port, and ocean engineering. It
-has two faces that share one code base:
+pyCoastal is a Python toolbox for coastal, port and ocean engineering. It
+contains two independent layers in one code base.
 
-1. **A numerical framework** of uniform grids, finite-difference operators,
-   explicit time integrators, boundary handlers, Poisson solvers, and
-   physics building blocks (shallow water, incompressible Navier-Stokes,
-   eddy-viscosity closures). It favors clarity over ultimate efficiency so
-   that students and practitioners can see and modify every numerical
-   brick.
-2. **A design chain** of scenario-level applications that take an
-   engineering design and report the quantities a project actually turns
-   on: a 100-year wave with its confidence band, an armor stone size and a
-   crest level, a seawall base width, a scour depth over a tidal cycle, a
-   dredge level, a fender size, a flood extent, and the drawing sheet that
-   carries all of it.
+1. **A numerical framework**: uniform grids, finite-difference operators,
+   explicit time integrators, boundary-condition classes, Poisson solvers,
+   and governing-equation components (shallow water, incompressible
+   Navier-Stokes, eddy-viscosity closures). Each numerical component is
+   exposed and can be replaced.
+2. **A design chain**: scenario-level applications that take an engineering
+   design and return project quantities. These include the 100-year wave
+   with its confidence band, armor stone size, crest level, seawall base
+   width, scour depth over a tidal cycle, dredge level, fender size, flood
+   extent, and the corresponding drawing sheet.
 
 ## The design chain
 
-A real coastal scheme runs as a chain, and pyCoastal is organized the same
-way (@tbl:chain). Each step hands its result to the next as an object, not
-as a number you retype, so a drawing cannot drift out of step with the
-calculation behind it.
+pyCoastal is organized in the sequence a coastal scheme is designed
+(@tbl:chain). Each step passes a structured object to the subsequent
+module. This maintains consistency between calculations and drawings.
 
 : The design chain and the modules that implement each step. {#tbl:chain}
 
-| Step | Module | What it gives you |
+| Step | Module | Output |
 |------------|-------------------------------------|------------------------------------|
 | Design condition | `applications.extremes` | 100-year wave or water level, with a confidence band |
 | Bed and soil | `applications.sediment` | grain mobility, fall velocity, earth pressure |
 | Nearshore | `applications.port` | phase-resolved diffraction into a harbor, berth agitation |
 | Structure | `applications.structures`, `applications.seawall` | armor size, crest level, stability checks |
 | Loads | `applications.piles`, `applications.berthing` | Morison loads through the wave cycle, berthing energy and fenders |
-| Scour | `applications.scour`, `applications.river` | contraction, pier and abutment scour over the tidal cycle; the flow split that feeds it |
+| Scour | `applications.scour`, `applications.river` | contraction, pier and abutment scour over the tidal cycle; the flow split that supplies it |
 | Navigation | `applications.channel` | dredge level, channel width, dredge volume |
 | Coastline | `applications.nourishment`, `applications.surge` | fill life and profile, water level budget and a connected flood map |
-| Deliverable | `drafting`, `applications.sections` | a dimensioned drawing sheet and a DXF |
+| Deliverable | `drafting`, `applications.sections` | dimensioned drawing sheet and DXF |
 
-## Principles
+## Implementation rules
 
-Three rules run through the whole package, and they explain most of the
-design decisions you will meet in the later chapters.
+Three rules apply throughout the package.
 
-**Every relation names its source.** Module docstrings list their sources
-(Van der Meer 1988, EurOtop 2018, Goda 2010, PIANC 2014, HEC-18, and so
-on), and each function says which equation it implements.
+**Source attribution.** Module docstrings list the sources implemented (Van
+der Meer 1988, EurOtop 2018, Goda 2010, PIANC 2014, HEC-18, among others).
+Each function records the equation it implements.
 
-**Nothing silently extrapolates.** Where a formula has a documented range of
-validity, the functions compute outside it if asked, because engineering
-judgement outside a range is the engineer's call, but they say so through a
-`warnings` list, a flag such as `within_range`, `impulsive`, or
-`screening_only`, or a note in the returned dictionary.
+**Range reporting.** Where a relation has a documented range of validity,
+the function computes outside that range and reports the condition through
+a `warnings` list, a flag such as `within_range`, `impulsive` or
+`screening_only`, or an entry in the returned dictionary.
 
-**Assumptions are reported, not buried.** Width components of a channel that
-you did not specify are taken at their most benign class and reported as
-assumed. The `+1` safety term in Froehlich's abutment equation is reported
-as a separate `safety_margin`. The steady-current floor added to the Sumer
-and Fredsoe scour relation is flagged as `current_governs`. A reviewer
-should always be able to see which assumption to argue with.
+**Assumption reporting.** Unspecified channel-width components are assigned
+the least restrictive class and reported as assumed. The `+1` safety term in
+Froehlich's abutment equation is returned separately as `safety_margin`. The
+steady-current floor applied to the Sumer and Fredsoe scour relation is
+flagged as `current_governs`.
 
-## Before the math
+## Terminology
 
-A few terms recur wherever this manual discusses the numerical
-framework of Part VII. A *field*
-is any variable defined over the domain, such as water depth, velocity, or
-pressure. A *grid* divides the domain into cells where these variables are
-stored; in pyCoastal the values live at cell centers. A *stencil* is the
-small pattern of neighboring cells used to approximate derivatives through
-finite differences, and these approximations form the spatial *operators*.
-Once the spatial terms are discretized, a *time integrator* updates the
-solution step by step, using a right-hand side that gathers fluxes,
-advection, diffusion, pressure gradients, and sources. *Boundary conditions*
-specify what happens at the domain edges.
+The following terms are used in Part VII. A *field* is a variable defined
+over the domain, such as water depth, velocity or pressure. A *grid*
+divides the domain into cells holding those variables; pyCoastal stores
+values at cell centers. A *stencil* is the pattern of neighboring cells used
+to approximate a derivative by finite differences; these approximations form
+the spatial *operators*. A *time integrator* advances the discretized
+solution using a right-hand side containing fluxes, advection, diffusion,
+pressure gradients and sources. *Boundary conditions* define the solution at
+the domain edges.
 
-On the design side, a *design condition* is the wave and water level a
-structure is sized against, a *design object* (for example `SeawallDesign`
-or `ChannelDesign`) is the fully dimensioned result of a design function,
-and a *sheet* is a drawing at a true, stated scale with a border, a title
-block, and specification notes.
+In Parts III and IV, a *design condition* is the wave and water level used
+to size a structure, a *design object* (for example `SeawallDesign` or
+`ChannelDesign`) is the dimensioned result returned by a design function,
+and a *sheet* is a drawing at a stated scale with border, title block and
+specification notes.
 
-## How this manual is organized
+## Manual organization
 
-- **Part I** covers installation, the repository layout, conventions, and a
-  quick start.
-- **Part II** documents the standalone engineering formulae in
-  `pyCoastal.tools`, which the design modules build on.
-- **Part III** is the core of the book: one chapter per design application,
-  in the order of the design chain.
-- **Part IV** covers the drafting layer: sections, sheets, and DXF export.
-- **Part V** describes PyCoaTools, the browser version of the design
-  modules.
-- **Part VI** describes PyCoaPedia, the knowledge base of the coastal and
-  ocean engineering literature, how to navigate it, and how the repository
-  serves AI agents.
-- **Part VII** describes the numerical framework and the governing
-  equations, with the simulation examples that exercise them. The design
-  modules do not depend on it; it stands on its own.
-- **Part VIII** describes the test suite and the verification of the browser
-  engine against the Python.
-- **Appendices** give a list of symbols and the engineering references.
+- **Part I**: installation, repository layout, conventions, quick start.
+- **Part II**: the standalone engineering formulae in `pyCoastal.tools`,
+  used by the design modules.
+- **Part III**: one chapter per design application, in the order of the
+  design chain.
+- **Part IV**: the drafting layer, sections, sheets and DXF export.
+- **Part V**: PyCoaTools, the browser implementation of the design modules.
+- **Part VI**: PyCoaPedia, its interfaces, and the repository layout for AI
+  agents.
+- **Part VII**: the numerical framework, the governing equations, and the
+  simulation examples. The design modules have no dependency on this layer.
+- **Part VIII**: the test suite and the verification of the browser engine
+  against the Python implementation.
+- **Appendices**: list of symbols and engineering references.

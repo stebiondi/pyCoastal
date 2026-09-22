@@ -4,11 +4,11 @@
 `examples/nourishment_design.py`, `examples/nourishment_profile.py`.
 *Browser:* Nourishment.
 
-A beach fill is designed in two directions at once. Alongshore, it is a
-perturbation to a straight shoreline that spreads and leaves the project
-area; the question is how long it lasts. Cross-shore, the beach takes the
-profile its own grain size can hold; the question is how much dry beach a
-given volume buys, and how much that depends on where the sand comes from.
+A beach fill is designed in two directions. Alongshore, the fill is a
+perturbation to a straight shoreline; it spreads and the placed volume
+leaves the project area over time. Cross-shore, the equilibrium profile is
+set by the grain size of the fill, which determines the dry beach width
+obtained from a given placed volume.
 
 ## The planform: how long a fill lasts
 
@@ -29,11 +29,11 @@ and length $L = 2a$, Pelnard-Considere (1956) gives @eq:pelnard,
 
 $$ y(x, t) = \frac{W}{2}\left[\operatorname{erf}\left(\frac{a - x'}{2\sqrt{\varepsilon t}}\right) + \operatorname{erf}\left(\frac{a + x'}{2\sqrt{\varepsilon t}}\right)\right], $$ {#eq:pelnard}
 
-with $x'$ from the fill center (`pelnard_considere`). The center width
-$W\operatorname{erf}(a/2\sqrt{\varepsilon t})$ halves when the argument
-reaches $\operatorname{erf}^{-1}(1/2) = 0.4769$, which defines the
-spreading half-life, the natural clock of a fill
-(`sections.spreading_half_life`).
+with $x'$ measured from the fill center (`pelnard_considere`). The center
+width $W\operatorname{erf}(a/2\sqrt{\varepsilon t})$ halves when the
+argument reaches $\operatorname{erf}^{-1}(1/2) = 0.4769$. This defines the
+spreading half-life returned by `sections.spreading_half_life`, which sets
+the time scale of the planform evolution.
 
 `NourishmentDesign(length=1000, berm_width=30, taper=100, center=None, D=8,
 B=2, porosity=0.4)` is the fill: full-width length, shoreline advance at
@@ -54,7 +54,7 @@ in the test suite.
 
 ![Nourishment design study: planform evolution against the Pelnard-Considere solution, retained volume, and the renourishment cycle.](media/nourishment_design.png){#fig:nourishment-design}
 
-## The profile: what a borrow source is worth
+## The profile: borrow material and shoreline advance
 
 Dean's equilibrium profile is $h = Ay^{2/3}$ (`equilibrium_profile`), with
 the scale parameter tied to the fall velocity (Kriebel, Kraus and Larson
@@ -69,23 +69,25 @@ at 0.38 mm gives 0.141, against Dean's tabulated 0.10 and 0.14).
 A fill with scale $A_f$ placed on a native beach with scale $A_n$ pushes the
 profile seaward at each depth by
 $\Delta(h) = a + (h/A_f)^{3/2} - (h/A_n)^{3/2}$, where $a$ is the shoreline
-advance. Integrating over *depth* (not distance, because the active profile
-is bounded by the closure contour) from the waterline to closure gives @eq:fill-volume,
+advance. The active profile is bounded by the closure contour, so the
+integration runs over *depth* from the waterline to closure and gives
+@eq:fill-volume,
 
 $$ V = Ba + ah_L + 0.4\,h_L^{5/2}\left(A_f^{-3/2} - A_n^{-3/2}\right), $$ {#eq:fill-volume}
 
-where $h_L$ is the closure depth, or the depth where the profiles meet if
-the fill is coarse enough to intersect first (`fill_volume_for_advance`).
-For matched sand it is exactly $V = (B + h_*)a$. Three cases follow:
-coarser fill **intersects** the native profile and buys more beach per
-cubic meter; finer fill is **non-intersecting**; and below a **critical
-volume** (`critical_volume`) a fine fill buys no dry beach at all, because
-the whole placement goes into flattening the underwater profile.
+where $h_L$ is the closure depth, or the depth at which the profiles
+intersect for a fill coarser than the native sand
+(`fill_volume_for_advance`). For matched sand the expression reduces to
+$V = (B + h_*)a$. Three cases follow. A coarser fill **intersects** the
+native profile and yields a larger advance per unit volume. A finer fill is
+**non-intersecting**. Below a **critical volume** (`critical_volume`) a
+finer fill yields no dry beach: the placed volume is contained in the
+flattening of the submerged profile.
 `shoreline_advance(A_native, A_fill, volume, berm_height, closure_depth)`
-solves for the advance by bisection (one solver that cannot pick the wrong
-branch) and names the case. `profile_overfill_factor(native, borrow, ...)`
-is the ratio of borrow to native volume for the same advance, which is not
-James's (1975) textural overfill ratio. `grain_compatibility(native, borrow)`
+solves for the advance by bisection over the volume, which is monotonic in
+the advance, and returns the case. `profile_overfill_factor(native, borrow,
+...)` returns the ratio of borrow to native volume for the same advance.
+This quantity is distinct from James's (1975) textural overfill ratio. `grain_compatibility(native, borrow)`
 compares the phi means and sortings
 ($\delta = (\phi_b - \phi_n)/\sigma_n$) and gives a verdict; `phi_size` and
 `size_from_phi` convert grain sizes.

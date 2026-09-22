@@ -1,15 +1,16 @@
 # Governing equations and closures {#sec:physics}
 
-`pyCoastal.physics` holds the governing equations as building blocks: flux
-functions and source terms that a solver assembles into a right-hand side,
-a pressure-projection step, Poisson solvers, and eddy-viscosity closures.
+`pyCoastal.physics` provides the governing-equation components: flux
+functions and source terms for assembly into a right-hand side, a
+pressure-projection step, Poisson solvers, and eddy-viscosity closures.
 
 ## Shallow water equations
 
-The shallow water equations describe a fluid layer whose horizontal scales
-are much larger than its depth. They track the total depth and the
-depth-averaged velocity, with the pressure hydrostatic. They capture wave
-propagation, flooding and draining, and large-scale currents ([@eq:swe-mass; @eq:swe-x; @eq:swe-y]):
+The shallow water equations apply to a fluid layer whose horizontal scales
+are large compared with its depth. The variables are the total depth and the
+depth-averaged velocity; the pressure is hydrostatic. The equations
+represent wave propagation, flooding and draining, and large-scale currents
+([@eq:swe-mass; @eq:swe-x; @eq:swe-y]):
 
 $$ \frac{\partial h}{\partial t} + \frac{\partial (hu)}{\partial x} + \frac{\partial (hv)}{\partial y} = 0, $$ {#eq:swe-mass}
 

@@ -3,11 +3,11 @@
 *Module:* `pyCoastal.applications.piles`. *Example:*
 `examples/pile_wave_loads.py`. *Browser:* Monopile.
 
-The load on a pile is not one number. It is a distribution up the pile that
-changes through the wave cycle, and the two things a designer needs from it,
-the base shear and the overturning moment at the mudline, peak at different
-phases. This module computes the distribution, integrates it, and sweeps the
-phase, rather than evaluating a formula at the crest.
+The wave load on a pile is a distribution along the pile that varies through
+the wave cycle. The base shear and the mudline overturning moment reach
+their maxima at different phases. The module computes the load
+distribution, integrates it, and sweeps the wave phase to locate both
+maxima.
 
 ## The Morison equation
 
@@ -17,25 +17,29 @@ inertia term in phase with the acceleration:
 
 $$ f(z) = \tfrac12\rho C_d D\,u|u| + \rho C_m\frac{\pi D^2}{4}\frac{\partial u}{\partial t}. $$ {#eq:morison}
 
-Slender means $D/L$ below about 0.2; above that the wave diffracts around
-the member and the functions warn rather than return a number.
+The slender-member condition is $D/L$ below about 0.2. Above that value the
+wave diffracts around the member and the Morison equation does not apply;
+the functions report the condition through the returned
+`diffraction_ratio` and a warning.
 
 **Kinematics.** `wave_kinematics(H, T, depth, z, phase=0.0,
-stretching="wheeler")` gives linear-theory velocity and acceleration.
-Linear theory says nothing about the water between the still water level
-and the crest, which is exactly where the load is largest, and
-extrapolating the $\cosh$ profile there overstates the velocity badly.
-Wheeler (1970) stretching maps the still-water profile onto the
-instantaneous water column and is the default; `"none"` and
-`"extrapolate"` are available for comparison.
+stretching="wheeler")` returns linear-theory velocity and acceleration.
+Linear theory is undefined between the still water level and the crest,
+where the load per unit length is largest. Extrapolation of the $\cosh$
+profile into that region overestimates the velocity. Wheeler (1970)
+stretching maps the still-water profile onto the instantaneous water column
+and is the default. The settings `"none"` and `"extrapolate"` are available
+for comparison.
 
 **Regime and coefficients.** The Keulegan-Carpenter number
-$KC = u_\mathrm{max}T/D$ sets which term dominates: below about 3 the load is
-almost all inertia, above about 20 drag governs. `drag_inertia_coefficients(KC,
-rough=True)` returns post-critical values from DNV-RP-C205: $C_d = 1.05$ for
-a rough cylinder (any pile with marine growth) and 0.65 for a clean one,
-with $C_m$ falling from the potential-flow value of 2.0 as $KC$ rises.
-These are concept-design starting values.
+$KC = u_\mathrm{max}T/D$ determines the dominant term: below about 3 the load
+is inertia dominated, above about 20 drag dominated.
+`drag_inertia_coefficients(KC, rough=True)` returns post-critical values
+from DNV-RP-C205: $C_d = 1.05$ for a rough cylinder, which applies to a pile
+carrying marine growth, and 0.65 for a clean cylinder. $C_m$ decreases from
+the potential-flow value of 2.0 with increasing $KC$. The values are
+concept-design defaults; a detailed design takes them from the governing
+code for the actual roughness, $KC$ and Reynolds number.
 
 **Integration and sweep.** `morison_load_profile` evaluates @eq:morison up
 the pile, `integrate_load(z, load, mudline)` integrates the force and the
@@ -73,13 +77,12 @@ result["crest_underestimate"]     # what a crest-phase check would miss
 
 <!-- output: pile_wave_loads -->
 
-A large monopile is inertia dominated, so the load follows the fluid
-acceleration, which peaks a quarter cycle before the crest. Evaluating the
-load under the crest, because that is where the water is highest,
-understates the overturning moment by 62% here. That is what the phase
-sweep exists to catch. The diameter table shows the transition from drag to
-inertia dominance as the pile grows, and the scour result shows that waves
-alone barely scour a pile this large because $KC$ is small; current is what
-governs.
+The 8 m monopile is inertia dominated. The load follows the fluid
+acceleration, which reaches its maximum a quarter cycle ahead of the crest.
+Evaluation at the crest phase alone understates the overturning moment by
+62% in this case; `phase_sweep` returns both phases and the ratio. The
+diameter table gives the transition from drag to inertia dominance with
+increasing diameter. At $KC = 6.3$ the wave-induced scour is 0.10 m; the
+steady-current value for the same pile is 10.40 m.
 
 ![Morison loads on an 8 m monopile: load profiles at the crest and worst phases, and force and moment through the wave cycle.](media/pile_wave_loads.png){#fig:pile-loads}

@@ -5,12 +5,11 @@
 *Modules:* `pyCoastal.drafting`, `pyCoastal.applications.sections`,
 `pyCoastal.plotting`. Needs the `plots` extra.
 
-A coastal cross-section is not a plot. It is a scaled drawing: the geometry
-is in real meters, line weights carry meaning, materials are hatched rather
-than colored by value, and every dimension that governs the design is called
-out on the paper. `pyCoastal.drafting` gives the small set of primitives that
-takes matplotlib from plotting to drafting, and `applications.sections`
-turns each design object into a drawing and a take-off.
+A coastal cross-section is produced as a scaled drawing: geometry in
+meters, line weights carrying meaning, hatched materials, and the governing
+dimensions annotated on the sheet. `pyCoastal.drafting` provides the
+drafting primitives on top of matplotlib. `applications.sections` converts
+each design object into a drawing and a quantity take-off.
 
 ## Drafting primitives
 
@@ -40,14 +39,14 @@ office:
 - `detail_bubble(label, title, scale="")` places the circled detail marker;
 - `notes_block(lines, title="NOTES", numbered=True)` places numbered
   specification notes;
-- `table(rows, title="Design parameters")` places the parameter block (a
-  drawing that does not carry its design inputs is not a deliverable);
+- `table(rows, title="Design parameters")` places the parameter block, which
+  records the design inputs on the sheet;
 - `scale_bar(length, divisions=4)` and `key(loc="upper left")` add a
   checkered scale bar and a material key;
 - `fit_scale(xlim, zlim, scales=None, paper="")` sets the view to a true,
   round drawing scale that fits the extents, and
-  `auto_exaggeration(xlim, zlim, cap=200)` stretches the second axis just
-  enough to fill the viewport when a true scale is unreadable;
+  `auto_exaggeration(xlim, zlim, cap=200)` scales the second axis to fill
+  the viewport, for cases where a true scale is not legible;
 - `finish(xlim=None, zlim=None, grid=True)`, `save(path, dpi=600)`, and
   `to_dxf(path, scale=1.0)`.
 
@@ -83,8 +82,8 @@ layers to a minimal DXF R12 file that any CAD package opens.
 
 ## Sections for each design
 
-Every structure in `applications.sections` has three entry points, and all
-three take a design object rather than loose numbers:
+Every structure in `applications.sections` has three entry points. All
+three take a design object as their input:
 
 - `draw_*` puts the geometry and annotation into an open `Section` and
   returns the extents it needs;
@@ -118,13 +117,13 @@ across the whole waterway as one line, and `plan_margin` and
 
 ### Scale and exaggeration
 
-Sections are drawn at a true scale by default, fitted to a round standard
-scale that the title block then states. Where a true scale is unreadable, as
-for a channel 600 m wide and 20 m deep or a beach profile hundreds of meters
-long and a few meters deep, the exaggeration is applied deliberately and
-printed on the drawing next to the scale. A drawing set then carries a
-second view at true scale where the detail matters: the channel keel and
-underkeel allowances, and the seawall toe.
+Sections are drawn at true scale by default and fitted to a round standard
+scale, which the title block records. Where a true scale is not legible, as
+for a channel 600 m wide and 20 m deep or a beach profile several hundred
+meters long and a few meters deep, a vertical exaggeration is applied and
+its factor is printed next to the scale. The corresponding sheets carry a
+second view at true scale: the channel keel with the underkeel allowances,
+and the seawall toe.
 
 ## The drawing sheets
 

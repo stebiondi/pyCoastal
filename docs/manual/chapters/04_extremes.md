@@ -5,38 +5,37 @@
 *Module:* `pyCoastal.applications.extremes`. *Example:*
 `examples/design_wave.py`. *Browser:* Return values.
 
-Every structure in this package is sized against a design condition, and
-that condition has to come from somewhere. This module is where it comes
-from: a measured or hindcast record in, a return value with an honest
-confidence band out.
+The module derives a design condition from a measured or hindcast record and
+returns a return value with a confidence band. The design conditions used by
+the structural modules of this part originate here.
 
-## Two routes
+## Methods
 
-**Peaks over threshold (POT).** Keep the independent storm peaks above a
-threshold, fit a generalized Pareto distribution (GPD) to the excesses, and
-combine it with the rate at which peaks arrive. It uses the record
-efficiently, but the answer depends on the threshold, so the threshold is
-chosen with the diagnostics below rather than by eye.
+**Peaks over threshold (POT).** Independent storm peaks above a threshold are
+retained, a generalized Pareto distribution (GPD) is fitted to the excesses,
+and the fit is combined with the arrival rate of the peaks. The result
+depends on the threshold, which is selected with the diagnostics described
+below.
 
-**Block maxima.** Keep the largest value in each year and fit a generalized
-extreme value (GEV) distribution. It wastes data but is hard to get wrong,
-and it is the right check on a POT answer.
+**Block maxima.** The largest value in each year is retained and a
+generalized extreme value (GEV) distribution is fitted. The method uses less
+of the record and provides an independent check on a POT result.
 
-Both are fitted by **L-moments** (Hosking and Wallis 1997), which are close
-to unbiased for the sample sizes a coastal record offers, are not troubled by
-the flat likelihood surfaces that defeat maximum likelihood on short
-records, and need no optimizer. Shape parameters use the extreme-value
-convention: a positive shape is a heavy tail with no upper bound, a negative
-shape a finite upper limit. Hosking writes $k = -\text{shape}$; the
-conversion is done internally and never exposed.
+Both are fitted by **L-moments** (Hosking and Wallis 1997). L-moment
+estimators are close to unbiased at the sample sizes of a coastal record,
+are stable on the flat likelihood surfaces of short records, and require no
+optimizer. Shape parameters follow the extreme-value convention: a positive
+shape gives a heavy tail with no upper bound, a negative shape a finite
+upper limit. Hosking's $k = -\text{shape}$ is converted internally and is
+not exposed in the interface.
 
-## Theory
+## Formulation
 
-**Declustering.** `decluster(values, threshold, separation)` walks the
-record and keeps only the largest value in each run above the threshold.
-Two runs separated by fewer than `separation` samples below the threshold
-are one storm. For a 3-hourly record, 24 samples is a three-day separation,
-the usual choice for storm waves.
+**Declustering.** `decluster(values, threshold, separation)` scans the record
+and retains the largest value in each run above the threshold. Two runs
+separated by fewer than `separation` samples below the threshold are treated
+as one storm. For a 3-hourly record, 24 samples corresponds to a three-day
+separation, the standard value for storm waves.
 
 **GPD fit.** With survivor function
 $1 - F(x) = (1 + \xi x/\sigma)^{-1/\xi}$ (exponential as $\xi \to 0$), the
@@ -45,51 +44,50 @@ $\tau = \lambda_2/\lambda_1$ of the excesses are given by @eq:gpd-lmom,
 
 $$ \xi = 2 - \frac{1}{\tau},\qquad \sigma = \lambda_1(1 - \xi). $$ {#eq:gpd-lmom}
 
-A shape at or above one means the fitted mean does not exist; the fit is
-returned and flagged rather than clipped.
+A shape at or above one implies an undefined fitted mean. The fit is
+returned with a warning and is not clipped.
 
 **POT return value.** With $\lambda$ peaks per year, the $T$-year value is @eq:pot-return,
 
 $$ x_T = u + \frac{\sigma}{\xi}\left[(\lambda T)^{\xi} - 1\right], $$ {#eq:pot-return}
 
-with the logarithmic form in the exponential limit. A return period shorter
-than $1/\lambda$ is outside the model.
+with the logarithmic form in the exponential limit. Return periods shorter
+than $1/\lambda$ are outside the model.
 
 **GEV fit.** With $F(x) = \exp\{-[1 + \xi(x - \mu)/\sigma]^{-1/\xi}\}$, the
-parameters come from Hosking's L-moment estimators, whose polynomial
-approximation for $k$ from the L-skewness is accurate to better than
+parameters follow Hosking's L-moment estimators. The polynomial
+approximation for $k$ from the L-skewness has an accuracy better than
 $10^{-4}$ for $-0.5 < k < 0.5$.
 
-**Plotting positions.** The empirical return periods use the Gringorten
-position $(i - a)/(n + 1 - 2a)$ with $a = 0.44$, close to unbiased for the
+**Plotting positions.** Empirical return periods use the Gringorten position
+$(i - a)/(n + 1 - 2a)$ with $a = 0.44$, which is close to unbiased for the
 Gumbel and GEV families.
 
-**Threshold diagnostics.** Above a threshold where the GPD holds, the mean
-excess is linear in the threshold (`mean_residual_life`), and both the
-fitted shape and the *modified* scale $\sigma^* = \sigma - \xi u$ are flat
-(`threshold_stability`). The raw scale is not threshold-invariant, and
-reading it as if it were is a common way to pick a threshold badly.
+**Threshold diagnostics.** Above a threshold at which the GPD applies, the
+mean excess is linear in the threshold (`mean_residual_life`), and the
+fitted shape and the *modified* scale $\sigma^* = \sigma - \xi u$ are
+constant (`threshold_stability`). The raw scale is not threshold-invariant
+and is not used for threshold selection.
 
-**Confidence.** `ExtremeFit.confidence` is a percentile bootstrap over the
-fitted peaks. It captures sampling error in the parameters and nothing
-else: not measurement error, not the choice of threshold, and not whether
-the climate that produced the record is the one the structure will see.
-Those are usually the larger uncertainties.
+**Confidence band.** `ExtremeFit.confidence` applies a percentile bootstrap
+over the fitted peaks. It quantifies sampling error in the parameters. It
+excludes measurement error, threshold selection, and non-stationarity of the
+wave climate.
 
-## Using the module
+## Interface
 
 ```python
 from pyCoastal.applications.extremes import (
     fit_pot, fit_block_maxima, mean_residual_life, threshold_stability,
 )
 
-mrl = mean_residual_life(record, thresholds)          # pick the threshold properly
+mrl = mean_residual_life(record, thresholds)          # threshold diagnostics
 stab = threshold_stability(record, thresholds, separation=24)
 fit = fit_pot(record, threshold=2.5, separation=24, samples_per_year=2920)
 
 fit.return_value(100)                  # 100-year Hm0
-fit.confidence(100, level=0.90)        # and how much it could have been
-fit.extrapolation_note(100)            # how far past the record that reaches
+fit.confidence(100, level=0.90)        # confidence band
+fit.extrapolation_note(100)            # extrapolation beyond the record
 print(fit.summary())
 
 check = fit_block_maxima(record, block=2920)   # annual maxima cross-check
@@ -98,32 +96,31 @@ check = fit_block_maxima(record, block=2920)   # annual maxima cross-check
 `fit_pot` and `fit_block_maxima` return an `ExtremeFit` with `kind`
 (`"pot"` or `"gev"`), `parameters`, the peaks or maxima in `data`, their
 `positions`, the `rate` and record length `years`, the bootstrap `samples`,
-and a `warnings` list. The fit warns when there are fewer than one or two
-peaks per year or fewer than about thirty in total.
+and a `warnings` list. A warning is issued for fewer than one or two peaks
+per year and for fewer than about thirty peaks in total.
 
 ## Worked example
 
-`examples/design_wave.py` builds a 40-year synthetic 3-hourly hindcast of
-$H_{m0}$ with known parameters, chooses the threshold with the diagnostics,
-fits POT and annual maxima, and hands the 100-year wave to the seawall
-designer. Because the record is synthetic, the right answer is known, so
-the example also does what a real study cannot: it repeats the whole
-analysis on 60 fresh 40-year records and measures the true sampling spread
-of the 100-year estimate, then checks the bootstrap band against it.
+`examples/design_wave.py` generates a 40-year synthetic 3-hourly record of
+$H_{m0}$ with known parameters, selects the threshold from the diagnostics,
+fits POT and annual maxima, and passes the 100-year wave to the seawall
+module. The record is synthetic, so the target value is known. The example
+repeats the analysis on 60 independent 40-year records, measures the
+sampling spread of the 100-year estimate, and compares the bootstrap band
+with that spread.
 
 <!-- output: design_wave -->
 
 ![Extreme value analysis of a 40-year record: threshold diagnostics, return level plot with bootstrap band, and the sampling spread of the 100-year estimate.](media/design_wave.png){#fig:design-wave}
 
-The bootstrap band from the single record (width 1.45 m) matches the real
-sampling spread across records (1.32 m), and the true 100-year value of
-5.25 m sits inside it. The 100-year wave is 2.5 times the record length, so
-the band should be treated as a lower bound on the real uncertainty, which
-is exactly what `extrapolation_note` says.
+The bootstrap band from the single record has a width of 1.45 m against a
+sampling spread across records of 1.32 m, and contains the target value of
+5.25 m. The 100-year return period is 2.5 times the record length;
+`extrapolation_note` reports this ratio, and the band is a lower bound on
+the total uncertainty.
 
-## Limits
+## Limitations
 
 - Stationarity is assumed: no trend or climate change in the record.
-- The band is sampling error only.
-- Very short records, or thresholds that leave too few peaks, are flagged
-  but still fitted.
+- The confidence band quantifies sampling error only.
+- Short records and thresholds retaining few peaks are fitted and flagged.

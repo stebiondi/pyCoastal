@@ -3,14 +3,12 @@
 *Module:* `pyCoastal.applications.channel`. *Example:*
 `examples/navigation_channel.py`. *Browser:* Channel.
 
-How deep and how wide does the approach channel have to be? The answer is a
-stack of allowances, each small, each defensible, and together often several
-meters. This module builds that stack explicitly so it can be argued over
-line by line, which is how a dredging budget actually gets agreed. It
-follows the concept-design method of PIANC (2014), Report 121. The width
-and lane tables are exposed as editable dictionaries rather than buried,
-because the governing edition of the guideline, and the pilots on the day,
-decide the numbers on a real scheme; a real channel is confirmed by
+The module sizes the depth and width of an approach channel. Both are built
+as a sum of allowances, each reported separately. The method is the
+concept-design procedure of PIANC (2014), Report 121. The width and
+maneuvering-lane tables are module-level dictionaries and can be edited to
+match the governing edition of the guideline or local requirements. The
+procedure is concept design; a final channel layout is confirmed by
 simulation.
 
 ## The vessel
@@ -48,11 +46,11 @@ to ship length, which governs whether the ship contours or bridges the wave.
 net_clearance=0.6, water_level_allowance=0.0, dredging_tolerance=0.3,
 survey_tolerance=0.2, siltation_allowance=0.2, density_allowance=0.0)`
 returns each allowance, the gross total below the keel, and the required
-depth. Leaving out the dredging and survey tolerances is the most common way
-a channel ends up shallower than its drawing.
+depth. The dredging and survey tolerances are part of the stack and are
+included by default.
 
-Because the squat depends on the depth and the depth depends on the squat,
-`design_channel` solves the depth by a short fixed-point iteration.
+The squat depends on the water depth and the water depth depends on the
+squat. `design_channel` resolves this dependency by fixed-point iteration.
 
 ## The width chain
 
@@ -65,9 +63,9 @@ speed, crosswind, crosscurrent, longitudinal current, waves, aids to
 navigation, bottom surface, depth of waterway, and cargo hazard (with
 separate outer and inner-channel columns), plus a bank clearance each side
 (`BANK_CLEARANCE`), plus a passing distance for two-way traffic
-(`PASSING_DISTANCE`). **Components you do not specify are taken at their
-most benign class and reported as assumed**, because a silent default is how
-a channel ends up too narrow on paper.
+(`PASSING_DISTANCE`). **Unspecified components are assigned the least
+restrictive class and reported as assumed** in the `assumptions` entry of the
+result.
 
 ## Side slopes, volumes, and turning basins
 
@@ -100,11 +98,11 @@ channel.dredge_level, channel.width, channel.dredge_volume(1000)
 
 <!-- output: navigation_channel -->
 
-The sensitivity table at the end is the lesson: one judgement call, the
-fraction of the wave height taken as vertical vessel motion, moves the
-dredge level by 0.35 m either way, more than the dredging and survey
-tolerances together.
+The sensitivity table at the end of the output quantifies the effect of
+each input. The wave response factor, the fraction of the wave height taken
+as vertical vessel motion, moves the dredge level by 0.35 m over the range
+0.3 to 0.7. The combined dredging and survey tolerances are 0.5 m.
 
-![Navigation channel drawing sheet: the whole channel with a stated vertical exaggeration, and the underkeel clearance at a true scale where the allowances read as real thicknesses.](media/navigation_channel_sheet.png){#fig:channel-sheet}
+![Navigation channel drawing sheet: the channel section at a stated vertical exaggeration, and the underkeel clearance at true scale.](media/navigation_channel_sheet.png){#fig:channel-sheet}
 
-![The depth chain and its sensitivity to each judgement.](media/channel_depth_chain.png){#fig:channel-chain}
+![The depth chain and its sensitivity to each input.](media/channel_depth_chain.png){#fig:channel-chain}

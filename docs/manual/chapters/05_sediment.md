@@ -2,19 +2,18 @@
 
 *Module:* `pyCoastal.applications.sediment`.
 
-Every structure in this package sits on, in, or behind something. This
-module makes that something a material with properties that propagate: the
-grain size that decides whether the bed moves at all, the friction angle
-that decides how hard the backfill pushes on a wall, and the unit weight
-that decides how much of that push is soil and how much is water. The
-seawall, breakwater, channel, pile, scour, and nourishment modules all take
-a `Sediment` or a catalogue key.
+The module defines bed and backfill materials and the relations that use
+them. Material properties propagate into the other design modules: the grain
+size controls bed mobility, the friction angle controls the lateral pressure
+of a backfill, and the unit weight sets the split between effective stress
+and pore pressure. The seawall, breakwater, channel, pile, scour and
+nourishment modules accept a `Sediment` instance or a catalogue key.
 
-Two families of relation live here. **Mobility** (grain size, fall
-velocity, the Shields threshold) gates scour: a bed that never reaches its
-threshold does not scour, whatever the wave height. **Earth pressure**
-(Rankine and Coulomb coefficients, and the pressure diagram with the water
-table and surcharge in the right places) loads the back of a wall.
+The module implements two groups of relation. **Mobility** (grain size, fall
+velocity, Shields threshold) determines whether the bed is in motion and
+gates the scour relations. **Earth pressure** (Rankine and Coulomb
+coefficients, and the pressure diagram including the water table and any
+surcharge) supplies the load on the back of a wall.
 
 ## The material catalogue
 
@@ -23,8 +22,8 @@ friction_angle=32, cohesion=0, phi_sorting=0.6, d90=None, description="")`
 stores a material, with derived `relative_density` ($s - 1$),
 `dry_unit_weight`, `saturated_unit_weight`, `submerged_unit_weight`,
 `grading` ($d_{90}/d_{50}$, with $d_{90}$ defaulting to $2.5\,d_{50}$), and
-`cohesive`. `sediment(key)` looks up the catalogue (@tbl:sediments) and
-names the options on a bad key.
+`cohesive`. `sediment(key)` returns a catalogue material
+(@tbl:sediments); an unknown key raises with the available keys listed.
 
 : The built-in material catalogue. {#tbl:sediments}
 
@@ -52,8 +51,8 @@ D_* &= d_{50}\left[\frac{g(s-1)}{\nu^2}\right]^{1/3},\\
 w_s &= \frac{\nu}{d_{50}}\left[\sqrt{10.36^2 + 1.049D_*^3} - 10.36\right].
 \end{aligned} $$ {#eq:soulsby}
 
-The fall velocity relation is valid from silt to gravel, which is why it is
-preferred to Stokes at one end and a drag law at the other.
+The fall velocity relation applies from silt to gravel and covers the full
+grain-size range of the catalogue.
 
 Under waves, `wave_orbital_velocity(Hs, T, depth)` gives the near-bed
 orbital amplitude from linear theory and `wave_shields(material, Hs, T,
@@ -62,33 +61,34 @@ turbulent bed and a Nikuradse roughness $k_s = 2.5\,d_{50}$ (@eq:swart):
 
 $$ f_w = \exp\left[5.213\left(\frac{A}{k_s}\right)^{-0.194} - 5.977\right],\quad f_w \le 0.3. $$ {#eq:swart}
 
-`bed_mobility(material, Hs, T, depth)` is the gate the scour functions use.
-It returns whether the bed is live, the regime (live bed, clear water, or
-cohesive), and by how much the threshold is exceeded. Scour relations are
-almost all live-bed results, and applying one to a bed that never reaches
-its threshold predicts a hole that will not form.
+`bed_mobility(material, Hs, T, depth)` returns the mobility state used by
+the scour functions: whether the bed is live, the regime (live bed, clear
+water or cohesive), and the ratio of the Shields parameter to its critical
+value. The scour relations implemented in this package are live-bed results
+and are gated on this state.
 
 ## Earth pressure
 
 `earth_pressure_coefficient(friction_angle, kind="active", wall_friction=0,
-backslope=0)` returns the Rankine coefficient for `"active"`,
-`"at_rest"` ($K_0 = 1 - \sin\phi'$), or `"passive"`; a non-zero wall
-friction switches the active case to Coulomb, which is the honest choice for
-a rough concrete face and gives a smaller force. Which coefficient applies
-is a question about movement, not about soil: a wall that cannot move the
-millimeter or two that mobilizes the active state carries at-rest pressure,
-roughly half as large again. Choosing "active" because it is smaller is the
-most common way a retaining structure is under-designed.
+backslope=0)` returns the Rankine coefficient for `"active"`, `"at_rest"`
+($K_0 = 1 - \sin\phi'$) or `"passive"`. A non-zero wall friction selects the
+Coulomb active coefficient, which applies to a rough wall face and returns a
+smaller force.
+
+Selection between the coefficients is governed by wall movement. A wall free
+to move by the displacement that mobilizes the active state carries active
+pressure. A wall restrained against that displacement carries at-rest
+pressure, which is approximately 1.5 times the active value for the
+materials in the catalogue.
 
 `lateral_earth_pressure(material, height, water_table=0, surcharge=0,
-kind="active")` builds the pressure diagram with effective stress and pore
-water apart; `lateral_earth_force(...)` integrates it into `soil`, `water`,
-and `total` forces with the lever arm of the total. Below the water table
-the soil pushes with its submerged unit weight and the water separately
-with its full hydrostatic gradient, $K = 1$. The sum is larger than dry soil
-alone would give, which is why drainage behind a seawall is a structural
-matter and not a detail. The soil force can be argued down with a better
-backfill; the water force can only be drained away.
+kind="active")` returns the pressure diagram with effective stress and pore
+pressure as separate arrays. `lateral_earth_force(...)` integrates the
+diagram into `soil`, `water` and `total` forces and the lever arm of the
+total. Below the water table the soil contributes its submerged unit weight
+and the pore water contributes the full hydrostatic gradient at $K = 1$. The
+total therefore exceeds the dry-soil value. The soil component depends on
+the backfill material; the water component is removed only by drainage.
 
 ```python
 from pyCoastal.applications.sediment import (

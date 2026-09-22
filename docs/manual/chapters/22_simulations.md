@@ -1,10 +1,10 @@
 # Simulation examples {#sec:simulations}
 
-Each numerical example connects one governing equation, one set of
-numerics, and one diagnostic to a single learning objective. The scripts
-read their parameters from YAML files in `examples/configs/`, so an
-experiment can be repeated or swept by editing a few lines of text. They
-animate their fields with matplotlib; run them from the repository root.
+Each numerical example combines one governing equation, one discretization
+and one diagnostic. The scripts read their parameters from YAML files in
+`examples/configs/`, so a case is repeated or swept by editing the case
+file. The fields are animated with matplotlib. The scripts run from the
+repository root.
 
 ```bash
 python examples/numerics/water_drop.py

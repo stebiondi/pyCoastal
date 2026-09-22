@@ -30,8 +30,8 @@ pip install pyCoastal
 pip install "pyCoastal[plots]"      # with drawings and plotting
 ```
 
-From a clone, in editable mode, which is the right choice for development
-and for running the examples:
+From a clone, in editable mode, for development and for running the
+examples:
 
 ```bash
 git clone https://github.com/stebiondi/pyCoastal.git
@@ -83,8 +83,8 @@ pyCoastal/
 
 ## Conventions
 
-The same conventions hold in every module. Where a module departs from them
-its docstring says so.
+The following conventions apply in every module. Departures are recorded in
+the docstring of the module concerned.
 
 **Coordinates.** `x` and `y` span the horizontal plane and `z` is elevation,
 positive upward. In 2D arrays `x` is axis 0 and `y` is axis 1, matching
@@ -99,32 +99,30 @@ appear: `numerics.domain.Mesh2D` builds its coordinate arrays with NumPy's
 default `indexing="xy"`, so they are shaped (ny, nx), and the solvers in
 `physics.poisson` take their right-hand side in that same (ny, nx) form.
 
-**Units.** SI throughout: meters, seconds, kilograms, newtons. Forces on
-walls and walls' weights are kN per meter run; overtopping discharges are
-liters per second per meter (l/s/m), the unit of the tolerability tables;
-ship speeds are in knots where the formula is written in knots and every
-such function says so. Grain sizes are meters, not millimeters. Angles are
-degrees where a geotechnical or navigational input is conventionally stated
-in degrees, and radians in wave-direction and slope-angle arguments of the
-low-level tools; each function states which.
+**Units.** SI throughout: meters, seconds, kilograms, newtons. Wall forces
+and wall weights are kN per meter run. Overtopping discharge is liters per
+second per meter (l/s/m), the unit of the tolerability tables. Ship speeds
+are knots in the functions whose source formula is written in knots. Grain
+sizes are meters. Geotechnical and navigational angles are degrees;
+wave-direction and slope-angle arguments of the low-level tools are radians.
+Each function states the unit it takes.
 
 **Levels.** Levels are meters relative to chart datum (m CD) and increase
-upward. Depths and draughts are positive numbers. Pier scour drawings use
-the initial bed as datum, because every dimension there is a depth below it.
+upward. Depths and draughts are positive. Pier scour drawings use the
+initial bed as datum; dimensions on those drawings are depths below it.
 
 **Wave parameters.** Design wave heights are spectral significant heights
-$H_{m0}$ at the toe of the structure. EurOtop relations use the spectral
-period $T_{m-1,0}$; if only the peak period is known,
-`DesignConditions.from_peak_period` converts with $T_{m-1,0} = T_p/1.1$.
-Goda's pressure method is written around the significant period, so the
-seawall module passes $T_p$ to it.
+$H_{m0}$ at the structure toe. EurOtop relations take the spectral period
+$T_{m-1,0}$. `DesignConditions.from_peak_period` converts a peak period with
+$T_{m-1,0} = T_p/1.1$. Goda's pressure method is formulated on the
+significant period; the seawall module passes $T_p$ to it.
 
-**Slopes.** Slopes are given as $\cot\alpha$, the horizontal run per unit
-rise, because that is how they appear on drawings.
+**Slopes.** Slope input: $\cot\alpha$, defined as horizontal run per unit
+rise. This convention is used in the generated drawings.
 
 ## Quick start
 
-A seawall from a design condition to a drawing sheet, in eight lines:
+A seawall from a design condition to a drawing sheet:
 
 ```python
 from pyCoastal.applications.structures import DesignConditions
@@ -140,9 +138,9 @@ sheet.save("seawall.png")     # 600 dpi, at a true scale stated on the sheet
 sheet.to_dxf("seawall.dxf")   # the geometry on named layers, for CAD
 ```
 
-The printed summary is the design report, in the order an engineer checks
-it (crest, founding level, base, wave force, safety factors, bearing). The
-full worked example is in @sec:seawall.
+The printed summary is the design report: crest level, founding level, base
+dimensions, wave force, safety factors and bearing pressures. The full
+worked example is in @sec:seawall.
 
 Every example in `examples/` runs from the repository root:
 

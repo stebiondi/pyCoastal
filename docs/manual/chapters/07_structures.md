@@ -3,12 +3,11 @@
 *Module:* `pyCoastal.applications.structures`. *Example:*
 `examples/breakwater_design.py`. *Browser:* Breakwater.
 
-Armor sizing and wave overtopping, with every relation traced to its
-source: Van der Meer (1988) and Hudson (SPM 1984) for stability, the Rock
-Manual (2007) for layer geometry, and EurOtop (2018) for overtopping and
-the tolerable discharge limits. The module is aimed at design work rather
-than illustration: every relation is named, its validity range stated, and
-the functions compute outside a range when asked but say so.
+The module implements armor sizing and wave overtopping. The sources are
+Van der Meer (1988) and Hudson (SPM 1984) for stability, the Rock Manual
+(2007) for layer geometry, and EurOtop (2018) for overtopping and the
+tolerable discharge limits. Each relation records its source and its
+validity range, computes outside that range, and reports the condition.
 
 ## The design condition
 
@@ -31,11 +30,11 @@ $$ \frac{H_s}{\Delta D_{n50}} = 1.0\,P^{-0.13}\left(\frac{S}{\sqrt N}\right)^{0.
 
 $$ \xi_{cr} = \left(6.2\,P^{0.31}\sqrt{\tan\alpha}\right)^{1/(P + 0.5)}. $$ {#eq:structures-2}
 
-$\Delta = \rho_s/\rho_w - 1$ (1.585 for 2650 kg/m$^3$ rock in seawater), $P$ is
-the notional permeability (0.1 impermeable core with a filter, 0.4
+$\Delta = \rho_s/\rho_w - 1$ (1.585 for 2650 kg/m$^3$ rock in seawater), $P$
+is the notional permeability (0.1 impermeable core with a filter, 0.4
 permeable core, 0.5 homogeneous, 0.6 very permeable), and $S$ the damage
-level (`DAMAGE_LEVELS`: 2 is start of damage and the usual design value, 8
-and 12 to 17 failure). `rock_armour_vandermeer(conditions, cot_alpha,
+level (`DAMAGE_LEVELS`: 2 start of damage, the design value; 8 and 12 to 17
+failure). `rock_armour_vandermeer(conditions, cot_alpha,
 Delta=1.585, permeability=0.4, damage=2.0, safety_factor=1.0)` returns
 `Dn50`, `M50`, the governing regime, $\xi$, and $\xi_{cr}$. It is valid for
 non-depth-limited waves at the toe; the shallow-water modification is not
@@ -43,9 +42,9 @@ applied.
 
 **Hudson (SPM 1984).** $H_s/(\Delta D_{n50}) = (K_D\cot\alpha)^{1/3}/1.27$,
 where 1.27 converts the SPM's $H_{1/10}$ basis to $H_s$.
-`rock_armour_hudson(conditions, cot_alpha, Delta, Kd=4.0)` is a first
-estimate and cross-check: it has no dependence on period, storm duration,
-permeability, or damage.
+`rock_armour_hudson(conditions, cot_alpha, Delta, Kd=4.0)` provides a
+screening estimate. The relation has no dependence on wave period, storm
+duration, permeability or damage level.
 
 **Layer geometry (Rock Manual).** `armour_layer(Dn50, n_layers=2,
 layer_coefficient=1.0, porosity=0.37)` returns the layer thickness
@@ -97,9 +96,10 @@ uses a discharge is tolerable for (@tbl:tolerable).
 armour="rock_two_layer_permeable", damage=2.0, permeability=0.4,
 Delta=1.585, tolerable_use="trained_staff", safety_factor=1.0,
 scatter_factor=3.0)` sizes the stone with Van der Meer and sets the crest so
-that the **upper** confidence bound on overtopping, not the mean, meets the
-limit. Designing to the mean would be exceeded about half the time. It
-returns a `BreakwaterDesign` with `Dn50`, `M50`, `regime`,
+that the **upper** confidence bound on overtopping meets the limit. The
+mean discharge is exceeded in approximately half of the realizations and is
+not used for the crest level. The function returns a `BreakwaterDesign`
+with `Dn50`, `M50`, `regime`,
 `crest_freeboard`, `q_mean`, `q_upper`, `layer`, `governing_limit`,
 `section`, and `summary()`.
 
@@ -109,22 +109,25 @@ The rest of the section is built from the design:
   (Seelig and Ahrens 1981, $K_r = a\xi^2/(b + \xi^2)$ with $a = 0.6$,
   $b = 6.6$ for rubble) and `toe_scour(bed, Hs, T, depth, reflection)`,
   which scales Xie's standing-wave result by $K_r$:
-  $S/H_s = 0.4\,K_r/\sinh(kh)^{1.35}$. This scaling is an engineering
-  assumption with the right limits, flagged `screening_only`.
+  $S/H_s = 0.4\,K_r/\sinh(kh)^{1.35}$. The scaling is an assumption with the
+  correct limits at $K_r = 1$ and $K_r = 0$, and the result carries the flag
+  `screening_only`.
   `breakwater_toe_scour(design, depth, bed)` applies it to a design, gated
   by `bed_mobility`.
 - **Foundation.** `mound_foundation(design, depth, bed="medium_sand",
   bedding_material="coarse_sand", settlement_allowance=0.0)` returns the
   bedding blanket on a geotextile, carried past each toe by the larger of the
-  scour apron and twice the scour depth (at least 3 m), and a toe berm of
-  filter stone, which sits low where the orbital velocities are smaller
-  than at the waterline.
+  scour apron and twice the scour depth, with a minimum of 3 m, and a toe
+  berm of filter stone. The berm is sized as filter stone; the near-bed
+  orbital velocities at its level are lower than at the waterline.
 - **Crown wall.** `crown_wall(design, still_water_level, deck_width=7.5,
   parapet_width=2.0, ...)` proportions a stepped concrete crown block and
-  its concrete volume. It is proportioned, not designed: its sliding and
-  overturning under impact and uplift are a separate calculation.
-- **Roundhead.** A head is attacked from more directions and its armor gets
-  less support, so practice uses a lower stability coefficient. With a
+  its concrete volume. The block is proportioned. Sliding and overturning of
+  the crown wall under wave impact and uplift are outside the scope of this
+  function.
+- **Roundhead.** A head receives wave attack from a wider range of
+  directions, and armor on a convex surface has reduced interlock. Design
+  practice applies a lower stability coefficient at the head. With a
   ratio $r = K_{D,\mathrm{head}}/K_{D,\mathrm{trunk}}$ from
   `roundhead_kd_ratio(armour, cot_alpha)` (@tbl:roundhead),
   $D_{n50,\mathrm{head}} = D_{n50,\mathrm{trunk}}/r^{1/3}$ and

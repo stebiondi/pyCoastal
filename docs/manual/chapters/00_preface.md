@@ -1,43 +1,31 @@
 # Preface {.unnumbered}
 
-pyCoastal started as the culmination of my academic journey in numerical
-modeling, fluid dynamics, and hydraulics. Students often believe that
-numerical models are overwhelmingly complex tools; however, their structure
-follows recurrent patterns common to many modeling frameworks. When properly
-configured and validated, these models can reproduce real-world phenomena,
-provide insight, and let us explore scenarios beyond direct observation.
-Some researchers prefer to work in the analytical domain, which has its own
-advantages and limitations, and I admire those who can capture the
-complexity of natural processes through concise formulations that, even if
-simplified, reflect the essence of how the world operates.
+pyCoastal began as a teaching and research package for numerical modeling,
+fluid dynamics and hydraulics. Numerical models follow recurrent structural
+patterns across modeling frameworks. Configured and validated, they
+reproduce measured behavior and allow the analysis of conditions that cannot
+be observed directly.
 
-Since the first edition of this manual the package has grown in a different
-direction as well. Next to the numerical framework it now carries a complete
-design chain: a wave record becomes a design condition, the design condition
-sizes a structure, and the structure comes out as a dimensioned drawing with
-its quantities and its specification notes. Every relation names its
-source, states its range of validity, and says so when it is pushed outside
-that range. A browser version of the design modules, PyCoaTools, puts each
-result next to what the peer-reviewed literature says about the ground it
-stands on, through PyCoaPedia, the package's knowledge base of the coastal
-and ocean engineering literature.
+The first edition of this manual documented the numerical framework. The
+package now also implements a design chain: a wave record yields a design
+condition, the design condition sizes a structure, and the structure is
+issued as a dimensioned drawing with quantities and specification notes.
+Each relation records its source and its range of validity, and reports
+application outside that range. PyCoaTools provides the design modules in a
+browser and presents each result together with the supporting literature
+held in PyCoaPedia, the knowledge base of coastal and ocean engineering
+publications distributed with the package.
 
-This manual documents all of it. Part I gets the package installed and
-running, and Part II describes the standalone engineering formulae the rest
-builds on. Part III is the core of the book: one chapter per design
-application, in the order of the design chain, each with its theory, its
-interface, a worked example with the output the code actually prints, and
-the limits of the method. Part IV covers drawings and deliverables and Part
-V the PyCoaTools browser app. Part VI explains PyCoaPedia, how it is built
-and how to navigate it from a browser, from Python, from the shell and in
-SQL, and how the repository is laid out for AI agents. Part VII is the
-numerical framework, the subject of the first edition of this manual:
-grids, operators, time integration, boundary conditions, the governing
-equations, and the simulation examples. Part VIII describes the test suite
-that keeps all of it honest.
-
-I do not expect pyCoastal to be the tool behind groundbreaking discoveries,
-although I hope it may contribute to them, or at least serve as a starting
-point for someone.
+This manual covers both. Part I describes installation and conventions.
+Part II documents the standalone engineering formulae. Part III documents
+the design applications, one chapter per module, in the order of the design
+chain, each with formulation, interface, a worked example reproducing the
+program output, and stated limitations. Part IV covers drawings and
+deliverables. Part V documents PyCoaTools. Part VI documents PyCoaPedia,
+its construction, and its interfaces for browser, Python, command line and
+SQL access, together with the repository layout for AI agents. Part VII
+documents the numerical framework: grids, operators, time integration,
+boundary conditions, governing equations, and the simulation examples.
+Part VIII documents the test suite.
 
 Stefano Biondi
