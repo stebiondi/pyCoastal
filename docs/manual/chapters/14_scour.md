@@ -179,6 +179,8 @@ base)` envelopes each component over the cycle and returns a
 total exceeds the water depth the result says so: that is a signal the
 relations have been pushed past their fitted range, not a foundation level.
 
+Continuing from the pier above, with the same `estuary`, `pier` and `base`:
+
 ```python
 from pyCoastal.applications.scour import BridgeOpening, design_bridge_scour
 

@@ -30,9 +30,10 @@ grid.n_cells, grid.cell_volume
 grid.boundary_indices["west"]    # flat indices of the west boundary cells
 ```
 
-`UniformGrid(shape, spacing, origin=None)` works in one and two dimensions
-(three-dimensional coordinates are built, but boundary indexing is 1D/2D
-only). Cell centers sit at $x_i = x_0 + (i + \tfrac12)\Delta x$. In 2D the
+`UniformGrid(shape, spacing, origin=None)` works in one and two dimensions.
+A three-dimensional shape raises `NotImplementedError` on construction,
+because the boundary indices are built there and are defined for 1D and 2D
+only. Cell centers sit at $x_i = x_0 + (i + \tfrac12)\Delta x$. In 2D the
 flat index of cell $(i, j)$ is $i\,n_y + j$, so that `x` is axis 0 and `y`
 is axis 1 in every array. The grid precomputes, for each side (`"west"`,
 `"east"`, `"south"`, `"north"`), the flat indices of the boundary cells in
@@ -47,7 +48,10 @@ case file. `Mesh1D(x0, x1, nx)` stores cell centers `x` and spacing `dx`;
 `Mesh2D(x0, x1, nx, y0, y1, ny)` stores 2D center arrays `x`, `y` and
 spacings `dx`, `dy`. `Domain(cfg)` reads a `domain:` block with
 `dimension: 1` or `2` and instantiates the right mesh; `Domain.info()`
-prints a summary.
+prints a summary. Note the axis order: `Mesh2D` builds its arrays with
+NumPy's default `indexing="xy"`, so they are shaped (ny, nx), the other way
+round from `UniformGrid`. Mixing the two in one script is the easiest
+mistake to make here.
 
 **Indexing and memory layout.** Arrays follow NumPy C order, so the
 last index is contiguous. Spacings $\Delta x$, $\Delta y$ are constant.
@@ -179,12 +183,21 @@ dictionary of tendencies.
 
 ### The `Solver` driver
 
-`pyCoastal.numerics.solver.Solver(grid, physics, bc, integrator=None)` ties
-the pieces together. `physics` provides `initialize_state(grid)`,
-`rhs(state, t, ...)` and a `dt`; `bc` provides `apply(state, t)`; the
-integrator defaults to forward Euler. `Solver.run(t0, t_end, callback=None)`
-applies the boundary conditions, takes one step, and calls
-`callback(state, t)` after every step for output or plotting.
+`pyCoastal.numerics.solver.Solver(grid, physics, bc, integrator=None)`
+sketches the loop: `Solver.run(t0, t_end, callback=None)` applies the
+boundary conditions, takes one step through the integrator, and calls
+`callback(state, t)` after each. It expects a `physics` object with
+`initialize_state(grid)`, `rhs(state, t, grid=..., bc=...)` and a `dt`, and
+a `bc` object with `apply(state, t)`.
+
+It is a scaffold rather than the way this package is driven, and two things
+have to be adapted before it runs. `BoundaryManager` exposes
+`apply_all(fields, grid, t)`, not `apply(state, t)`, so it has to be wrapped;
+and `physics.navier_stokes.rhs` takes `bc_mgr`, not the `bc` keyword the
+solver passes. Every example in `examples/` writes its own time loop
+instead, which is also the clearer way to see what a scheme does, and the
+design applications that march in time (the port solver of @sec:port, the
+one-line model of @sec:tools-oneline) carry their own loops.
 
 ### Stability
 

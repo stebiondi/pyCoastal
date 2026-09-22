@@ -71,7 +71,7 @@ stopping when $\|b - A\phi^{(k)}\|_2 / \|b\|_2 < \varepsilon$.
 - `build_laplacian(nx, ny, dx, dy)`, the sparse CSR operator with zero
   Dirichlet boundaries (needs SciPy);
 - `solve_direct(rhs, dx, dy, bc_mask=None, bc_values=None)`, a sparse direct
-  solve;
+  solve (the right-hand side is shaped (ny, nx) here, not (nx, ny));
 - `solve_jacobi(rhs, dx, dy, bc_mask=None, bc_values=None, tol=1e-6,
   maxiter=5000)`;
 - `solve_poisson(rhs, dx, dy, ..., method="auto")`, which picks the direct
