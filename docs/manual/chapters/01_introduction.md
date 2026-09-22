@@ -35,7 +35,7 @@ calculation behind it.
 : The design chain and the modules that implement each step. {#tbl:chain}
 
 | Step | Module | What it gives you |
-|------|--------|-------------------|
+|------------|-------------------------------------|------------------------------------|
 | Design condition | `applications.extremes` | 100-year wave or water level, with a confidence band |
 | Bed and soil | `applications.sediment` | grain mobility, fall velocity, earth pressure |
 | Nearshore | `applications.port` | phase-resolved diffraction into a harbor, berth agitation |

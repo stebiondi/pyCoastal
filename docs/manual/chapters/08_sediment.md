@@ -46,9 +46,11 @@ names the options on a bad key.
 The dimensionless grain size, the critical Shields parameter (Soulsby and
 Whitehouse 1997), and the settling velocity (Soulsby 1997) are
 
-$$ D_* = d_{50}\left[\frac{g(s-1)}{\nu^2}\right]^{1/3},\qquad
-\theta_{cr} = \frac{0.30}{1 + 1.2D_*} + 0.055\left[1 - e^{-0.020D_*}\right],\qquad
-w_s = \frac{\nu}{d_{50}}\left[\sqrt{10.36^2 + 1.049D_*^3} - 10.36\right]. $$ {#eq:soulsby}
+$$ \begin{aligned}
+D_* &= d_{50}\left[\frac{g(s-1)}{\nu^2}\right]^{1/3},\\
+\theta_{cr} &= \frac{0.30}{1 + 1.2D_*} + 0.055\left[1 - e^{-0.020D_*}\right],\\
+w_s &= \frac{\nu}{d_{50}}\left[\sqrt{10.36^2 + 1.049D_*^3} - 10.36\right].
+\end{aligned} $$ {#eq:soulsby}
 
 The fall velocity relation is valid from silt to gravel, which is why it is
 preferred to Stokes at one end and a drag law at the other.

@@ -1,6 +1,11 @@
-# Appendices {.part .unnumbered}
+```{=latex}
+\clearpage
+\appendix
+\part*{Appendices}
+\addcontentsline{toc}{part}{Appendices}
+```
 
-# Appendix A. API reference {#sec:api .unnumbered}
+# API reference {#sec:api}
 
 This appendix is generated from the docstrings of the installed package by
 `docs/manual/build_manual.py`, so it always matches the code it ships with.
@@ -10,7 +15,7 @@ its full docstring.
 
 <!-- api -->
 
-# Appendix B. Example scripts {#sec:examples-src .unnumbered}
+# Example scripts {#sec:examples-src}
 
 The full source of every example in `examples/`, in the order of the
 chapters that use it. Run each from the repository root; the engineering
@@ -19,7 +24,7 @@ screen and read their parameters from `examples/configs/`.
 
 <!-- examples -->
 
-# Appendix C. List of symbols {#sec:symbols .unnumbered}
+# List of symbols {#sec:symbols}
 
 | Symbol | Meaning | Unit |
 |--------|---------|------|
@@ -70,7 +75,7 @@ screen and read their parameters from `examples/configs/`.
 | $Q$, $K_\mathrm{cerc}$ | longshore transport and CERC coefficient | m$^3$/s |
 | $u$, $\sigma$, $\xi$, $\lambda$ | threshold, scale, shape, and rate of an extreme value fit | - |
 
-# Appendix D. Engineering references {#sec:refs .unnumbered}
+# Engineering references {#sec:refs}
 
 The design relations implemented in pyCoastal, as cited in the module
 docstrings.
@@ -130,7 +135,7 @@ docstrings.
 - Xie, S. L. (1981). *Scouring patterns in front of vertical breakwaters and their influence on the stability of the foundations of the breakwaters*. Delft University of Technology.
 - Yarnell, D. L. (1934). *Bridge piers as channel obstructions*. Technical Bulletin 442, US Department of Agriculture.
 
-# Appendix E. CoastalWiki bibliography {#sec:wiki-bib .unnumbered}
+# CoastalWiki bibliography {#sec:wiki-bib}
 
 The papers behind the claims and equations of Part VIII, numbered as cited
 there. Each entry gives the first author, year, title, journal, and DOI, as

@@ -13,19 +13,19 @@ can drift out of step with the code is generated here instead of typed:
 - the example listings, from ``examples/``.
 
 The Markdown goes through pandoc (with pandoc-crossref for numbered figures,
-tables, equations and sections) to one HTML file with MathML, and a
-Chromium-family browser prints that to PDF. The table of contents gets its
-page numbers from a first printing: the link targets in that PDF say which
-page each heading landed on, and the second printing carries them.
+tables, equations and sections) to LaTeX, set in the style of the first
+edition: the article class in Computer Modern, with the wave on the cover.
+Tectonic (or latexmk with xelatex) typesets it. Every wiki equation is test
+compiled first, and any that LaTeX refuses is printed as code instead.
 
 Run from the repository root:
 
     python docs/manual/build_manual.py                 # -> pyCoastal manual.pdf
     python docs/manual/build_manual.py --run-examples  # refresh example output
-    python docs/manual/build_manual.py --html-only     # stop after the HTML
+    python docs/manual/build_manual.py --tex-only      # stop after the LaTeX
 
 Needs pandoc (on PATH, or the copy bundled with pypandoc), pandoc-crossref
-(optional), Pillow, pypdf, and Microsoft Edge or Google Chrome.
+(optional), Pillow, pypdf, and Tectonic or a TeX distribution with xelatex.
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 CHAPTERS = HERE / "chapters"
 OUTPUTS = HERE / "outputs"
-# Scratch space for the HTML, figures and the first printing. Kept out of the
+# Scratch space for the LaTeX, figures and intermediate files. Kept out of the
 # repository (and out of any synced folder) because it is large and disposable.
 BUILD = Path(tempfile.gettempdir()) / "pycoastal_manual_build"
 PDF_OUT = ROOT / "pyCoastal manual.pdf"
@@ -126,12 +126,18 @@ NOISE = (
 # ---------------------------------------------------------------------------
 
 _MD_SPECIAL = re.compile(r"([\\`*_{}\[\]<>#+!|~^$@])")
+_SUPERSCRIPT = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻", "0123456789+-")
+_SUPERSCRIPT_RUN = re.compile("[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+")
 
 
 def esc(text) -> str:
     """Escape free text so pandoc reads it as text and nothing else."""
     text = str(text).replace("\r", " ").replace("\n", " ").strip()
     text = _MD_SPECIAL.sub(r"\\\1", text)
+    # Unicode superscripts (m s⁻¹) become real ones: the text face has no
+    # superscript minus.
+    text = _SUPERSCRIPT_RUN.sub(
+        lambda m: "^" + m.group(0).translate(_SUPERSCRIPT) + "^", text)
     # A line starting "12. " or "- " would become a list.
     return re.sub(r"^(\d+)\.", r"\1\\.", text)
 
@@ -178,21 +184,6 @@ def find_crossref() -> str | None:
         if path.exists():
             return str(path)
     return None
-
-
-def find_browser() -> str:
-    candidates = [
-        shutil.which("msedge"), shutil.which("chrome"),
-        shutil.which("google-chrome"), shutil.which("chromium"),
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    ]
-    for c in candidates:
-        if c and Path(c).exists():
-            return c
-    sys.exit("No Chromium-family browser found for printing the PDF.")
 
 
 # ---------------------------------------------------------------------------
@@ -322,6 +313,8 @@ class Wiki:
                                  str(self.papers[k].get("t") or "").lower()))
         self.number = {k: i + 1 for i, k in enumerate(keys)}
         self.order = keys
+        #: Equations LaTeX accepts, filled by check_equations. None trusts all.
+        self.good_equations: set[str] | None = None
         self.module_of: dict[str, list[str]] = {}
         for m in self.data["modules"].values():
             for t in m["topics"]:
@@ -391,8 +384,11 @@ class Wiki:
                 latex = latex.replace("\n", " ")
                 parts.append(f"- *{esc(e.get('name', 'Equation'))}* "
                              f"{self.cite(e.get('paper'))}")
-                if latex:
+                if latex and (self.good_equations is None or latex in self.good_equations):
                     parts.append(f"\n  $${latex}$$\n")
+                elif latex:
+                    # LaTeX refused it; keep the source rather than lose it.
+                    parts.append("\n  " + fence(latex, "latex").replace("\n", "\n  ") + "\n")
                 if e.get("regime"):
                     parts.append(f"  Regime: {esc(e['regime'])}")
                 variables = e.get("variables")
@@ -613,39 +609,48 @@ def prepare_images(markdown: str, max_width: int = 1900) -> str:
 # Assembly
 # ---------------------------------------------------------------------------
 
+def latex(code: str) -> str:
+    """A raw LaTeX block for pandoc."""
+    return "```{=latex}\n" + code.strip() + "\n```"
+
+
 def assemble(wiki: Wiki) -> str:
     parts = []
     for path in sorted(CHAPTERS.glob("*.md")):
         parts.append(path.read_text(encoding="utf-8"))
     text = "\n\n".join(parts)
 
+    # Parts become LaTeX \part, each on a fresh page.
+    text = re.sub(
+        r"^# Part [IVXLC]+\. (.+?) \{\.part \.unnumbered\}\s*$",
+        lambda m: latex("\\part{" + m.group(1) + "}"),
+        text, flags=re.M)
+
     text = re.sub(r"<!-- output: (\w+) -->", lambda m: example_output(m.group(1)), text)
     replacements = {
         "<!-- webapp-inputs -->": webapp_inputs,
         "<!-- test-table -->": test_table,
         "<!-- wiki-stats -->": wiki.stats,
-        "<!-- wiki -->": lambda: ("::: {.wiki}\n\n" + wiki.modules_chapter() + "\n\n"
-                                  + wiki.tree_chapters() + "\n\n:::"),
-        "<!-- wiki-bib -->": wiki.bibliography,
-        "<!-- api -->": lambda: "::: {.api}\n\n" + api_reference() + "\n\n:::",
-        "<!-- examples -->": lambda: "::: {.listing}\n\n" + example_listings() + "\n\n:::",
+        # The wiki is set a size down, and its topics are kept out of the
+        # contents, which would otherwise run to a dozen pages.
+        "<!-- wiki -->": lambda: "\n\n".join([
+            latex("\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{1}}\n"
+                  "\\begingroup\\small"),
+            wiki.modules_chapter(), wiki.tree_chapters(),
+            latex("\\endgroup\n"
+                  "\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{2}}")]),
+        "<!-- wiki-bib -->": lambda: "\n\n".join([
+            latex("\\begingroup\\footnotesize\\begin{multicols}{2}\\raggedright"),
+            wiki.bibliography(),
+            latex("\\end{multicols}\\endgroup")]),
+        "<!-- api -->": lambda: "\n\n".join([
+            latex("\\begingroup\\small"), api_reference(), latex("\\endgroup")]),
+        "<!-- examples -->": example_listings,
     }
     for key, fn in replacements.items():
         if key in text:
             text = text.replace(key, fn())
     return text
-
-
-TITLE_PAGE = """
-<section class="titlepage">
-<img class="logo" src="media/pycoastal-logo.png" alt="pyCoastal">
-<h1 class="title">pyCoastal</h1>
-<p class="subtitle">A Python toolbox for coastal, port and ocean engineering</p>
-<p class="edition">User manual and reference, version {version}</p>
-<p class="author">Stefano Biondi<br>University of Florida</p>
-<p class="date">{date}</p>
-</section>
-"""
 
 
 def package_version() -> str:
@@ -654,45 +659,176 @@ def package_version() -> str:
     return m.group(1) if m else "dev"
 
 
-def build_toc(html_body: str, pages: dict[str, int] | None) -> str:
-    """Table of contents from the numbered headings pandoc produced."""
-    entries = []
-    for m in re.finditer(r'<(h[12])([^>]*)>(.*?)</\1>', html_body, re.S):
-        tag, attrs, inner = m.groups()
-        idm = re.search(r'id="([^"]+)"', attrs)
-        if not idm:
-            continue
-        hid = idm.group(1)
-        cls = re.search(r'class="([^"]*)"', attrs)
-        classes = cls.group(1).split() if cls else []
-        if "apientry" in classes:
-            continue
-        if tag == "h2" and hid.startswith("wiki-"):
-            continue
-        text = re.sub(r"<[^>]+>", "", inner).strip()
-        level = "part" if "part" in classes else tag
-        page = pages.get(hid, 0) if pages else 0
-        entries.append((level, hid, text, page))
-    rows = []
-    for level, hid, text, page in entries:
-        num = str(page) if page else "000"
-        rows.append(f'<li class="toc-{level}"><a href="#{hid}"><span class="t">'
-                    f'{text}</span><span class="dots"></span><span class="p">{num}</span></a></li>')
-    return ('<nav class="toc" id="contents"><h1 class="unnumbered toc-title">'
-            'Contents</h1><ul>' + "\n".join(rows) + "</ul></nav>")
+# ---------------------------------------------------------------------------
+# LaTeX
+# ---------------------------------------------------------------------------
+
+#: Preamble additions. The look is the first edition's: the standard article
+#: class in Computer Modern, 11 pt on A4. Computer Modern Unicode is used
+#: for text rather than Latin Modern because the wiki quotes authors and
+#: symbols (Fredsoe with its slashed o, Greek letters, inequality signs)
+#: that Latin Modern does not carry.
+HEADER = r"""
+\usepackage{fontspec}
+\setmainfont{cmunrm}[Extension=.otf, BoldFont=cmunbx, ItalicFont=cmunti,
+  BoldItalicFont=cmunbi]
+\setsansfont{cmunss}[Extension=.otf, BoldFont=cmunsx, ItalicFont=cmunsi,
+  BoldItalicFont=cmunso]
+\setmonofont{cmuntt}[Extension=.otf, BoldFont=cmuntb, ItalicFont=cmunit,
+  BoldItalicFont=cmuntx, HyphenChar=None]
+% Computer Modern has no arrows or mathematical operators in its text faces,
+% and the docstrings quoted in the appendices use them (the partial, nabla,
+% approximately and proportional signs). XeTeX switches to Latin Modern Math
+% for exactly those characters and back again, in running text and code.
+\newfontfamily\mathglyphs{latinmodern-math.otf}
+\XeTeXinterchartokenstate=1
+\newXeTeXintercharclass\MathGlyphClass
+\makeatletter
+\count@="2190
+\loop\XeTeXcharclass\count@=\MathGlyphClass
+  \ifnum\count@<"22FF\advance\count@ 1\repeat
+\makeatother
+\XeTeXcharclass"2032=\MathGlyphClass
+\XeTeXcharclass"2070=\MathGlyphClass
+\XeTeXcharclass"2074=\MathGlyphClass
+\XeTeXcharclass"207A=\MathGlyphClass
+\XeTeXcharclass"207B=\MathGlyphClass
+\XeTeXinterchartoks 0 \MathGlyphClass = {\begingroup\mathglyphs}
+\XeTeXinterchartoks 4095 \MathGlyphClass = {\begingroup\mathglyphs}
+\XeTeXinterchartoks \MathGlyphClass 0 = {\endgroup}
+\XeTeXinterchartoks \MathGlyphClass 4095 = {\endgroup}
+\usepackage{multicol}
+\usepackage{xcolor}
+\usepackage{fvextra}
+\fvset{breaklines=true, breakanywhere=true, fontsize=\footnotesize}
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+\AtBeginDocument{\hypersetup{colorlinks=true, linkcolor=black,
+  citecolor=black, urlcolor=blue!50!black}}
+\let\oldtableofcontents\tableofcontents
+\renewcommand{\tableofcontents}{\oldtableofcontents\clearpage}
+\usepackage{etoolbox}
+\pretocmd{\part}{\clearpage}{}{}
+\setlength{\emergencystretch}{3em}
+\sloppy
+\widowpenalty=10000
+\clubpenalty=10000
+"""
+
+TITLE_PAGE = r"""
+\begin{titlepage}
+\centering
+\vspace*{0.4cm}
+{\LARGE\bfseries pyCoastal: a Python Tool for Coastal Engineering\par}
+\vspace{0.9cm}
+{\large Stefano Biondi\par}
+\vspace{0.1cm}
+{\large University of Florida\par}
+\vspace{0.8cm}
+{\normalsize User manual and reference, version @VERSION@\par}
+\vspace{0.1cm}
+{\normalsize @DATE@\par}
+\vfill
+\includegraphics[width=\linewidth]{media/manual-cover.jpg}
+\vfill
+\vspace*{2cm}
+\end{titlepage}
+"""
 
 
-def pandoc_html(markdown: str, pandoc: str, crossref: str | None) -> str:
+def find_tectonic() -> list[str]:
+    exe = shutil.which("tectonic")
+    if exe:
+        return [exe]
+    local = Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "tectonic" / "tectonic.exe"
+    if local.exists():
+        return [str(local)]
+    if shutil.which("latexmk") and shutil.which("xelatex"):
+        return ["latexmk", "-xelatex", "-interaction=nonstopmode", "-halt-on-error"]
+    sys.exit("No LaTeX engine found: install Tectonic (https://tectonic-typesetting.github.io) "
+             "or TeX Live with latexmk and xelatex.")
+
+
+def run_tex(engine: list[str], tex: Path) -> subprocess.CompletedProcess:
+    cmd = engine + [tex.name]
+    if Path(engine[0]).stem == "tectonic":
+        cmd = engine + ["--keep-logs", "--chatter", "minimal", tex.name]
+    return subprocess.run(cmd, cwd=tex.parent, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace")
+
+
+def equation_source(e: dict) -> str:
+    return str(e.get("latex", "")).strip().strip("$").strip().replace("\n", " ")
+
+
+def check_equations(wiki: "Wiki", engine: list[str]) -> None:
+    """Compile every wiki equation once and demote any that will not set.
+
+    The equations come out of a database written by many hands, and one bad
+    brace would stop a five-hundred-page build. Each is tried on its own
+    line of a test document; the ones LaTeX refuses are printed as code
+    instead, which keeps the information and loses only the typesetting.
+    Verdicts are cached against the equation text.
+    """
+    cache_path = BUILD / "equation_check.json"
+    cache = json.loads(cache_path.read_text(encoding="utf-8")) if cache_path.exists() else {}
+    todo = []
+    for t in wiki.topics.values():
+        for e in t.get("equations", []):
+            src = equation_source(e)
+            if src and src not in cache and src not in todo:
+                todo.append(src)
+    if todo:
+        print(f"  checking {len(todo)} wiki equations with LaTeX ...")
+        work = BUILD / "eqcheck"
+        work.mkdir(exist_ok=True)
+        while todo:
+            head = ["\\documentclass{article}", "\\usepackage{amsmath,amssymb}",
+                    "\\begin{document}"]
+            first = len(head) + 1
+            body = [f"\\[{src}\\]" for src in todo]
+            tex = work / "eq.tex"
+            tex.write_text("\n".join(head + body + ["\\end{document}"]), encoding="utf-8")
+            proc = run_tex(engine, tex)
+            if proc.returncode == 0:
+                for src in todo:
+                    cache[src] = True
+                break
+            m = re.search(r"eq\.tex:(\d+)", proc.stderr + proc.stdout)
+            if not m:
+                for src in todo:
+                    cache[src] = False
+                break
+            bad = min(max(int(m.group(1)) - first, 0), len(todo) - 1)
+            for src in todo[:bad]:
+                cache[src] = True
+            cache[todo[bad]] = False
+            print(f"    demoted: {todo[bad][:70]}")
+            todo = todo[bad + 1:]
+        cache_path.write_text(json.dumps(cache, indent=0), encoding="utf-8")
+    wiki.good_equations = {k for k, v in cache.items() if v}
+
+
+def pandoc_latex(markdown: str, pandoc: str, crossref: str | None) -> Path:
     src = BUILD / "manual.md"
     src.write_text(markdown, encoding="utf-8")
-    out = BUILD / "body.html"
-    cmd = [pandoc, str(src), "-f", "markdown",
-           "-t", "html5", "--mathml", "--number-sections",
-           "--wrap=none", "-o", str(out)]
+    (BUILD / "header.tex").write_text(HEADER, encoding="utf-8")
+    from datetime import date
+    title = (TITLE_PAGE.replace("@VERSION@", package_version())
+             .replace("@DATE@", date.today().strftime("%B %Y")))
+    (BUILD / "titlepage.tex").write_text(title, encoding="utf-8")
+    out = BUILD / "manual.tex"
+    cmd = [pandoc, str(src), "-f", "markdown", "-t", "latex", "-s",
+           "--highlight-style=monochrome", "--number-sections", "--toc", "--toc-depth=2",
+           "-V", "documentclass=article", "-V", "classoption=11pt",
+           "-V", "papersize=a4", "-V", "geometry:margin=2.5cm",
+           "--include-in-header", str(BUILD / "header.tex"),
+           "--include-before-body", str(BUILD / "titlepage.tex"),
+           "--lua-filter", str(HERE / "breakable_code.lua"),
+           "-o", str(out)]
     if crossref:
         cmd[2:2] = ["--filter", crossref,
-                    "-M", "chapters=true", "-M", "chaptersDepth=1",
-                    "-M", "sectionsDepth=3",
                     "-M", "linkReferences=true", "-M", "nameInLink=true",
                     "-M", "figPrefix=Figure", "-M", "tblPrefix=Table",
                     "-M", "eqnPrefix=Equation", "-M", "secPrefix=Section",
@@ -702,104 +838,15 @@ def pandoc_html(markdown: str, pandoc: str, crossref: str | None) -> str:
     if proc.returncode:
         print(proc.stderr)
         sys.exit("pandoc failed")
-    noise = [ln for ln in proc.stderr.splitlines() if ln.strip()]
-    if noise:
-        print(f"  pandoc: {len(noise)} warnings, first few:")
-        for ln in noise[:8]:
-            print("   ", ln[:200])
-    return out.read_text(encoding="utf-8")
-
-
-def page_html(body: str, toc: str) -> str:
-    css = (HERE / "manual.css").read_text(encoding="utf-8")
-    from datetime import date
-    title = TITLE_PAGE.format(version=package_version(),
-                              date=date.today().strftime("%B %Y"))
-    return (f"<!DOCTYPE html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
-            f"<title>pyCoastal manual</title><style>{css}</style></head>"
-            f"<body>{title}{toc}<main>{body}</main></body></html>")
-
-
-def print_pdf(browser: str, html_path: Path, pdf_path: Path) -> None:
-    user_dir = Path(tempfile.mkdtemp(prefix="pycoastal-manual-"))
-    cmd = [browser, "--headless=new", "--disable-gpu", "--no-sandbox",
-           "--no-pdf-header-footer", "--generate-pdf-document-outline",
-           f"--user-data-dir={user_dir}", "--virtual-time-budget=60000",
-           f"--print-to-pdf={pdf_path}", html_path.resolve().as_uri()]
-    print(f"  printing {pdf_path.name} ...")
-    if pdf_path.exists():
-        pdf_path.unlink()
-    subprocess.run(cmd, capture_output=True, timeout=1800)
-    if not pdf_path.exists():
-        sys.exit("The browser did not write a PDF.")
-
-
-def heading_pages(pdf_path: Path, ids: list[str]) -> dict[str, int]:
-    """Page of each TOC target, read from the link annotations of the TOC."""
-    from pypdf import PdfReader
-
-    reader = PdfReader(str(pdf_path))
-    page_index = {p.indirect_reference.idnum: i for i, p in enumerate(reader.pages)}
-    found: dict[str, int] = {}
-    order = iter(ids)
-    # The TOC links appear in document order, one per entry.
-    for page in reader.pages[:60]:
-        for annot in page.get("/Annots") or []:
-            a = annot.get_object()
-            if a.get("/Subtype") != "/Link":
-                continue
-            dest = None
-            if "/Dest" in a:
-                dest = a["/Dest"]
-            elif "/A" in a and a["/A"].get("/S") == "/GoTo":
-                dest = a["/A"].get("/D")
-            if dest is None:
-                continue
-            if isinstance(dest, str) or hasattr(dest, "startswith"):
-                try:
-                    dest = reader.named_destinations[str(dest)]
-                    target = dest.page
-                except KeyError:
-                    continue
-            else:
-                target = dest[0]
-            try:
-                idx = page_index[target.idnum] if hasattr(target, "idnum") else page_index[target.indirect_reference.idnum]
-            except (KeyError, AttributeError):
-                continue
-            try:
-                hid = next(order)
-            except StopIteration:
-                return found
-            found[hid] = idx + 1
-    return found
-
-
-def compact(pdf_path: Path) -> None:
-    """Pack the browser's PDF into object streams, if PyMuPDF is available.
-
-    Chromium writes a tagged PDF with every structure element as its own
-    uncompressed object, which is a third of the file. Object streams and a
-    garbage pass take that back without touching the outline or the links.
-    """
-    try:
-        import fitz
-    except ImportError:
-        print("  PyMuPDF not installed; leaving the PDF uncompacted")
-        return
-    print("  compacting ...")
-    tmp = pdf_path.with_suffix(".tmp.pdf")
-    with fitz.open(str(pdf_path)) as doc:
-        doc.save(str(tmp), garbage=3, deflate=True, use_objstms=1)
-    tmp.replace(pdf_path)
+    return out
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--run-examples", action="store_true",
                         help="rerun the engineering examples and refresh their output")
-    parser.add_argument("--html-only", action="store_true",
-                        help="write build/manual.html and stop")
+    parser.add_argument("--tex-only", action="store_true",
+                        help="write the LaTeX source and stop")
     parser.add_argument("--out", type=Path, default=PDF_OUT)
     args = parser.parse_args()
     args.out = args.out.resolve()
@@ -809,32 +856,32 @@ def main() -> None:
         print("Running examples")
         run_examples()
 
+    engine = find_tectonic()
     print("Assembling")
     wiki = Wiki(ROOT / "webapp" / "knowledge.json")
-    markdown = assemble(wiki)
-    markdown = prepare_images(markdown)
-    # The title page logo.
+    check_equations(wiki, engine)
+    markdown = prepare_images(assemble(wiki))
     from PIL import Image
-    with Image.open(ROOT / "media" / "pyCoastal_logo.png") as im:
-        im.convert("RGBA").save(BUILD / "media" / "pycoastal-logo.png")
+    with Image.open(ROOT / "media" / "manual_cover.jpeg") as im:
+        im.convert("RGB").save(BUILD / "media" / "manual-cover.jpg", quality=95)
 
-    body = pandoc_html(markdown, find_pandoc(), find_crossref())
-    toc = build_toc(body, None)
-    html_path = BUILD / "manual.html"
-    html_path.write_text(page_html(body, toc), encoding="utf-8")
-    print(f"  wrote {html_path}")
-    if args.html_only:
+    tex = pandoc_latex(markdown, find_pandoc(), find_crossref())
+    print(f"  wrote {tex}")
+    if args.tex_only:
         return
 
-    browser = find_browser()
-    first = BUILD / "pass1.pdf"
-    print_pdf(browser, html_path, first)
-    ids = re.findall(r'<li class="toc-[^"]+"><a href="#([^"]+)"', toc)
-    pages = heading_pages(first, ids)
-    print(f"  located {len(pages)} of {len(ids)} contents entries")
-    html_path.write_text(page_html(body, build_toc(body, pages)), encoding="utf-8")
-    print_pdf(browser, html_path, args.out)
-    compact(args.out)
+    print("  typesetting (several passes) ...")
+    proc = run_tex(engine, tex)
+    log = tex.with_suffix(".log")
+    if proc.returncode or not tex.with_suffix(".pdf").exists():
+        print((proc.stderr or proc.stdout)[-4000:])
+        sys.exit(f"LaTeX failed; see {log}")
+    if log.exists():
+        missing = set(re.findall(r"Missing character: There is no (\S+)",
+                                 log.read_text(encoding="utf-8", errors="replace")))
+        if missing:
+            print('  missing glyphs: ' + ' '.join(ascii(c) for c in sorted(missing)))
+    shutil.copyfile(tex.with_suffix(".pdf"), args.out)
     from pypdf import PdfReader
     n = len(PdfReader(str(args.out)).pages)
     size = args.out.stat().st_size / 1e6

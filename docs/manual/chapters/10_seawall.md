@@ -25,9 +25,11 @@ with the pressure at the crest $p_4$ interpolated where the crest is below
 $\eta^*$, and a triangular uplift $p_u = \tfrac12(1 + \cos\beta)\alpha_1\alpha_3\rho g H_\mathrm{max}$
 at the seaward edge. The coefficients are
 
-$$ \alpha_1 = 0.6 + \frac12\left(\frac{4\pi h/L}{\sinh 4\pi h/L}\right)^2,\quad
-\alpha_2 = \min\left[\frac{h_b - d}{3h_b}\left(\frac{H_\mathrm{max}}{d}\right)^2, \frac{2d}{H_\mathrm{max}}\right],\quad
-\alpha_3 = 1 - \frac{h'}{h}\left[1 - \frac{1}{\cosh 2\pi h/L}\right], $$
+$$ \begin{aligned}
+\alpha_1 &= 0.6 + \frac12\left(\frac{4\pi h/L}{\sinh 4\pi h/L}\right)^2,\\
+\alpha_2 &= \min\left[\frac{h_b - d}{3h_b}\left(\frac{H_\mathrm{max}}{d}\right)^2, \frac{2d}{H_\mathrm{max}}\right],\\
+\alpha_3 &= 1 - \frac{h'}{h}\left[1 - \frac{1}{\cosh 2\pi h/L}\right],
+\end{aligned} $$
 
 where $h_b$ is the depth five wave heights seaward (from the seabed slope),
 $d$ the depth over the berm, and $h'$ the depth to the underside of the
