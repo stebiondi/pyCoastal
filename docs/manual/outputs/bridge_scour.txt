@@ -1,0 +1,27 @@
+Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+Waterway 140 m, opening 80 m gross less 5 m of piers
+Contraction 1.87 to 1
+
+Governing phase 35 deg (ebb)
+  approach            1.24 m/s in 10.80 m
+  through the opening 1.51 m/s in 16.62 m
+
+  contraction    6.03 m
+  pier local     5.93 m
+  abutment       8.37 m
+  ----------------------
+  at a pier     10.72 m
+  at abutment   14.09 m   <- governs
+
+  - Opening 80 m gross less 5.0 m of piers in a 140 m waterway: a 1.87 to 1 contraction.
+  - Governing phase 35 deg on the ebb: 1.24 m/s approaching in 10.80 m, becoming 1.51 m/s in 16.62 m through the opening.
+  - Live-bed contraction scour: the approach at 1.24 m/s is 1.9 times the 0.67 m/s threshold, so the opening is fed from upstream and scours only until it can pass what arrives. Note that this mode does not depend on how fast the water goes: Laursen's relation is a sediment balance, and above the threshold it turns on the width ratio alone.
+  - Components: contraction 6.03 m, pier local 5.93 m, abutment 8.37 m. Each is the worst over the whole cycle; they do not all peak at the same phase.
+  - Total 10.72 m at a pier and 14.09 m at an abutment. The abutment governs. These are not added together: they are depths at two different places, and combining them would invent a hole that exists nowhere.
+  - Abutment scour by Froehlich, of which 4.32 m (52%) is the +1 flow depth HEC-18 adds as a factor of safety rather than as physics. Worth knowing before it is treated as a measurement.
+  - Local scour is computed on the flow in the contracted opening, not on the approach, since the contraction has already accelerated and deepened it. Taking approach values here is the usual way a pier gets understated.
+  - A total of 14.09 m exceeds the 10.80 m of water at the governing phase. That is a signal the relations have been pushed past where they were fitted, not a foundation level. Check the abutment depth and the contraction ratio, and get a physical model or a morphodynamic run before committing to it.
+  - Long-term degradation or aggradation of the reach is not included and is a separate study. HEC-18 adds it to these; on a river with a moving bed it can exceed all three.
+
+Wrote media/bridge_scour.png, media/bridge_scour_sheet.png and media/bridge_scour_components.png

@@ -1,0 +1,17 @@
+250 m3/s on a 0.0008 bed, natural_clean
+  normal depth   3.54 m
+  critical depth 1.84 m
+  reach is mild, so a bridge backs water up upstream
+
+Piers blocking 18% of the section, Froude 0.35
+  afflux 0.071 m, so the control sits at 3.61 m
+  M1 profile reaching 5.14 km
+  - M1 profile on a mild reach. Control at 3.61 m against normal 3.54 m and critical 1.84 m.
+  - Backwater reaches 5.14 km to get 99% of the way to normal depth. The curve is asymptotic, so that figure is a convention and moves a long way with it: quoting an extent without quoting the criterion is meaningless.
+
+In flood, 1.2 m over a wooded floodplain:
+  the channel is 26% of the width
+  and carries 84% of the flow
+  contraction scour 1.08 m with the computed split, 1.81 m if it is assumed to be all of it
+
+Wrote media/backwater.png

@@ -1,0 +1,29 @@
+Post-Panamax container: 179 thousand tonnes
+Approaching at 0.15 m/s
+
+  kinetic energy          2018 kNm
+  x Cm 1.631          added water
+  x Ce 0.478          rotation about the contact
+  x Cs 1.000          fender softness
+  x Cc 1.000          berth configuration
+  normal berthing         1573 kNm
+  x 1.50              abnormal allowance
+  design energy           2360 kNm
+
+  fender              2.00 m, 4000 kNm rated (59% used)
+  reaction            4000 kN
+  hull pressure       325 kN/m2 against 400 allowed
+  spacing             16.1 m against 20.2 m allowed
+  ADEQUATE            True
+
+  - Post-Panamax container: 366 m by 48.2 m, 15.2 m draught, 179 thousand tonnes displacement.
+  - Berthing at 0.15 m/s, as specified. Velocity is squared in the energy, so it carries more of the answer than anything else here.
+  - Factors: Cm 1.63 adds the water the ship drags, Ce 0.48 takes away what the ship rotates out, Cs 1.00 and Cc 1.00 take away a little more. Net, the fender sees 78% of the 2018 kNm the ship arrived with.
+  - Eccentricity is taken at the quarter point, the usual design assumption. A ship that lands flat on its midships rotates about nothing and hands the fender all of it: Ce becomes 1 and the energy rises by 2.09 times.
+  - Abnormal factor 1.50 for a container, taking the design energy from 1573 to 2360 kNm. This is the allowance for the berthing that goes wrong, and it is the largest single term in this calculation.
+  - Cone fender, mid grade, 2.00 m: 4000 kNm rated against 2360 kNm required, so it works at 59% of capacity and pushes back 4000 kN.
+  - Hull pressure 325 kN/m2 over a 2.8 by 4.4 m panel, within the 400 kN/m2 allowed for this class.
+  - Fenders at 16.1 m centres, inside the 20.2 m limit set by vessel length for Feeder. Contact is on the parallel midbody, which is straight, so only the vessel length rule binds; check the end fenders separately with a bow radius.
+  - Fender performance here is a scaling model within one family, not a catalogue. Size the fender you are asking for from this, then select against the manufacturer's tested curves at the design temperature, angle and velocity, which is what they guarantee.
+
+Wrote media/berth_energy.png

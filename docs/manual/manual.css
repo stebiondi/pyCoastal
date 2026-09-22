@@ -1,0 +1,215 @@
+/* pyCoastal manual, print stylesheet.
+   A4, a serif text face for reading, a sans face for structure, and a
+   drawing-office palette: ink on paper, one sea blue for links and rules. */
+
+@page {
+  size: A4;
+  margin: 22mm 20mm 22mm 20mm;
+  @bottom-center {
+    content: counter(page);
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 8.5pt;
+    color: #54514b;
+  }
+}
+@page :first {
+  @bottom-center { content: none; }
+}
+
+:root {
+  --ink: #16181a;
+  --soft: #54514b;
+  --faint: #85817a;
+  --rule: #c9c7c0;
+  --wash: #f2f0ea;
+  --sea: #1b6fa0;
+  --sea-deep: #0b3554;
+  --sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --serif: Cambria, Georgia, "Times New Roman", serif;
+  --mono: Consolas, "Cascadia Mono", "Courier New", monospace;
+}
+
+html { color: var(--ink); background: #fff; }
+body {
+  font-family: var(--serif);
+  font-size: 10.5pt;
+  line-height: 1.45;
+  margin: 0;
+  hyphens: auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+main { counter-reset: none; }
+
+p { margin: 0 0 0.6em; text-align: justify; orphans: 3; widows: 3; }
+a { color: var(--sea); text-decoration: none; }
+strong { font-weight: 700; }
+
+/* ---- Title page ---------------------------------------------------- */
+.titlepage {
+  height: 250mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  break-after: page;
+}
+.titlepage .logo { width: 95mm; margin-bottom: 14mm; }
+.titlepage .title {
+  font-family: var(--sans); font-size: 40pt; font-weight: 700;
+  letter-spacing: 0.02em; margin: 0; border: 0; break-before: auto;
+  color: var(--sea-deep);
+}
+.titlepage .subtitle { font-family: var(--sans); font-size: 15pt; color: var(--soft); margin: 4mm 0 16mm; text-align: center; }
+.titlepage .edition { font-size: 12pt; text-align: center; }
+.titlepage .author { font-size: 12pt; margin-top: 18mm; text-align: center; }
+.titlepage .date { font-size: 11pt; color: var(--soft); text-align: center; }
+
+/* ---- Contents ------------------------------------------------------- */
+.toc { break-after: page; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc li { margin: 0; }
+.toc a { display: flex; color: var(--ink); align-items: baseline; }
+.toc .t { flex: 0 1 auto; }
+.toc .dots { flex: 1 1 auto; border-bottom: 0.8pt dotted var(--rule); margin: 0 1.5mm 0.9mm; min-width: 6mm; }
+.toc .p { flex: 0 0 auto; font-family: var(--sans); font-size: 9pt; }
+.toc-part { font-family: var(--sans); font-weight: 700; font-size: 10.5pt; margin-top: 3mm !important; color: var(--sea-deep); }
+.toc-h1 { font-family: var(--sans); font-weight: 600; font-size: 9.8pt; margin-top: 1.2mm !important; }
+.toc-h2 { font-size: 9.2pt; padding-left: 7mm; color: var(--soft); }
+.toc-h2 a { color: var(--soft); }
+.toc .header-section-number { display: inline-block; min-width: 3.2em; }
+.toc-h2 .header-section-number { min-width: 3.6em; }
+
+/* ---- Headings ------------------------------------------------------- */
+h1, h2, h3, h4, h5 {
+  font-family: var(--sans);
+  color: var(--ink);
+  line-height: 1.2;
+  break-after: avoid;
+  page-break-after: avoid;
+  hyphens: manual;
+  text-align: left;
+}
+h1 {
+  font-size: 21pt; font-weight: 700;
+  break-before: page;
+  margin: 0 0 7mm;
+  padding-bottom: 3mm;
+  border-bottom: 1.4pt solid var(--sea-deep);
+}
+h1 .header-section-number { color: var(--sea); margin-right: 0.35em; }
+h1.part {
+  font-size: 28pt;
+  border: 0;
+  text-align: center;
+  padding-top: 85mm;
+  color: var(--sea-deep);
+  break-after: page;
+}
+h1.toc-title { break-before: auto; }
+h2 { font-size: 13.5pt; font-weight: 700; margin: 7mm 0 2.5mm; color: var(--sea-deep); }
+h3 { font-size: 11.5pt; font-weight: 700; margin: 5mm 0 2mm; }
+h4 { font-size: 10.5pt; font-weight: 700; margin: 4mm 0 1.5mm; }
+h5 { font-size: 10pt; font-weight: 600; font-style: italic; margin: 3mm 0 1mm; }
+.header-section-number { margin-right: 0.45em; }
+
+/* ---- Figures, tables, math ----------------------------------------- */
+figure { margin: 5mm 0; text-align: center; break-inside: avoid; }
+figure img { max-width: 100%; max-height: 205mm; }
+figcaption {
+  font-family: var(--sans); font-size: 8.8pt; color: var(--soft);
+  margin-top: 2mm; text-align: left; line-height: 1.35;
+}
+img { max-width: 100%; }
+
+table {
+  border-collapse: collapse;
+  margin: 3mm auto 5mm;
+  font-size: 9pt;
+  font-family: var(--sans);
+  break-inside: auto;
+  max-width: 100%;
+}
+caption {
+  caption-side: top; font-size: 8.8pt; color: var(--soft);
+  text-align: left; padding-bottom: 1.5mm;
+}
+thead th {
+  border-top: 1pt solid var(--ink);
+  border-bottom: 0.6pt solid var(--ink);
+  text-align: left;
+  padding: 1.2mm 2.5mm;
+  font-weight: 600;
+}
+tbody td { padding: 1mm 2.5mm; border-bottom: 0.3pt solid var(--rule); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 1pt solid var(--ink); }
+tr { break-inside: avoid; }
+
+math[display="block"] { margin: 2.5mm 0; overflow: visible !important; }
+math, mtable { overflow: visible !important; }
+math { font-size: 1.04em; }
+.math.display { display: block; text-align: center; }
+
+/* ---- Code ----------------------------------------------------------- */
+code { font-family: var(--mono); font-size: 0.88em; color: #2a3b47; }
+pre {
+  font-family: var(--mono);
+  font-size: 8.2pt;
+  line-height: 1.35;
+  background: var(--wash);
+  border-left: 2pt solid var(--rule);
+  padding: 2.5mm 3.5mm;
+  margin: 3mm 0 4mm;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+pre code { font-size: 1em; color: var(--ink); }
+.sourceCode { background: transparent; }
+div.sourceCode { margin: 0; }
+/* pandoc syntax highlighting, muted */
+code span.kw, code span.cf { color: #0b3554; font-weight: 600; }
+code span.st, code span.ss, code span.ch { color: #2f6b46; }
+code span.co { color: #85817a; font-style: italic; }
+code span.dv, code span.fl, code span.bn { color: #8a2f24; }
+code span.fu { color: #1b6fa0; }
+code span.bu { color: #6b4f1d; }
+code span.op { color: #54514b; }
+
+/* ---- Worked example output ----------------------------------------- */
+.output { margin: 4mm 0 5mm; break-inside: auto; }
+.output > p:first-child { font-family: var(--sans); font-size: 8.8pt; color: var(--soft); margin-bottom: 1mm; }
+.output pre { background: #eef4f7; border-left-color: var(--sea); font-size: 7.9pt; }
+
+/* ---- Lists ---------------------------------------------------------- */
+ul, ol { margin: 0 0 0.7em; padding-left: 6mm; }
+li { margin: 0.15em 0; }
+
+/* ---- Knowledge base ------------------------------------------------- */
+.wiki { font-size: 9.2pt; line-height: 1.38; }
+.wiki h1 { font-size: 18pt; }
+.wiki h2 { font-size: 12pt; margin-top: 6mm; }
+.wiki h3 { font-size: 10.5pt; }
+.wiki h4 { font-size: 9.8pt; }
+.wiki p { text-align: left; }
+.wiki .synthesis { border-left: 2pt solid var(--sea); padding: 0.5mm 0 0.5mm 3mm; margin: 2mm 0 3mm; }
+.wiki .synthesis p { margin-bottom: 1.3mm; }
+.wiki .claims ol { column-count: 2; column-gap: 7mm; font-size: 8.6pt; padding-left: 5mm; }
+.wiki .claims li { break-inside: avoid; margin-bottom: 1.2mm; }
+.wiki .tag { font-family: var(--sans); font-size: 7.4pt; color: var(--faint); }
+.wiki table { font-size: 8.6pt; }
+.bibliography { font-size: 8.2pt; line-height: 1.3; column-count: 2; column-gap: 7mm; }
+.bibliography p { text-align: left; margin-bottom: 1.2mm; break-inside: avoid; padding-left: 7mm; text-indent: -7mm; }
+.bibno { font-family: var(--sans); font-weight: 600; color: var(--sea-deep); }
+
+/* ---- API reference and listings ------------------------------------ */
+.api { font-size: 9pt; }
+.api h2 { font-family: var(--mono); font-size: 12pt; break-before: auto; border-top: 1pt solid var(--sea-deep); padding-top: 2mm; margin-top: 8mm; }
+.api h3 { font-size: 10pt; margin: 4mm 0 1mm; }
+.api h3 code { font-size: 1em; color: var(--sea-deep); }
+.api pre { font-size: 7.6pt; margin: 1mm 0 2mm; }
+.api .docstring pre { background: #fff; border-left: 1.2pt solid var(--rule); color: var(--ink); }
+.listing pre { font-size: 7.2pt; line-height: 1.28; }
+.listing h2 { font-family: var(--mono); font-size: 11pt; break-before: page; }
+.listing h2:first-of-type { break-before: auto; }

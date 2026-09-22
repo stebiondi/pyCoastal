@@ -1,0 +1,57 @@
+Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+Design condition    Hm0 = 2.80 m, Tm-1,0 = 8.64 s
+Water level         SWL +2.90 m CD, depth at wall 8.50 m
+
+Crest level         +8.59 m CD (Rc = 5.69 m, Rc/Hm0 = 2.03)
+Promenade level     +7.59 m CD
+Founding level      -7.11 m CD (embedment 1.51 m, scour 1.51 m)
+Wall height         15.70 m
+Base                15.05 m wide x 1.20 m thick, stem 1.00 m
+Sizing              73 iterations on base width
+
+Goda Hmax           5.04 m
+Pressures           p1 = 45.8 kPa, p3 = 37.5 kPa, pu = 36.8 kPa
+Wave force          517 kN/m at 8.08 m above the base
+Weight, uplift      2788 kN/m, 277 kN/m
+
+Backfill            Medium sand, phi' = 33 deg, retained 14.70 m
+Water table         0.00 m below the surface, saturated to the top
+Earth pressure      1643 kN/m at 5.00 m (K = 0.455, 557 soil + 1087 water)
+
+Load case 1, wave crest pushing landward
+   sliding          inf
+   overturning      inf
+Load case 2, trough with the backfill pushing seaward
+   front water      253 kN/m at +1.50 m CD
+   net seaward      1390 kN/m
+   sliding          1.20
+   overturning      2.60
+Governing case      drawdown
+Bearing             p_max = 245 kPa, e = -1.18 m
+
+Toe protection      Dn50 = 0.27 m, M50 = 0.05 t, berm 2.0 m wide x 0.55 m thick
+Overtopping         mean 0.333 l/s/m, upper bound 1 l/s/m
+Governing limit     1 l/s/m, trained staff, well shod and protected, wide walkway
+
+Concrete            32.56 m3/m (78.2 t/m)
+Backfill            189.71 m3/m
+Toe rock            1.82 t/m
+Excavation          22.74 m3/m
+
+Warnings
+  - Toe depth ratio ht/h = 0.94 is outside the 0.4 to 0.9 calibration range of the Van der Meer toe formula.
+  - Pore water is 66% of the pressure on the back of the wall. Drainage is a structural matter here, not a detail: a working drain would cut the total from 1643 to about 854 kN/m.
+  - The drawdown case governs, not the wave. The wall is sized by the saturated backfill pushing it seaward at the trough, so the backfill grading and the drainage detail matter more than the design wave.
+
+Overtopping tolerability at the design discharge
+   no   0.03 l/s/m   pedestrians_unaware
+   no    0.1 l/s/m   pedestrians_aware
+   no    0.4 l/s/m   harbour_quay_equipment
+   ok      1 l/s/m   trained_staff
+   ok      1 l/s/m   buildings_structural
+   ok     10 l/s/m   vehicles_low_speed
+   ok     50 l/s/m   vehicles_moderate_speed
+   ok     50 l/s/m   embankment_seaward
+
+Wrote media/seawall_section.png and media/seawall_section.dxf
+Wrote media/seawall_sheet.png

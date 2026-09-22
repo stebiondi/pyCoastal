@@ -1,0 +1,24 @@
+Water level budget (m above datum)
+                 tide   0.60
+       sea level rise   0.00
+     barometric setup   0.73
+           wind setup   3.28
+           wave setup   1.75
+    still water level   6.36
+            runup R2%   2.32
+    total water level   8.68
+
+Still water level 6.36 m
+   threshold-only flooded area :  19.17 km2
+   connected flooded area      :  18.82 km2
+   overstated by the threshold :   0.35 km2 (2% of it)
+   water volume on land        : 113.81 Mm3
+
+   with the inlet open   :  18.82 km2 flooded
+   with the inlet sealed :   5.45 km2 flooded
+   a single breach in the barrier is what floods the bay
+
+   inundation limit, intact barrier:    1418 m
+   inundation limit, at the inlet  :    4990 m
+
+Wrote media/storm_surge_flooding.png

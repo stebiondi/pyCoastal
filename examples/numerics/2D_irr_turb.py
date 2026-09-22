@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pyCoastal.numerics.grid import UniformGrid
-from pyCoastal.boundary import (
+from pyCoastal.numerics.boundary import (
     DirichletBC, NeumannBC, WallBC, SpongeBC, BoundaryManager
 )
 

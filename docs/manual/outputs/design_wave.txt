@@ -1,0 +1,42 @@
+Record: 40 years, 116800 samples, max 5.21 m, 240 storms (6.0/yr)
+Threshold 2.50 m chosen from the diagnostics (the record was built with 2.50 m)
+
+Peaks over threshold
+Model              peaks over threshold
+Record             40.0 years, 240 peaks
+Threshold          2.50
+Rate               6.00 peaks per year
+Scale, shape       0.560, -0.071
+
+Return period   value    90% band
+     10 yr       4.49   4.19 to 4.83
+     50 yr       5.12   4.61 to 5.78
+    100 yr       5.38   4.74 to 6.19
+   the record was built with scale 0.550, shape -0.080, rate 6.0/yr
+
+Annual maxima, as a cross-check
+Model              annual maxima
+Record             40.0 years, 40 maxima
+Location           3.489
+Scale, shape       0.484, -0.058
+
+Return period   value    90% band
+     10 yr       4.51   4.22 to 4.74
+     50 yr       5.18   4.63 to 5.58
+    100 yr       5.45   4.77 to 5.95
+
+100-year Hm0 = 5.38 m (4.74 to 6.19 m, 90% bootstrap)
+   true value for this climate: 5.25 m
+   2.5 times the 40 year record. Treat the confidence band as a lower bound on the real uncertainty.
+
+Repeating the study on 60 fresh 40-year records
+   100-year estimate: mean 5.23 m, sd 0.44 m
+   5th to 95th percentile: 4.61 to 5.94 m (width 1.32 m)
+   bootstrap band from the single record: width 1.45 m
+   this record sits at the 70th percentile of that spread
+   The bootstrap band matches the real sampling spread.
+
+Design wave at the toe 4.68 m (depth limited)
+Seawall crest +13.13 m CD, base 20.83 m, concrete 45.0 m3/m
+
+Wrote media/design_wave.png

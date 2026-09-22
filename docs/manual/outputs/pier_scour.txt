@@ -1,0 +1,22 @@
+Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+Pier 2.5 m on a 7 x 12 m base, top -1.5 m to the bed
+Peak ebb 1.50 m/s, peak flood 0.70 m/s
+
+Governing phase       145 deg (ebb)
+  current             0.78 m/s (peak is 1.50)
+  depth               7.20 m
+  effective diameter  5.15 m (stem is 2.50)
+  equilibrium scour   5.93 m
+  one tidal half      1.76 m (time scale 17.7 h)
+  base                UNDERMINED
+
+  - Governing phase 145 deg, on the ebb: 0.78 m/s current and 0.47 m/s near-bed orbital velocity in 7.20 m of water.
+  - Ucw = 0.62, so the waves and current both matter. KC = 0.5 against a threshold of 0.32.
+  - Equilibrium scour 5.93 m, 1.30 times the effective diameter of 5.15 m.
+  - Shallow water takes 12% off the unlimited depth: h/D = 1.4.
+  - The hole exposes the base completely (2.5 m) and reaches its underside. The foundation is undermined, not merely exposed, and the bearing check has to be redone on the scoured section.
+  - Flow misalignment multiplies the base width by 1.32 at 20 deg of skew. A base set square to one direction of a reversing tide is skewed to the other.
+  - Scour time scale 17.7 hours against a 6.2 hour tidal half cycle, so one half cycle reaches 1.76 m, 30% of equilibrium. The hole does not refill on the reverse flow, so successive tides work it deeper towards the equilibrium. Size protection on the equilibrium either way.
+  - Sumer and Fredsoe's relations carry a standard deviation near 0.7 diameters in steady current. Treat the number as a mean, not a bound, and design protection with margin on it.
+
+Wrote media/pier_scour.png, media/pier_scour_sheet.png and media/pier_scour_tide.png

@@ -1,0 +1,20 @@
+Wavelength        : 81.7 m   (20 cells per wave)
+Celerity          : 9.08 m/s
+Entrance gap      : 130 m = 1.59 wavelengths
+Approach angle    : 25 deg off shore-normal
+Incident height   : 1.50 m
+
+        berth      Kd    Hs (m)
+     entrance    0.12      0.18
+  outer basin    0.33      0.49
+  north berth    0.55      0.82
+  south berth    0.13      0.20
+
+Berths within a 0.5 m operational limit:
+   entrance     yes
+   outer basin  yes
+   north berth  no
+   south berth  yes
+
+Wrote media/port_disturbance.png
+Wrote media/port_diffraction.gif

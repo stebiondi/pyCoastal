@@ -1,0 +1,32 @@
+Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
+Native beach: Medium sand, d50 = 0.38 mm, A = 0.141
+Berm 2.0 m, closure 6.0 m, fill 250 m3 per metre
+
+borrow            A      delta   profile            dry beach   critical
+  Very fine sand  0.051  +3.78  submerged            0.0 m    2362 m3/m
+  Fine sand       0.094  +1.82  submerged            0.0 m     566 m3/m
+  Medium sand     0.141  +0.00  matched             31.2 m       0 m3/m
+  Coarse sand     0.183  -1.78  intersecting        54.5 m       0 m3/m
+  Fine gravel     0.307  -7.24  intersecting        66.2 m       0 m3/m
+
+What that costs, per metre of beach, for 40 m of dry sand
+  Very fine sand    2682 m3/m  (8.38 times the native requirement)
+  Fine sand          886 m3/m  (2.77 times the native requirement)
+  Medium sand        320 m3/m  (1.00 times the native requirement)
+  Coarse sand        164 m3/m  (0.51 times the native requirement)
+  Fine gravel        131 m3/m  (0.41 times the native requirement)
+
+Compatibility
+  Very fine sand  much finer than native, poorly suited
+  Fine sand       much finer than native, poorly suited
+  Medium sand     close to native, suitable
+  Coarse sand     coarser than native, well suited
+  Fine gravel     coarser than native, well suited
+
+Planform, 1500 m of fill in Hb = 1.2 m:
+  spreading half-life  0.57 yr
+  placed volume        719 thousand m3 in place
+
+Wrote media/nourishment_profile.png, media/nourishment_plan.png and media/nourishment_sheet.png
+Wrote media/nourishment_borrow.png

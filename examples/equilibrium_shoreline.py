@@ -5,7 +5,7 @@ Equilibrium shoreline built from three arcs:
   - central arc (T2 -> apex S -> T3)
   - right lateral arc (T4 -> bay point S1 -> shoreline)
 
-Inputs are read from examples/configs/hsu_tombolo.yaml.
+Inputs are read from examples/configs/equilibrium_shoreline.yaml.
 Computation uses helper utilities in pyCoastal.tools.morphodynamics.
 """
 

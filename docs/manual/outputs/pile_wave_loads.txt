@@ -1,0 +1,35 @@
+Pile                8.00 m diameter in 30.0 m of water
+Wave                H = 12.00 m, T = 13.0 s
+KC, regime          6.3, mixed
+Cd, Cm              1.05, 1.87
+D / L               0.041
+
+Worst phase         56 degrees (crest at 0), surface at +3.36 m
+Base shear          4,297 kN
+Mudline moment      77.2 MNm
+Effective arm       17.96 m above the mudline
+Inertia share       90% of the load
+
+Warnings
+  - The worst moment is 62% larger than the moment at the crest phase. Designing on the crest alone would have understated it.
+
+At the crest phase        1,437 kN, 29.6 MNm
+At the worst phase        4,297 kN, 77.2 MNm
+Designing on the crest would miss 62% of the moment
+
+Max base shear at         70 degrees
+Max mudline moment at     56 degrees
+
+Scour                     0.10 m (0.01 D) at KC = 6.3
+   under a steady current: 10.40 m (1.3 D, standard deviation 5.60 m)
+   waves alone barely scour a pile this large, because KC is small; current is what governs.
+
+How the load splits with pile diameter
+   D (m)    KC    regime              inertia share   moment (MNm)
+     1.0   50.7   drag dominated         5%           3.8
+     2.0   25.3   drag dominated        15%           8.1
+     4.0   12.7   mixed                 50%          20.7
+     8.0    6.3   mixed                 90%          77.2
+    12.0    4.2   mixed                 96%         176.0
+
+Wrote media/pile_wave_loads.png

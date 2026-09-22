@@ -1,0 +1,53 @@
+Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
+Design vessel       Post-Panamax container ship
+                    336 x 48.2 x 14.5 m, Cb = 0.68, 157,130 t
+Speed               8.0 knots (Fnh = 0.31)
+
+Depth chain (m below the design water level)
+   static draught             14.50
+   squat                       0.37
+   wave response               0.90
+   density                     0.00
+   net clearance               0.80
+   water level uncertainty     0.30
+   dredging tolerance          0.30
+   survey tolerance            0.20
+   siltation                   0.20
+   required depth             17.57
+
+Design water level  +1.20 m CD
+Dredge level        -16.37 m CD
+
+Channel width       415 m (8.6 beams, 2-way)
+   basic manoeuvring lane      72.3
+   crosswind (moderate)        14.5
+   crosscurrent (low)           9.6
+   waves (moderate)            24.1
+   aids_to_navigation (good)    9.6
+   bottom_surface (smooth_and_soft)   4.8
+   depth_of_waterway (shallow)   9.6
+   bank clearance, each side   24.1
+   passing distance            77.1
+
+Existing bed        -11.50 m CD
+Dredge depth        4.87 m
+Top width           463 m at 1:5 side slopes
+Volume              2,135 thousand m3 per km
+
+Turning basin       672 m (2.0 x Loa, assisted, current running)
+
+Squat, two ways
+    6.0 kn   ICORELS 0.20 m   Barrass 0.24 m   Fnh 0.24
+    8.0 kn   ICORELS 0.37 m   Barrass 0.44 m   Fnh 0.31
+   10.0 kn   ICORELS 0.59 m   Barrass 0.68 m   Fnh 0.39
+   12.0 kn   ICORELS 0.89 m   Barrass 0.98 m   Fnh 0.47
+
+What moves the dredge level
+   wave factor 0.3 rather than 0.5       -0.35 m       -162 k m3/km
+   wave factor 0.7 rather than 0.5       +0.35 m       +164 k m3/km
+   speed 12 kn rather than 8 kn          +0.49 m       +229 k m3/km
+   net clearance 1.5 m rather than 0.8 m +0.69 m       +320 k m3/km
+   no siltation allowance                -0.20 m        -90 k m3/km
+
+Wrote media/navigation_channel.png, media/navigation_channel_sheet.png and media/navigation_channel.dxf
+Wrote media/channel_depth_chain.png

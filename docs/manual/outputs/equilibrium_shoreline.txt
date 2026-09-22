@@ -1,0 +1,2 @@
+C:\Users\stefano.biondi\AppData\Local\Temp\claude\C--Users-stefano-biondi-UF-Dropbox-Stefano-Biondi-projects\4ee35c30-3d03-409c-b36f-42310928d97b\scratchpad\repo\examples\equilibrium_shoreline.py:163: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()

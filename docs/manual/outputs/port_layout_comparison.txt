@@ -1,0 +1,17 @@
+ran two_arm
+ran offset_entrance
+ran hooked
+ran detached_screen
+ran marina
+
+                          layout   mean Kd   95th pct Kd
+   Outer harbour and inner basin     0.007         0.022
+       Overlapping arms, dog-leg     0.008         0.029
+     Detached screen off the gap     0.039         0.067
+          Two arms, straight gap     0.146         0.370
+          Hooked main breakwater     0.180         0.768
+
+Quietest basin: Outer harbour and inner basin (0.007 mean Kd)
+Noisiest basin: Hooked main breakwater (0.180 mean Kd)
+
+Wrote media/port_layouts.png

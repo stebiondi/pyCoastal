@@ -1,0 +1,18 @@
+Placed volume        : 960,000 m3
+Active profile height: 10.0 m
+Diffusivity          : 0.0175 m2/s  (551,100 m2/yr)
+
+  year  retained %  berm width (m)
+   0.0       100.0            30.0
+   4.0        54.0            16.6
+   8.0        41.5            12.3
+  12.0        34.9            10.2
+  16.0        30.7             8.9
+  20.0        27.8             8.0
+
+Design life (50% retained): 5.0 yr
+Renourishment interval    : 4.9 yr
+Renourishments in 30 yr   : 6
+Total sand over 30 yr     : 6,720,000 m3
+
+Wrote media/nourishment_design.png
