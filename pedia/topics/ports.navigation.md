@@ -1,0 +1,85 @@
+# Navigation and vessel response
+
+`ports.navigation` | Ship motions and safe access.
+
+Parent: [Ports and harbors](ports.md)
+
+Papers: 23. Claims: 19. Equations: 0.
+
+Used by pyCoastal design modules: Navigation channel.
+
+## Synthesis
+
+**Well established.** Safe port access and operability depend jointly on vessel response, dynamic water depth, squat and heel, wave/current/wind forcing, channel and berth geometry, mooring, traffic, forecasts, and human decisions.
+
+**Governing physics.** Restricted depth and banks modify hull/propulsor/rudder forces and squat; waves drive heave, roll, pitch and horizontal motions; infragravity can dominate harbor response; currents, wind, tide, and moorings alter low-speed control and clearance.
+
+**Dimensionless parameters.** Important controls include UKC/draft, depth/draft, blockage, Froude number, squat/draft, wave length/ship length, motion relative to cargo limits, forecast lead time, threshold exceedance probability, traffic density, and waiting tolerance.
+
+**Major equations.** Frameworks include six-degree rigid-body motion and mooring, MMG-style maneuvering forces, squat and dynamic UKC budgets, ship-domain risk, wave transformation/forecasting, statistical motion prediction, accident exposure, and waiting/operability exceedance.
+
+**Typical methods.** Methods span full-scale motion and AIS data, buoy and water-level records, hindcast/reanalysis, nested wave forecasts, maneuvering reviews, neural and semi-supervised prediction, Kalman filtering, accessibility statistics, and stakeholder-defined operational limits.
+
+**Numerical models.** Models include six-degree motion learners, MMG and automatic-berthing representations, dynamic UKC and ship-domain tools, nested operational wave forecasts, Kalman draft estimation, climate downscaling, and accessibility/waiting probability.
+
+**Experimental datasets.** Accessible evidence includes Punta Langosteira motion campaigns, 50 Accu-Waves port areas, international buoy validation, UK AIS/accidents, 2008-2022 Polish fairway levels, Spanish port risk assessment, and the Melilla record wave event.
+
+**Validated ranges.** Reported evidence includes motion RMSE 0.09-0.11 m and 0.11-0.9 degrees, three-day forecasts every three hours across 50 areas, captured waves above 10 m, and Melilla infragravity correlation 0.96 with Hs²Tp forcing.
+
+**Recent advances.** Recent work uses high-frequency field motion, semi-supervised learning, nested multi-port forecasts, Kalman draft estimation, long water-level records, AIS exposure statistics, and explicit infragravity monitoring for real-time decisions.
+
+**Disagreements.** Generic single-parameter limits are inadequate, yet complex predictors can overfit or hide mechanism. Climate-model spread may dominate scenario differences, and safe depth depends dynamically on speed and motion rather than a fixed UKC allowance.
+
+**Limitations.** Full-scale datasets are sparse and proprietary; vessel, loading, mooring, berth, bathymetry and local resonance limit transfer. Forecast error, rare extremes, human factors, autonomy, and inconsistent operability criteria constrain validation.
+
+**Open questions.** Needs include coupled maneuver-motion-mooring response, nonlinear harbor resonance, bank and passing-ship effects, dynamic UKC uncertainty, autonomous berthing assurance, traffic interaction, forecast-to-decision reliability, and climate-conditioned downtime.
+
+**Seminal papers.** The branch connects static navigation depth and classical maneuvering/moored-motion analysis to dynamic UKC, probabilistic accessibility, operational forecasts, full-scale sensing, AIS risk, and data-assisted motion prediction.
+
+## Claims
+
+- **C619.** Field-trained moored-ship models predicted six-degree motions with test errors below 10% of each motion range for operational limit decisions. *Regime: Test RMSE was 0.09-0.11 m for translations and 0.11-0.9 degrees for rotations, below 10% of motion ranges, enabling forecast-based cargo limits..* [direct_finding, mixed] (Alberto Alvarellos 2021, [doi:10.3390/jmse9080800](https://doi.org/10.3390/jmse9080800))
+- **C620.** Automatic berthing requires maneuver models that resolve hull forces, four-quadrant propulsion, steerage, environmental disturbances, and auxiliary devices. *Regime: Berthing models must represent hull force, four-quadrant propulsion, steerage, wind/wave/current disturbances, and auxiliary devices before autonomous control is trusted..* [literature_review_statement, review] (Song Zhang 2023, [doi:10.3390/jmse11091824](https://doi.org/10.3390/jmse11091824))
+- **C621.** Port of Gijón scenarios found inter-climate-model spread exceeded differences among time horizons or concentration pathways for dock operability. *Regime: Inter-GCM differences exceeded differences among time horizons or concentration scenarios, making climate model selection a dominant operational uncertainty..* [direct_finding, numerical] (Álvaro Campos 2019, [doi:10.3390/w11102153](https://doi.org/10.3390/w11102153))
+- **C622.** Shallow and narrow-water maneuvering prediction must resolve ship design together with depth, bank, channel, wind, wave, and current effects. *Regime: Restricted-water maneuverability depends on hull/propulsor/rudder design and external wind, wave, current, bank, depth, and channel effects..* [literature_review_statement, review] (Mislav Maljković 2024, [doi:10.3390/jmse12081450](https://doi.org/10.3390/jmse12081450))
+- **C623.** Global open-data mapping identified short waves as the dominant seaport operability risk indicator at most locations, with exposed oceanic capes as hotspots. *Regime: Exposed high-latitude and southern-cape ports had greater risk, and short waves were the most critical indicator at most locations..* [direct_finding, numerical] (Matijs Wiegel 2021, [doi:10.3390/jmse9070695](https://doi.org/10.3390/jmse9070695))
+- **C624.** Dynamic under-keel clearance must combine water-level variation, ship squat, heel, and wave response rather than use a static depth margin. *Regime: Dynamic UKC combines water-level variation, squat, heel, and wave response and can support safe draft maximization..* [direct_finding, analytical] (W. Galor 2008, [doi:10.2478/v10040-008-0100-0](https://doi.org/10.2478/v10040-008-0100-0))
+- **C625.** A three-dimensional ship-domain method links shallow-water speed and ECDIS safety depth to a 0-1 navigational risk factor. *Regime: The proposed method maps shallow-water speed and safety depth to a 0-1 navigation risk factor for canals and fairways..* [direct_finding, analytical] (Grzegorz Rutkowski 2020, [doi:10.2478/pomr-2020-0055](https://doi.org/10.2478/pomr-2020-0055))
+- **C626.** Berthed-ship operability should use dock-specific multi-factor limits and field monitoring rather than generic single-parameter thresholds. *Regime: Generic single-parameter limits are inadequate; berth/anchorage-specific monitoring and stakeholder experience should inform multi-factor criteria..* [literature_review_statement, review] (Rafael Molina 2020, [doi:10.3390/jmse8040255](https://doi.org/10.3390/jmse8040255))
+- **C627.** The Accu-Waves platform delivered three-day, three-hourly forecasts for 50 port areas with adequate-to-very-good buoy validation and captured an Algeciras event above 10 m. *Regime: Three-hourly forecasts for 50 areas showed adequate-to-very-good buoy skill and reproduced an Algeciras event with wave maxima above 10 m..* [direct_finding, mixed] (Christos Makris 2024, [doi:10.3390/jmse12020220](https://doi.org/10.3390/jmse12020220))
+- **C628.** A Punta Langosteira semi-supervised model outperformed compared learning methods for moored-vessel motion and explicitly evaluated infragravity predictors. *Regime: The semi-supervised model outperformed alternative supervised, unsupervised, and deep-learning methods, and infragravity predictors were tested alongside waves, wind, and sea level..* [direct_finding, mixed] (Romano-Moreno 2022, [doi:10.3390/jmse10081125](https://doi.org/10.3390/jmse10081125))
+- **C629.** Kalman filtering reduced uncertainty in real-time ship-draft estimates under simulated static and dynamic marine conditions. *Regime: Filtering reduced draft-measurement uncertainty in both static and dynamic conditions..* [direct_finding, numerical] (Sourav Dhar 2023, [doi:10.21152/1750-9548.17.4.407](https://doi.org/10.21152/1750-9548.17.4.407))
+- **C630.** UK accident/AIS analysis linked port risk to vessel size, winter, service vessels, daytime transits, traffic density, geometry, and channel complexity, with human factors dominant. *Regime: Larger vessels, winter, service ships, daytime transits, and confined high-density geometry increased likelihood; human factors were the leading improvement need..* [direct_finding, mixed] (Manole 2025, [doi:10.1017/s0373463325101380](https://doi.org/10.1017/s0373463325101380))
+- **C631.** Fifteen years of fairway water levels quantified ship-specific acceptable level drops, passage probability, and expected waiting for deep-draft access. *Regime: Acceptable level drops, passage probability, and expected waiting depended on ship class, draft, and ability to delay entry..* [direct_finding, field] (Kinga Łazuga 2025, [doi:10.3390/app15137104](https://doi.org/10.3390/app15137104))
+- **C632.** During a record Melilla event, harbor infragravity energy correlated 0.96 with offshore Hs²Tp forcing and exceeded 2000 m²s. *Regime: Infragravity energy correlated 0.96 with an offshore Hs-squared-times-period forcing parameter and exceeded 2000 m2 s during energetic swell..* [direct_finding, mixed] (Pablo Lorente 2024, [doi:10.5194/sp-4-osr8-19-2024](https://doi.org/10.5194/sp-4-osr8-19-2024))
+- **C1454.** Dynamic ship-domain models incorporate restricted-waterway conditions, vessel characteristics, behavior, and operator skill for site-specific navigation-capacity analysis. *Regime: Dynamic Ship Domain Models for Capacity Analysis of Restricted Water Channels.* [direct_finding, numerical] (Jingxian Liu 2015, [doi:10.1017/s0373463315000764](https://doi.org/10.1017/s0373463315000764))
+- **C1455.** A maritime-sensor review connects sensing configurations to safer and more sustainable vessel mobility and identifies remaining operational integration needs. *Regime: Review on Sensors for Sustainable and Safe Maritime Mobility.* [literature_review_statement, review] (Giovanni Briguglio 2024, [doi:10.3390/jmse12020353](https://doi.org/10.3390/jmse12020353))
+- **C1456.** A review assesses small unmanned surface vessels as lower-cost platforms for testing autonomous-navigation safety and assurance concepts. *Regime: Small Unmanned Surface Vessels—A Review and Critical Analysis of Relations to Safety and Safety Assurance of Larger Autonomous Ships.* [literature_review_statement, review] (Victor Bolbot 2023, [doi:10.3390/jmse11122387](https://doi.org/10.3390/jmse11122387))
+- **C1457.** A survey organizes visual perception and navigation-system technologies for smart ships and identifies safety, regulation, and integration challenges. *Regime: Visual Navigation Systems for Maritime Smart Ships: A Survey.* [literature_review_statement, review] (Yuqing Wang 2024, [doi:10.3390/jmse12101781](https://doi.org/10.3390/jmse12101781))
+- **C1720.** A nested sequence of spectral-energy, extended mild-slope, and Boussinesq wave models transfers a 50-year design wave from regional generation scale to detailed Samchunpo harbor-entrance conditions for renovation design. *Regime: Typhoon design waves propagating from offshore through the south Korean coast into the Samchunpo (Sin Hyang) fishery harbor entrance..* [direct_finding, numerical] (Jung 2007, [doi:10.5394/kinpr.2007.31.7.579](https://doi.org/10.5394/kinpr.2007.31.7.579))
+
+## Papers
+
+- Jingxian Liu (2015). Dynamic Ship Domain Models for Capacity Analysis of Restricted Water Channels. *Journal of Navigation*. [doi:10.1017/s0373463315000764](https://doi.org/10.1017/s0373463315000764)
+- Alberto Alvarellos (2021). Machine Learning Based Moored Ship Movement Prediction. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse9080800](https://doi.org/10.3390/jmse9080800)
+- Giovanni Briguglio (2024). Review on Sensors for Sustainable and Safe Maritime Mobility. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse12020353](https://doi.org/10.3390/jmse12020353)
+- Song Zhang (2023). State-of-the-Art Review and Future Perspectives on Maneuvering Modeling for Automatic Ship Berthing. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse11091824](https://doi.org/10.3390/jmse11091824)
+- Victor Bolbot (2023). Small Unmanned Surface Vessels—A Review and Critical Analysis of Relations to Safety and Safety Assurance of Larger Autonomous Ships. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse11122387](https://doi.org/10.3390/jmse11122387)
+- Álvaro Campos (2019). Addressing Long-Term Operational Risk Management in Port Docks under Climate Change Scenarios—A Spanish Case Study. *Water*. [doi:10.3390/w11102153](https://doi.org/10.3390/w11102153)
+- Mislav Maljković (2024). Ship Maneuvering in Shallow and Narrow Waters: Predictive Methods and Model Development Review. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse12081450](https://doi.org/10.3390/jmse12081450)
+- Matijs Wiegel (2021). Global Mapping of Seaport Operability Risk Indicators Using Open-Source Metocean Data. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse9070695](https://doi.org/10.3390/jmse9070695)
+- Yuqing Wang (2024). Visual Navigation Systems for Maritime Smart Ships: A Survey. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse12101781](https://doi.org/10.3390/jmse12101781)
+- W. Galor (2008). Determination of Dynamic Under Keel Clearance of Maneuvering Ship. *Journal of Konbin*. [doi:10.2478/v10040-008-0100-0](https://doi.org/10.2478/v10040-008-0100-0)
+- Christos Makris (2024). Validation and Application of the Accu-Waves Operational Platform for Wave Forecasts at Ports. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse12020220](https://doi.org/10.3390/jmse12020220)
+- Grzegorz Rutkowski (2020). Determining the Best Possible Speed of the Ship in Shallow Waters Estimated Based on the Adopted Model for Calculation of the Ship’s Domain Depth. *Polish Maritime Research*. [doi:10.2478/pomr-2020-0055](https://doi.org/10.2478/pomr-2020-0055)
+- Rafael Molina (2020). Assessing Operability on Berthed Ships. Common Approaches, Present and Future Lines. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse8040255](https://doi.org/10.3390/jmse8040255)
+- Romano-Moreno (2022). A Semi-Supervised Machine Learning Model to Forecast Movements of Moored Vessels. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse10081125](https://doi.org/10.3390/jmse10081125)
+- Sourav Dhar (2023). Real-Time Ship Draft Measurement and Optimal Estimation Using Kalman Filter. *The International Journal of Multiphysics*. [doi:10.21152/1750-9548.17.4.407](https://doi.org/10.21152/1750-9548.17.4.407)
+- Manole (2025). How safe are the United Kingdom’s ports? A statistical analysis using accident data and AIS vessel movements. *Journal of Navigation*. [doi:10.1017/s0373463325101380](https://doi.org/10.1017/s0373463325101380)
+- Kinga Łazuga (2025). Analysis of the Accessibility of the Świnoujście–Szczecin Fairway for Deep-Draught Ships. *Applied Sciences*. [doi:10.3390/app15137104](https://doi.org/10.3390/app15137104)
+- Pablo Lorente (2024). Monitoring the record-breaking wave event in Melilla harbour (SW Mediterranean Sea). *State of the Planet*. [doi:10.5194/sp-4-osr8-19-2024](https://doi.org/10.5194/sp-4-osr8-19-2024)
+- Jung (2007). A Practical Application of Multiple Wave Models to the Small Fishery Harbor Entrance. *Journal of Navigation and Port Research*. [doi:10.5394/kinpr.2007.31.7.579](https://doi.org/10.5394/kinpr.2007.31.7.579)
+- Campmans (2021). Modeling tidal sand wave recovery after dredging: effect of different types of dredging strategies. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2021.103862](https://doi.org/10.1016/j.coastaleng.2021.103862)
+- Lee (2010). Conceptual Design for Mooring Stability System and Equipments of Mobile Harbor. *Journal of Korean navigation and port research*. [doi:10.5394/kinpr.2010.34.5.311](https://doi.org/10.5394/kinpr.2010.34.5.311)
+- Lee (2005). Analysis of Numerical Model Wave Predictions for Coastal Waters at Gunsan-Janghang Harbor Entrance. *Journal of Navigation and Port Research*. [doi:10.5394/kinpr.2005.29.7.627](https://doi.org/10.5394/kinpr.2005.29.7.627)
+- Lee (2006). Analysis of Harbor Responses due to the Dredging Work at Waterway and Mooring Basin in Busan New Port. *Journal of Korean navigation and port research*. [doi:10.5394/kinpr.2006.30.1.097](https://doi.org/10.5394/kinpr.2006.30.1.097)

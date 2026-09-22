@@ -43,7 +43,7 @@ $\bar\eta = \tfrac{5}{16}\gamma H_b$.
 A wave spectrum describes how the energy of a sea state is distributed over
 frequency. To drive a numerical flume with irregular seas, a surface
 elevation record is synthesized by random-phase superposition consistent
-with a target spectrum:
+with a target spectrum (@eq:synthesis):
 
 $$ \eta(t) = \sum_{i=1}^{N}\sqrt{2S(f_i)\,\Delta f}\,\cos(2\pi f_i t + \varphi_i),\qquad \varphi_i \sim U[0, 2\pi]. $$ {#eq:synthesis}
 
@@ -108,7 +108,7 @@ $$ \frac{\partial y}{\partial t} = -\frac{1}{(1-p)D}\frac{\partial Q_{ls}}{\part
 Q_{ls} = K_\mathrm{cerc}H_b^{5/2}\sin(2\alpha_b),\qquad \alpha_b = \alpha_0 - \frac{\partial y}{\partial x}, $$ {#eq:oneline}
 
 with $H_b = K_d K_t H_\mathrm{free}$, where $K_d$ is a diffraction shadow
-factor and $K_t$ a transmission factor. The explicit scheme is stable for
+factor and $K_t$ a transmission factor. The explicit scheme is stable when @eq:oneline-dt holds,
 
 $$ \Delta t \le 0.45\,\frac{\Delta x^2}{\max G},\qquad G = \frac{2K_\mathrm{cerc}H_b^{5/2}}{(1-p)D}. $$ {#eq:oneline-dt}
 

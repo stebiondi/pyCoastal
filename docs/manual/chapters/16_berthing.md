@@ -13,7 +13,7 @@ hull touches the structure between them. All three are checked.
 ## The energy chain
 
 PIANC (2002, Working Group 33) writes the normal berthing energy as the
-kinetic energy times four factors:
+kinetic energy times four factors (@eq:pianc):
 
 $$ E_N = \tfrac12 MV^2\,C_mC_eC_sC_c. $$ {#eq:pianc}
 
@@ -56,7 +56,7 @@ from the displacement.
 ## Fender, panel, and spacing
 
 **Fender family.** Within one family and rubber grade, performance scales
-with size: energy with the volume of rubber, reaction with the section,
+with size: energy with the volume of rubber, reaction with the section (@eq:fender-scaling),
 
 $$ E = E_0\left(\frac{H}{H_0}\right)^3,\qquad R = R_0\left(\frac{H}{H_0}\right)^2. $$ {#eq:fender-scaling}
 
@@ -76,7 +76,7 @@ ships and general cargo, 700 for tugs).
 **Spacing.** `fender_spacing(vessel, spacing, projection, bow_radius=None,
 smallest_vessel=None, clearance=0.15)` applies two checks. Geometric: with
 the fenders compressed, the standoff must exceed the sagitta of the hull
-across the gap,
+across the gap (@eq:spacing),
 
 $$ s \le 2\sqrt{R_b^2 - (R_b - p + c)^2}. $$ {#eq:spacing}
 

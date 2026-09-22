@@ -51,5 +51,9 @@ Issues = "https://github.com/stebiondi/pyCoastal/issues"
 [tool.setuptools.packages.find]
 include = ["pyCoastal*"]
 
+# PyCoaPedia, the knowledge base, ships as one SQLite file.
+[tool.setuptools.package-data]
+"pyCoastal.pedia" = ["pycoapedia.sqlite"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

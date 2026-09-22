@@ -9,7 +9,7 @@ a pressure-projection step, Poisson solvers, and eddy-viscosity closures.
 The shallow water equations describe a fluid layer whose horizontal scales
 are much larger than its depth. They track the total depth and the
 depth-averaged velocity, with the pressure hydrostatic. They capture wave
-propagation, flooding and draining, and large-scale currents:
+propagation, flooding and draining, and large-scale currents ([@eq:swe-mass; @eq:swe-x; @eq:swe-y]):
 
 $$ \frac{\partial h}{\partial t} + \frac{\partial (hu)}{\partial x} + \frac{\partial (hv)}{\partial y} = 0, $$ {#eq:swe-mass}
 
@@ -33,7 +33,7 @@ spacing is taken as one.
 For incompressible viscous flow a popular explicit strategy is Chorin's
 projection (fractional step) method: predict the velocity with advection
 and diffusion, solve a Poisson equation for the pressure that removes the
-divergence, then correct:
+divergence, then correct ([@eq:ns-predict; @eq:ns-poisson; @eq:ns-correct]):
 
 $$ \tilde{\mathbf u} = \mathbf u^n + \Delta t\left(N(\mathbf u^n) + \nu\nabla^2\mathbf u^n\right), $$ {#eq:ns-predict}
 
@@ -52,17 +52,17 @@ with the velocity boundary conditions enforced on the result.
 
 A Poisson solver computes a field whose Laplacian matches a given source.
 It appears in the pressure projection, in potential flow, and in diffusion
-steady states:
+steady states (@eq:physics-1):
 
 $$ \nabla^2\phi = b \text{ in } \Omega,\qquad \phi|_{\Gamma_D} = \phi_D,\qquad
-\left.\frac{\partial\phi}{\partial n}\right|_{\Gamma_N} = g_N, $$
+\left.\frac{\partial\phi}{\partial n}\right|_{\Gamma_N} = g_N, $$ {#eq:physics-1}
 
 with the compatibility condition $\int_\Omega b\,\mathrm{d}\Omega +
 \int_{\Gamma_N} g_N\,\mathrm{d}\Gamma = 0$ for a pure Neumann problem. The
 five-point Laplacian of @eq:laplacian gives a sparse linear system. The
-Jacobi iteration, with $h = \Delta x = \Delta y$, reads
+Jacobi iteration, with $h = \Delta x = \Delta y$, is @eq:physics-2,
 
-$$ \phi^{(k+1)}_{i,j} = \tfrac14\left(\phi^{(k)}_{i+1,j} + \phi^{(k)}_{i-1,j} + \phi^{(k)}_{i,j+1} + \phi^{(k)}_{i,j-1} - h^2 b_{i,j}\right), $$
+$$ \phi^{(k+1)}_{i,j} = \tfrac14\left(\phi^{(k)}_{i+1,j} + \phi^{(k)}_{i-1,j} + \phi^{(k)}_{i,j+1} + \phi^{(k)}_{i,j-1} - h^2 b_{i,j}\right), $$ {#eq:physics-2}
 
 stopping when $\|b - A\phi^{(k)}\|_2 / \|b\|_2 < \varepsilon$.
 
@@ -87,20 +87,20 @@ scaffolds: production RANS or LES needs careful calibration and near-wall
 treatment.
 
 **Smagorinsky (LES).** The eddy viscosity is proportional to the local strain
-rate and the filter width:
+rate and the filter width (@eq:physics-3):
 
-$$ \nu_t = (C_s\Delta)^2|S|,\qquad |S| = \sqrt{2S_{ij}S_{ij}},\qquad S_{ij} = \tfrac12\left(\frac{\partial u_i}{\partial x_j} + \frac{\partial u_j}{\partial x_i}\right), $$
+$$ \nu_t = (C_s\Delta)^2|S|,\qquad |S| = \sqrt{2S_{ij}S_{ij}},\qquad S_{ij} = \tfrac12\left(\frac{\partial u_i}{\partial x_j} + \frac{\partial u_j}{\partial x_i}\right), $$ {#eq:physics-3}
 
 with $C_s \approx$ 0.1 to 0.2. `SmagorinskyModel(Cs=0.17, filter_width=1.0)`
 computes `eddy_viscosity(u, v, grid)`.
 
 **$k$-$\varepsilon$ (RANS).** Two transport equations for the turbulent
 kinetic energy $k$ and its dissipation $\varepsilon$, with
-$\nu_t = C_\mu k^2/\varepsilon$:
+$\nu_t = C_\mu k^2/\varepsilon$ ([@eq:physics-4; @eq:physics-5]):
 
-$$ \partial_t k + U_j\partial_{x_j}k = P - \varepsilon + \partial_{x_j}\left[\left(\nu + \frac{\nu_t}{\sigma_k}\right)\partial_{x_j}k\right], $$
+$$ \partial_t k + U_j\partial_{x_j}k = P - \varepsilon + \partial_{x_j}\left[\left(\nu + \frac{\nu_t}{\sigma_k}\right)\partial_{x_j}k\right], $$ {#eq:physics-4}
 
-$$ \partial_t\varepsilon + U_j\partial_{x_j}\varepsilon = C_{\varepsilon1}\frac{\varepsilon}{k}P - C_{\varepsilon2}\frac{\varepsilon^2}{k} + \partial_{x_j}\left[\left(\nu + \frac{\nu_t}{\sigma_\varepsilon}\right)\partial_{x_j}\varepsilon\right], $$
+$$ \partial_t\varepsilon + U_j\partial_{x_j}\varepsilon = C_{\varepsilon1}\frac{\varepsilon}{k}P - C_{\varepsilon2}\frac{\varepsilon^2}{k} + \partial_{x_j}\left[\left(\nu + \frac{\nu_t}{\sigma_\varepsilon}\right)\partial_{x_j}\varepsilon\right], $$ {#eq:physics-5}
 
 with $P = 2\nu_t S_{ij}S_{ij}$. `KEpsilonModel(Cmu=0.09, sigma_k=1.0,
 sigma_e=1.3, C1=1.44, C2=1.92)` returns the eddy viscosity from `k` and
@@ -108,11 +108,11 @@ sigma_e=1.3, C1=1.44, C2=1.92)` returns the eddy viscosity from `k` and
 
 **$k$-$\omega$ (RANS).** Pairs $k$ with the specific dissipation
 $\omega = \varepsilon/k$, which behaves better near walls, with
-$\nu_t = k/\omega$:
+$\nu_t = k/\omega$ ([@eq:physics-6; @eq:physics-7]):
 
-$$ \partial_t k + U_j\partial_{x_j}k = P - \beta^* k\omega + \partial_{x_j}\left[(\nu + \sigma_k^*\nu_t)\partial_{x_j}k\right], $$
+$$ \partial_t k + U_j\partial_{x_j}k = P - \beta^* k\omega + \partial_{x_j}\left[(\nu + \sigma_k^*\nu_t)\partial_{x_j}k\right], $$ {#eq:physics-6}
 
-$$ \partial_t\omega + U_j\partial_{x_j}\omega = \alpha\frac{\omega}{k}P - \beta\omega^2 + \partial_{x_j}\left[(\nu + \sigma_\omega\nu_t)\partial_{x_j}\omega\right]. $$
+$$ \partial_t\omega + U_j\partial_{x_j}\omega = \alpha\frac{\omega}{k}P - \beta\omega^2 + \partial_{x_j}\left[(\nu + \sigma_\omega\nu_t)\partial_{x_j}\omega\right]. $$ {#eq:physics-7}
 
 `KOmegaModel(sigma_k=2.0, sigma_ω=2.0, beta_star=0.09, beta=0.075,
 gamma=0.52)` returns `k / ω` from `eddy_viscosity(k, ω)`.

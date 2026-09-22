@@ -5,25 +5,6 @@
 \addcontentsline{toc}{part}{Appendices}
 ```
 
-# API reference {#sec:api}
-
-This appendix is generated from the docstrings of the installed package by
-`docs/manual/build_manual.py`, so it always matches the code it ships with.
-Modules are listed in package order; within each, the public classes,
-functions, and constants appear in source order, each with its signature and
-its full docstring.
-
-<!-- api -->
-
-# Example scripts {#sec:examples-src}
-
-The full source of every example in `examples/`, in the order of the
-chapters that use it. Run each from the repository root; the engineering
-examples write their figures to `media/`, the numerical examples animate on
-screen and read their parameters from `examples/configs/`.
-
-<!-- examples -->
-
 # List of symbols {#sec:symbols}
 
 | Symbol | Meaning | Unit |
@@ -134,11 +115,3 @@ docstrings.
 - Wilcox, D. C. (1998). *Turbulence Modeling for CFD*. DCW Industries.
 - Xie, S. L. (1981). *Scouring patterns in front of vertical breakwaters and their influence on the stability of the foundations of the breakwaters*. Delft University of Technology.
 - Yarnell, D. L. (1934). *Bridge piers as channel obstructions*. Technical Bulletin 442, US Department of Agriculture.
-
-# CoastalWiki bibliography {#sec:wiki-bib}
-
-The papers behind the claims and equations of Part VIII, numbered as cited
-there. Each entry gives the first author, year, title, journal, and DOI, as
-held in the extract.
-
-<!-- wiki-bib -->

@@ -1,0 +1,64 @@
+# Tsunami propagation
+
+`tsunami.propagation` | Basin and shelf propagation.
+
+Parent: [Tsunamis and long waves](tsunami.md)
+
+Papers: 13. Claims: 10. Equations: 0.
+
+## Synthesis
+
+**Well established.** Across deep ocean and shelves, tsunami propagation is governed primarily by long-wave gravity dynamics, with travel time controlled by depth and coastal amplitude shaped by shoaling, refraction, diffraction, resonance, friction, dispersion and bathymetric focusing.
+
+**Governing physics.** Rapid source displacement launches long waves whose phase speed is approximately sqrt(gh) in shallow-water regimes; variable depth redirects rays and changes amplitude, shelves and ridges trap or focus energy, harbors resonate, and dispersion matters as wavelength shortens or distance accumulates.
+
+**Dimensionless parameters.** Controls include relative amplitude a/h, shallowness h/L, Ursell number, Froude number, relative shelf width and slope, travel distance relative to dispersive length, numerical Courant number, cells per wavelength, normalized runup and amplitude or phase error.
+
+**Major equations.** Models use linear or nonlinear shallow-water mass and momentum equations for nondispersive propagation, Boussinesq or nonhydrostatic equations for frequency dispersion, and sometimes mild-slope or spectral formulations; moving-bottom source terms and wet/dry boundaries connect generation and inundation.
+
+**Typical methods.** Workflows construct nested bathymetry, initialize a tested source, verify conservation and convergence, compare analytical travel and oscillation cases, validate laboratory shelf/island/runup benchmarks, hindcast gauge and harbor records, test dispersion and friction sensitivity, and report arrival, amplitude and phase separately.
+
+**Numerical models.** The evidence spans nonlinear shallow-water UBO-TSUFD and a higher-order Boussinesq model with dispersive propagation, breaking and wetting/drying, evaluated against a broader verification and validation benchmark framework.
+
+**Experimental datasets.** Reviewed evidence includes plane-beach, conical-island, oscillating-basin and Monai benchmarks, the Rat Islands-to-Hilo operational test, and Eastern Mediterranean Crete, Sicily, Catania and Libyan-coast scenarios.
+
+**Validated ranges.** Benchmark support covers selected analytical basins and laboratory geometries plus scenario-scale Mediterranean propagation. The operational Hilo requirement constrains speed as well as physics; none of these proves universal skill across all source spectra and ocean basins.
+
+**Recent advances.** Recent advances combine higher-order dispersive and nonhydrostatic solvers, GPU and adaptive meshes, conservative unstructured nesting, real-time pressure and GNSS assimilation, probabilistic source ensembles, digital-twin harbors and operational benchmark requirements.
+
+**Disagreements.** Nondispersive shallow-water models are efficient and often adequate for earthquake tsunamis, while Boussinesq or nonhydrostatic models capture accumulated dispersion and shorter components at greater cost. Apparent agreement can result from compensating source, bathymetry and friction errors.
+
+**Limitations.** Uncertainty arises from source kinematics, bathymetric resolution and datum, unresolved ridges and channels, open boundaries, numerical dispersion and diffusion, friction, grid nesting, harbor geometry and sparse gauges; propagation validation can be confounded by generation and inundation errors.
+
+**Open questions.** Priorities include adaptive dispersive criteria, global-to-harbor conservative nesting, uncertainty attribution among source and path, subgrid bathymetry, scattering by rough seafloor and islands, real-time assimilation, compound tides and currents, and reliable faster-than-real-time ensembles.
+
+**Seminal papers.** Linear long-wave theory and Green-law shoaling established depth-controlled propagation; ray and edge-wave theory treated refraction and trapping, while finite-difference shallow-water models and later Boussinesq solvers enabled basin-scale scenarios and dispersive benchmarks.
+
+## Claims
+
+- **C8.** In the southwest-Crete source scenario, normalized extreme water elevation locally exceeded 0.4 along the eastern Libyan coast approximately 250 km from the source. *Regime: The paper's passive-generation southwest-Crete earthquake scenario with ζ0=1 m and its specified source geometry, bathymetry, and model setup; not scalable to other amplitudes by linear multiplication..* [direct_finding, numerical] (Samaras 2015, [doi:10.5194/os-11-643-2015](https://doi.org/10.5194/os-11-643-2015))
+- **C23.** The Rat Islands-to-Hilo operational benchmark requires a model to reproduce four hours of harbor dynamics in ten minutes of computation. *Regime: The proposed 17 November 2003 Rat Islands tsunami operational forecast benchmark and its computing context in 2008..* [direct_finding, field] (Synolakis 2008, [doi:10.1007/s00024-004-0427-y](https://doi.org/10.1007/s00024-004-0427-y))
+- **C1263.** Tsunami-HySEA successfully exercises five National Tsunami Hazard Mitigation Program benchmark problems, supporting its use for generation, propagation, runup and inundation calculations within the tested configurations. *Regime: Performance Benchmarking of Tsunami-HySEA Model for NTHMP’s Inundation Mapping Activities.* [direct_finding, mixed] (Jorge Macı́as 2017, [doi:10.1007/s00024-017-1583-1](https://doi.org/10.1007/s00024-017-1583-1))
+- **C1266.** A Tohoku generation-to-inundation hindcast using heterogeneous slip calibrated against observations reproduces important propagation and coastal-response features and illustrates the value of jointly constraining the source and wave model. *Regime: Modeling propagation and inundation of the 11 March 2011 Tohoku tsunami.* [direct_finding, mixed] (Finn Løvholt 2012, [doi:10.5194/nhess-12-1017-2012](https://doi.org/10.5194/nhess-12-1017-2012))
+- **C1540.** A new approach is proposed to separate the influence of source and topography in observed tsunami spectra and to reconstruct the initial source spectrum. *Regime: The study system, forcing, data and methods stated in the indexed abstract..* [literature_review_statement, mixed] (Alexander B. Rabinovich 1997, [doi:10.1029/97jc00479](https://doi.org/10.1029/97jc00479))
+- **C1542.** We present numerical simulations of tsunami run-up in the near field for a data set of 72 models of sources, involving both seismic dislocations and landslides. *Regime: The study system, forcing, data and methods stated in the indexed abstract..* [literature_review_statement, mixed] (Emile A. Okal 2004, [doi:10.1111/j.1365-246x.2004.02347.x](https://doi.org/10.1111/j.1365-246x.2004.02347.x))
+- **C1544.** We evaluate far-field tsunami hazard in the Indian Ocean Basin based on hydrodynamic simulations of ten case studies of possible mega earthquakes at the major seismic zones surrounding the basin. *Regime: The study system, forcing, data and methods stated in the indexed abstract..* [literature_review_statement, mixed] (Emile A. Okal 2008, [doi:10.1111/j.1365-246x.2007.03674.x](https://doi.org/10.1111/j.1365-246x.2007.03674.x))
+- **C1550.** Abstract. *Regime: The study system, forcing, data and methods stated in the indexed abstract..* [direct_finding, mixed] (Byung Ho Choi 2003, [doi:10.5194/nhess-3-321-2003](https://doi.org/10.5194/nhess-3-321-2003))
+- **C1560.** The key issue of this article is the concept of combining a model dedicated to dispersive large scale propagation of tsunamis with ComMIT, developed and made freely available by NOAA, that is a state of the art tool for tsunami impact studies.First, the main motivation for this approach, namely the need for efficient computation of runup of tsunamis from submarine/subaerial slides and certain types of earthquake, is discussed.Then the models involved are presented.We describe in some detail the dispersive model component which is a Boussinesq type model that is recently developed for tsunami propagation purposes.Finally, the performance and flexibility of the joint model approach is illustrated by two case studies including inundation computations at selected cites.The potentially disastrous, but small probability, flank-collapse event at the La Palma Island is used as an example of slide generated tsunamis where dispersion plays an important role.The second example is a tsunami from a potential inverse thrust fault at the Lesser Antilles.In this case dispersion during propagation is important for some regions, but not for others. *Regime: The study system, forcing, data and methods stated in the indexed abstract..* [direct_finding, numerical] (Finn Løvholt 2010, [doi:10.2174/1874252101004010071](https://doi.org/10.2174/1874252101004010071))
+- **C1685.** VOLNA simulates tsunami generation, propagation, wetting–drying and coastal run-up on unstructured triangular meshes, with analytical and laboratory benchmark comparisons supporting its use across the tsunami life cycle. *Regime: Long tsunami waves over realistic bathymetry where nonlinear shallow-water assumptions are adequate from generation through inundation..* [direct_finding, numerical] (Denys Dutykh 2011, [doi:10.1016/j.euromechflu.2011.05.005](https://doi.org/10.1016/j.euromechflu.2011.05.005))
+
+## Papers
+
+- Denys Dutykh (2011). The VOLNA code for the numerical modeling of tsunami waves: Generation, propagation and inundation. *European Journal of Mechanics - B/Fluids*. [doi:10.1016/j.euromechflu.2011.05.005](https://doi.org/10.1016/j.euromechflu.2011.05.005)
+- Jorge Macı́as (2017). Performance Benchmarking of Tsunami-HySEA Model for NTHMP’s Inundation Mapping Activities. *Pure and Applied Geophysics*. [doi:10.1007/s00024-017-1583-1](https://doi.org/10.1007/s00024-017-1583-1)
+- Finn Løvholt (2012). Modeling propagation and inundation of the 11 March 2011 Tohoku tsunami. *Natural Hazards and Earth System Sciences*. [doi:10.5194/nhess-12-1017-2012](https://doi.org/10.5194/nhess-12-1017-2012)
+- Synolakis (2008). Validation and Verification of Tsunami Numerical Models. *Pure and Applied Geophysics*. [doi:10.1007/s00024-004-0427-y](https://doi.org/10.1007/s00024-004-0427-y)
+- Alexander B. Rabinovich (1997). Spectral analysis of tsunami waves: Separation of source and topography effects. *Journal of Geophysical Research Atmospheres*. [doi:10.1029/97jc00479](https://doi.org/10.1029/97jc00479)
+- Emile A. Okal (2004). Source discriminants for near-field tsunamis. *Geophysical Journal International*. [doi:10.1111/j.1365-246x.2004.02347.x](https://doi.org/10.1111/j.1365-246x.2004.02347.x)
+- Emile A. Okal (2008). Far-field tsunami hazard from mega-thrust earthquakes in the Indian Ocean. *Geophysical Journal International*. [doi:10.1111/j.1365-246x.2007.03674.x](https://doi.org/10.1111/j.1365-246x.2007.03674.x)
+- Stéphan T. Grilli (2012). Numerical Simulation of the 2011 Tohoku Tsunami Based on a New Transient FEM Co-seismic Source: Comparison to Far- and Near-Field Observations. *Pure and Applied Geophysics*. [doi:10.1007/s00024-012-0528-y](https://doi.org/10.1007/s00024-012-0528-y)
+- Byung Ho Choi (2003). Simulation of the trans-oceanic tsunami propagation due to the 1883 Krakatau volcanic eruption. *Natural hazards and earth system sciences*. [doi:10.5194/nhess-3-321-2003](https://doi.org/10.5194/nhess-3-321-2003)
+- Finn Løvholt (2010). Coupling of Dispersive Tsunami Propagation and Shallow Water Coastal Response. *The Open Oceanography Journal*. [doi:10.2174/1874252101004010071](https://doi.org/10.2174/1874252101004010071)
+- Tinti (2013). The UBO-TSUFD tsunami inundation model: validation and application to a tsunami case study focused on the city of Catania, Italy. *Natural Hazards and Earth System Sciences*. [doi:10.5194/nhess-13-1795-2013](https://doi.org/10.5194/nhess-13-1795-2013)
+- Samaras (2015). Simulation of tsunami generation, propagation and coastal inundation in the Eastern Mediterranean. *Ocean Science*. [doi:10.5194/os-11-643-2015](https://doi.org/10.5194/os-11-643-2015)
+- Горбань (2022). ВЗАЄМОДІЯ ПОВЕРХНЕВОЇ ПООДИНОКОЇ ХВИЛІ ІЗ ЗАНУРЕНИМ ТА НАПІВЗАНУРЕНИМ ХВИЛЕГАСНИКАМИ. *PRECARPATHIAN BULLETIN OF THE SHEVCHENKO SCIENTIFIC SOCIETY Number*. [doi:10.31471/2304-7399-2022-17(64)-118-132](https://doi.org/10.31471/2304-7399-2022-17(64)-118-132)

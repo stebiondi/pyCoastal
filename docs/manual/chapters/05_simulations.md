@@ -40,9 +40,9 @@ indices.
 ## Water drop: the 2D wave equation
 
 **Objective.** Verify the accuracy of the Laplacian and the stability of the
-time stepping on a simple hyperbolic system,
+time stepping on a simple hyperbolic system (@eq:simulations-1),
 
-$$ \frac{\partial^2\eta}{\partial t^2} = c^2\nabla^2\eta. $$
+$$ \frac{\partial^2\eta}{\partial t^2} = c^2\nabla^2\eta. $$ {#eq:simulations-1}
 
 A Gaussian bump of width `sigma` is released at the center of the domain
 with zero Dirichlet boundaries, and the circular front should travel at
@@ -77,9 +77,9 @@ absorbs the outgoing waves.
 advects a passive field with a uniform current, $u_t + c\,u_x = 0$, with a
 Dirichlet inlet on the west and a Neumann outlet on the east, and records
 a gauge. `pollutant.py` solves the full advection-diffusion equation for a
-Gaussian patch in a vortex flow in a shallow pond,
+Gaussian patch in a vortex flow in a shallow pond (@eq:simulations-2),
 
-$$ \frac{\partial C}{\partial t} + u\frac{\partial C}{\partial x} + v\frac{\partial C}{\partial y} = D\nabla^2 C, $$
+$$ \frac{\partial C}{\partial t} + u\frac{\partial C}{\partial x} + v\frac{\partial C}{\partial y} = D\nabla^2 C, $$ {#eq:simulations-2}
 
 with upwind advection, centered diffusion (`operators.gradient` and
 `operators.laplacian`), and zero-flux boundaries. For pure diffusion the
@@ -90,9 +90,9 @@ variance of the patch grows as $2Dt$, which the run can be checked against.
 **Objective.** Check the diffusive time scale and operator accuracy.
 `viscous_fluid.py` evolves two counter-rotating vortices on a periodic
 domain with central differences and forward Euler. The diffusion part can
-be checked against the decaying mode
+be checked against the decaying mode (@eq:simulations-3)
 
-$$ u(x, y, t) = U_0\sin(k_x x)\sin(k_y y)\exp\left[-\nu(k_x^2 + k_y^2)t\right]. $$
+$$ u(x, y, t) = U_0\sin(k_x x)\sin(k_y y)\exp\left[-\nu(k_x^2 + k_y^2)t\right]. $$ {#eq:simulations-3}
 
 ## Boundary-condition test: `2D_irr_turb.py`
 

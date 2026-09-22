@@ -1,0 +1,67 @@
+# Reliability and uncertainty
+
+`uncertainty` | Uncertainty quantification and reliability of coastal systems.
+
+Subtopics: [Ensemble and Bayesian methods](uncertainty.ensembles.md), [Structural and system reliability](uncertainty.reliability.md), [Sensitivity analysis](uncertainty.sensitivity.md), [Aleatory and epistemic uncertainty](uncertainty.sources.md)
+
+Papers: 14. Claims: 12. Equations: 0.
+
+## Synthesis
+
+**Well established.** Coastal uncertainty includes natural variability, observation and sampling error, parameter uncertainty, model structure and discrepancy, boundary forcing, scenario choice and deep knowledge gaps; credible decisions require separating, propagating, validating and communicating these sources rather than collapsing them into one unqualified range.
+
+**Governing physics.** Uncertainty enters through stochastic forcing, nonlinear thresholds and feedback, spatial and temporal dependence, incomplete state observation, unresolved scales, model closures, changing morphology and climate, deterioration, human response and consequence valuation.
+
+**Dimensionless parameters.** Controls include coefficient of variation, reliability index and failure probability, return period and exceedance probability, ensemble spread-to-error ratio, calibration and coverage, sensitivity indices, signal-to-noise, effective sample and tail size, prior-to-data information, dependence strength, robustness and regret ratios.
+
+**Major equations.** Core formulations include Bayes theorem and posterior prediction, total probability and variance, likelihood and model discrepancy, limit-state reliability, variance- and moment-based sensitivity, ensemble decomposition, extreme-value and copula dependence, calibration scores, decision loss, expected utility, regret and value of information.
+
+**Typical methods.** Methods define an uncertainty taxonomy and decision, audit data and models, propagate Monte Carlo/Bayesian/ensemble alternatives, perform global sensitivity and identifiability analysis, validate probabilities and tails, test scenarios and structural choices, update with observations, evaluate robustness and communicate conditional findings.
+
+**Numerical models.** Tools include Bayesian networks and calibration, Monte Carlo and polynomial chaos, global sensitivity, surrogate and machine-learning UQ, multimodel and perturbed ensembles, probabilistic extremes and copulas, reliability models, robust decision making and adaptive pathways.
+
+**Experimental datasets.** Evidence includes nonstationary-extreme reviews, compound river–coastal flood projections, coastal-cliff multimodel ensembles, New Orleans deep-uncertainty scenarios, environmental Bayesian networks, sensitivity-tool benchmarks, ocean-engineering ANN studies and adaptation case reasoning.
+
+**Validated ranges.** The reviewed evidence spans environmental risk, coastal climate services, compound flooding, cliff retreat, infrastructure risk and ocean-engineering prediction from event to multidecadal horizons; uncertainty results remain conditional on data, priors, model/scenario ensembles and decisions considered.
+
+**Recent advances.** Recent work integrates global sensitivity toolkits, Bayesian and ML uncertainty, calibrated ensembles, compound hazards, multimodel morphology projections, deep-uncertainty scenarios, model-discrepancy awareness, robustness and ethical/shared coastal adaptation.
+
+**Disagreements.** Aleatory and epistemic uncertainty are not always cleanly separable; probability may be inappropriate for deep uncertainty; complex models can reduce process omission yet increase unidentifiable parameters; ensemble agreement can reflect shared bias; calibration can compensate errors; narrow intervals can be accurate on average but fail in tails.
+
+**Limitations.** Extreme records are short, observations correlated and incomplete, priors and structural alternatives subjective, computational budgets restrict exploration, models share ancestry, validation domains are narrow, future scenarios lack frequencies and human adaptation and cascading consequences are poorly constrained.
+
+**Open questions.** Priorities include compound-tail dependence, nonstationary extremes, structural discrepancy, shared ensemble bias, observation error covariance, rare failure validation, multi-model weighting, adaptive observation, cascading systems, human behavior, equity, deep uncertainty and trustworthy real-time calibration.
+
+**Seminal papers.** Classical probability, extreme-value theory, reliability indices, Bayesian inference, Monte Carlo, sensitivity analysis and decision theory established quantitative uncertainty; ensemble forecasting, robust decision making and adaptive pathways later addressed model plurality and changing futures.
+
+## Claims
+
+- **C1058.** A review of nonstationary extremes shows that detection, attribution, probability estimation and management must distinguish changing forcing from sampling variability and model assumptions. *Regime: Nonstationary weather and water extremes: a review of methods for their detection, attribution, and management.* [literature_review_statement, review] (Louise Slater 2021, [doi:10.5194/hess-25-3897-2021](https://doi.org/10.5194/hess-25-3897-2021))
+- **C1059.** A review of Bayesian networks for environmental risk demonstrates a transparent way to combine causal structure, heterogeneous evidence, conditional dependence and uncertain consequences. *Regime: Bayesian Networks in Environmental Risk Assessment: A Review.* [literature_review_statement, review] (Laura Kaikkonen 2020, [doi:10.1002/ieam.4332](https://doi.org/10.1002/ieam.4332))
+- **C1060.** VARS-TOOL provides a reproducible framework for global sensitivity and uncertainty analysis that compares parameter influence across scales and supports efficient diagnostic sampling. *Regime: VARS-TOOL: A toolbox for comprehensive, efficient, and robust sensitivity and uncertainty analysis.* [direct_finding, numerical] (Saman Razavi 2018, [doi:10.1016/j.envsoft.2018.10.005](https://doi.org/10.1016/j.envsoft.2018.10.005))
+- **C1061.** Projections for northwestern Europe show that coastal and riverine flood dependence, marginal changes and scenario choices must be represented jointly when estimating future compound hazard. *Regime: Projected Changes in Compound Flood Hazard From Riverine and Coastal Floods in Northwestern Europe.* [direct_finding, numerical] (Poulomi Ganguli 2020, [doi:10.1029/2020ef001752](https://doi.org/10.1029/2020ef001752))
+- **C1062.** Good-practice guidance for epistemic natural-hazard uncertainty calls for explicit assumptions, alternative plausible models, expert judgement protocols, traceability and communication rather than hiding knowledge gaps in one probability. *Regime: Epistemic uncertainties and natural hazard risk assessment – Part 2: What should constitute good practice?.* [literature_review_statement, review] (Keith Beven 2018, [doi:10.5194/nhess-18-2769-2018](https://doi.org/10.5194/nhess-18-2769-2018))
+- **C1063.** A multimodel ensemble for multidecadal coastal-cliff retreat propagates alternative process representations and future forcing to expose structural spread in shoreline projections. *Regime: A Model Ensemble for Projecting Multidecadal Coastal Cliff Retreat During the 21st Century.* [direct_finding, numerical] (Patrick W. Limber 2018, [doi:10.1029/2017jf004401](https://doi.org/10.1029/2017jf004401))
+- **C1064.** A New Orleans case demonstrates deep uncertainty in coastal flood risk across probabilistic scenarios, showing that decision robustness can matter more than a single best-estimate projection. *Regime: Deep Uncertainty Surrounding Coastal Flood Risk Projections: A Case Study for New Orleans.* [direct_finding, numerical] (Tony E. Wong 2017, [doi:10.1002/2017ef000607](https://doi.org/10.1002/2017ef000607))
+- **C1065.** Decision-oriented analysis can favor simpler simulation models when their assumptions and uncertainty are more thoroughly explored than those of computationally complex models. *Regime: Why Simpler Computer Simulation Models Can Be Epistemically Better for Informing Decisions.* [direct_finding, analytical] (Casey Helgeson 2020, [doi:10.1086/711501](https://doi.org/10.1086/711501))
+- **C1066.** A review of artificial neural networks in ocean engineering identifies data, architecture, calibration, validation, extrapolation and uncertainty as distinct sources of predictive risk. *Regime: Uncertainties in the application of artificial neural networks in ocean engineering.* [literature_review_statement, review] (Nerea Portillo Juan 2023, [doi:10.1016/j.oceaneng.2023.115193](https://doi.org/10.1016/j.oceaneng.2023.115193))
+- **C1067.** A coastal-adaptation perspective argues that large hydro-morphodynamic uncertainty requires transparent ethics, shared responsibility, participation and fair treatment of uncertain futures. *Regime: Coastal Adaptation and Uncertainties: The Need of Ethics for a Shared Coastal Future.* [literature_review_statement, review] (Agustín Sánchez‐Arcilla 2021, [doi:10.3389/fmars.2021.717781](https://doi.org/10.3389/fmars.2021.717781))
+- **C1398.** A revised Atlantic hurricane database format explicitly represents track and intensity uncertainty, improving the traceability of historical storm information used in hazard applications. *Regime: Atlantic Hurricane Database Uncertainty and Presentation of a New Database Format.* [direct_finding, mixed] (Christopher W. Landsea 2013, [doi:10.1175/mwr-d-12-00254.1](https://doi.org/10.1175/mwr-d-12-00254.1))
+- **C1399.** A planning review compares approaches for adaptation under deep uncertainty and emphasizes flexible pathways, robustness and iterative learning over single deterministic forecasts. *Regime: Adapt or Perish: A Review of Planning Approaches for Adaptation under Deep Uncertainty.* [literature_review_statement, review] (Warren E. Walker 2013, [doi:10.3390/su5030955](https://doi.org/10.3390/su5030955))
+
+## Papers
+
+- Christopher W. Landsea (2013). Atlantic Hurricane Database Uncertainty and Presentation of a New Database Format. *Monthly Weather Review*. [doi:10.1175/mwr-d-12-00254.1](https://doi.org/10.1175/mwr-d-12-00254.1)
+- Warren E. Walker (2013). Adapt or Perish: A Review of Planning Approaches for Adaptation under Deep Uncertainty. *Sustainability*. [doi:10.3390/su5030955](https://doi.org/10.3390/su5030955)
+- Louise Slater (2021). Nonstationary weather and water extremes: a review of methods for their detection, attribution, and management. *Hydrology and earth system sciences*. [doi:10.5194/hess-25-3897-2021](https://doi.org/10.5194/hess-25-3897-2021)
+- Laura Kaikkonen (2020). Bayesian Networks in Environmental Risk Assessment: A Review. *Integrated Environmental Assessment and Management*. [doi:10.1002/ieam.4332](https://doi.org/10.1002/ieam.4332)
+- Saman Razavi (2018). VARS-TOOL: A toolbox for comprehensive, efficient, and robust sensitivity and uncertainty analysis. *Environmental Modelling & Software*. [doi:10.1016/j.envsoft.2018.10.005](https://doi.org/10.1016/j.envsoft.2018.10.005)
+- Poulomi Ganguli (2020). Projected Changes in Compound Flood Hazard From Riverine and Coastal Floods in Northwestern Europe. *Earth s Future*. [doi:10.1029/2020ef001752](https://doi.org/10.1029/2020ef001752)
+- Keith Beven (2018). Epistemic uncertainties and natural hazard risk assessment – Part 2: What should constitute good practice?. *Natural hazards and earth system sciences*. [doi:10.5194/nhess-18-2769-2018](https://doi.org/10.5194/nhess-18-2769-2018)
+- Patrick W. Limber (2018). A Model Ensemble for Projecting Multidecadal Coastal Cliff Retreat During the 21st Century. *Journal of Geophysical Research Earth Surface*. [doi:10.1029/2017jf004401](https://doi.org/10.1029/2017jf004401)
+- Tony E. Wong (2017). Deep Uncertainty Surrounding Coastal Flood Risk Projections: A Case Study for New Orleans. *Earth s Future*. [doi:10.1002/2017ef000607](https://doi.org/10.1002/2017ef000607)
+- Casey Helgeson (2020). Why Simpler Computer Simulation Models Can Be Epistemically Better for Informing Decisions. *Philosophy of Science*. [doi:10.1086/711501](https://doi.org/10.1086/711501)
+- Nerea Portillo Juan (2023). Uncertainties in the application of artificial neural networks in ocean engineering. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2023.115193](https://doi.org/10.1016/j.oceaneng.2023.115193)
+- Agustín Sánchez‐Arcilla (2021). Coastal Adaptation and Uncertainties: The Need of Ethics for a Shared Coastal Future. *Frontiers in Marine Science*. [doi:10.3389/fmars.2021.717781](https://doi.org/10.3389/fmars.2021.717781)
+- Jadhav (2013). Probability distribution of wave heights attenuated by salt marsh vegetation during tropical cyclone. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2013.08.006](https://doi.org/10.1016/j.coastaleng.2013.08.006)
+- Luan (2018). Comparative analysis of numerically simulated and experimentally measured motions and sectional forces and moments in a floating wind turbine hull structure subjected to combined wind and wave loads. *Engineering Structures*. [doi:10.1016/j.engstruct.2018.08.021](https://doi.org/10.1016/j.engstruct.2018.08.021)

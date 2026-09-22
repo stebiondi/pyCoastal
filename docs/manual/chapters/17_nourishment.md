@@ -14,18 +14,18 @@ given volume buys, and how much that depends on where the sand comes from.
 
 Under small wave angles the one-line model (@eq:oneline) reduces to a
 diffusion equation. With the CERC transport in the solid-volume SI form this
-model needs,
+model needs (@eq:cerc),
 
 $$ Q = K_\mathrm{cerc}H_b^{5/2}\sin 2\alpha,\qquad K_\mathrm{cerc} = \frac{K\sqrt{g/\gamma_b}}{16(s - 1)}, $$ {#eq:cerc}
 
 (`cerc_coefficient(K=0.39, s=2.65, gamma_b=0.78)`; the solver divides by
 $1 - p$ itself, so a bulk-volume coefficient would double-count porosity),
-linearization gives
+linearization gives @eq:diffusivity,
 
 $$ \frac{\partial y}{\partial t} = \varepsilon\frac{\partial^2y}{\partial x^2},\qquad \varepsilon = \frac{2K_\mathrm{cerc}H_b^{5/2}}{(1 - p)(D + B)}, $$ {#eq:diffusivity}
 
 (`longshore_diffusivity`). For an initially rectangular fill of width $W$
-and length $L = 2a$, Pelnard-Considere (1956) gives
+and length $L = 2a$, Pelnard-Considere (1956) gives @eq:pelnard,
 
 $$ y(x, t) = \frac{W}{2}\left[\operatorname{erf}\left(\frac{a - x'}{2\sqrt{\varepsilon t}}\right) + \operatorname{erf}\left(\frac{a + x'}{2\sqrt{\varepsilon t}}\right)\right], $$ {#eq:pelnard}
 
@@ -58,7 +58,7 @@ in the test suite.
 
 Dean's equilibrium profile is $h = Ay^{2/3}$ (`equilibrium_profile`), with
 the scale parameter tied to the fall velocity (Kriebel, Kraus and Larson
-1991),
+1991) (@eq:dean-A),
 
 $$ A = 0.067\,w^{0.44}\quad (w \text{ in cm/s}), $$ {#eq:dean-A}
 
@@ -70,7 +70,7 @@ A fill with scale $A_f$ placed on a native beach with scale $A_n$ pushes the
 profile seaward at each depth by
 $\Delta(h) = a + (h/A_f)^{3/2} - (h/A_n)^{3/2}$, where $a$ is the shoreline
 advance. Integrating over *depth* (not distance, because the active profile
-is bounded by the closure contour) from the waterline to closure gives
+is bounded by the closure contour) from the waterline to closure gives @eq:fill-volume,
 
 $$ V = Ba + ah_L + 0.4\,h_L^{5/2}\left(A_f^{-3/2} - A_n^{-3/2}\right), $$ {#eq:fill-volume}
 

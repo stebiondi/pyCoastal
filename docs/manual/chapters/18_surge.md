@@ -20,7 +20,7 @@ predicted), any sea-level rise, and three setups:
 - **Wind setup**, from integrating
   $\mathrm{d}\eta/\mathrm{d}x = nkW^2\cos\theta/(gd)$ over the fetch, with
   $k = 3.3\times10^{-6}$ and a return-flow factor $n$ of 1.15 to 1.30.
-  Over a constant depth,
+  Over a constant depth (@eq:wind-setup),
 
   $$ \eta_w = \frac{nkW^2F\cos\theta}{gd}, $$ {#eq:wind-setup}
 
@@ -31,7 +31,7 @@ predicted), any sea-level rise, and three setups:
 - **Wave setup** in the surf zone, from the breaking height
   (`surf_zone_setup(breaking_height, gamma=0.8)`).
 
-Runup is added on top for the total water level, from Stockdon et al. (2006):
+Runup is added on top for the total water level, from Stockdon et al. (2006) (@eq:stockdon):
 
 $$ R_{2\%} = 1.1\left(0.35\beta\sqrt{H_0L_0} + \frac{\sqrt{H_0L_0(0.563\beta^2 + 0.004)}}{2}\right), $$ {#eq:stockdon}
 

@@ -1,0 +1,67 @@
+# Laboratory experiments
+
+`laboratory` | Controlled physical modeling of coastal processes.
+
+Subtopics: [Wave-basin experiments](laboratory.basins.md), [Wave-flume experiments](laboratory.flumes.md), [Laboratory instrumentation](laboratory.instrumentation.md), [Physical-model similitude](laboratory.similitude.md)
+
+Papers: 16. Claims: 10. Equations: 0.
+
+## Synthesis
+
+**Well established.** Coastal laboratory experiments are controlled approximations of prototype systems: credibility depends on a stated question, prioritized similitude, characterized facility and boundaries, calibrated forcing and sensors, repeatability, uncertainty, documented processing, and explicit transfer limits.
+
+**Governing physics.** Physical models reproduce gravity waves, currents, wind, turbulence, sediment, structures and devices through conservation laws and boundary forcing, while viscosity, surface tension, air compressibility, grain properties, elasticity, porosity and control-system dynamics can scale differently.
+
+**Dimensionless parameters.** Key controls include geometric and Froude scale, Reynolds and Weber numbers, relative depth and wave steepness, Ursell and Keulegan–Carpenter numbers, blockage, surf similarity, density and fall-velocity ratios, relative roughness, Cauchy stiffness, pneumatic compliance, reflection coefficient, signal-to-noise and repeatability ratios.
+
+**Major equations.** Core formulations include Froude, Reynolds, Weber, Cauchy and Shields scaling; wavemaker transfer and absorption; dispersion and spectral targets; reflection separation; force and pressure coefficients; sediment and morphology scaling; response amplitude operators; and Type A/B measurement and propagated uncertainty.
+
+**Typical methods.** Methods define prototype and model scales, characterize basin transfer and flow quality, generate regular/irregular/directional/focused/breaking waves and currents, absorb reflections, synchronize sensors, repeat and randomize tests, separate incident/reflected fields, quantify uncertainty and compare against theory, computation or prototype data.
+
+**Numerical models.** Numerical tools support wavemaker and boundary control, facility characterization, design of experiments, sensor correction, reflection analysis, digital twins, CFD and reduced-order validation, uncertainty propagation and hybrid numerical–physical testing.
+
+**Experimental datasets.** The reviewed evidence includes ocean-environment simulation surveys, testing-standard gap analysis, tidal round robins, wind-over-wave load tests, focused-wave validation, volcanic-tsunami experiments, breaking-cylinder impacts, wave–current cylinder coefficients, FloWave turbine validation and an OWC efficiency/survivability database.
+
+**Validated ranges.** Examples span flumes and directional or circular basins, regular through irregular and focused waves, currents and wind, nonbreaking through impact regimes, structural cylinders, turbines and oscillating-water columns, and gravity-driven tsunami sources; each remains bounded by facility and scale.
+
+**Recent advances.** Recent advances include segmented multidirectional control, real-time absorption, high-speed optical and remote sensing, synchronized dense pressure and velocity arrays, large-scale prototype-like facilities, round-robin testing, open benchmark databases, digital facility twins and hybrid physical–numerical experiments.
+
+**Disagreements.** Froude similarity preserves gravity but not all viscous, capillary, elastic, pneumatic or sediment processes; facility-to-facility results can differ despite nominally identical targets; deterministic focus and stochastic sea states answer different questions; numerical agreement may reflect shared boundary assumptions rather than prototype validity.
+
+**Limitations.** Finite depth, width and length create blockage and reflection; wavemakers have stroke, velocity and bandwidth limits; long waves and currents recirculate; wind and air effects are difficult to scale; sediments distort mobility and time scales; sensors disturb or filter response; few repeats weaken tail estimates.
+
+**Open questions.** Priorities include quantified multi-physics scale effects, coupled wind–wave–current–surge forcing, controlled breaking and aeration, sediment mixtures and ecology, active three-dimensional boundaries, rare-event repeatability, interlaboratory uncertainty, hybrid testing and model-to-prototype discrepancy inference.
+
+**Seminal papers.** Classical wave-tank work established wavemaker theory, Froude scaling, reflection control, force and overtopping measurement and hydraulic similitude; movable-bed and multidirectional facilities extended physical modelling to sediment, morphology and directional seas.
+
+## Claims
+
+- **C1023.** A review of offshore-renewable testing shows that laboratory reproduction of the ocean environment must coordinate waves, currents, wind, turbulence, depth, scaling, control, instrumentation, and device response. *Regime: Capture and simulation of the ocean environment for offshore renewable energy.* [literature_review_statement, review] (Samuel Draycott 2019, [doi:10.1016/j.rser.2019.01.011](https://doi.org/10.1016/j.rser.2019.01.011))
+- **C1024.** FloWave experiments provide robust validation of a generalized actuator-disk CFD model and show how facility measurements connect numerical assumptions to turbine response. *Regime: Robust validation of a generalised actuator disk CFD model for tidal turbine analysis using the FloWave ocean energy research facility.* [direct_finding, mixed] (C. Badoe 2022, [doi:10.1016/j.renene.2022.03.109](https://doi.org/10.1016/j.renene.2022.03.109))
+- **C1025.** A marine-renewable testing gap analysis identifies common terminology, procedures, uncertainty reporting, facility characterization, and staged validation as prerequisites for comparable experiments. *Regime: Standardising Marine Renewable Energy Testing: Gap Analysis and Recommendations for Development of Standards.* [literature_review_statement, review] (Donald R. Noble 2021, [doi:10.3390/jmse9090971](https://doi.org/10.3390/jmse9090971))
+- **C1026.** A documented floating oscillating-water-column test database links wave conditions, mooring, air and power-take-off response, efficiency, and survivability for reuse and model validation. *Regime: Efficiency and Survivability of a Floating Oscillating Water Column Wave Energy Converter Moored to the Seabed: An Overview of the EsflOWC MaRINET2 Database.* [direct_finding, experimental] (Dogan Kisacik 2020, [doi:10.3390/w12040992](https://doi.org/10.3390/w12040992))
+- **C1027.** Round-robin tidal tests demonstrate that facility flow quality and measurement practice can alter inferred turbine loading and performance, motivating interlaboratory comparison and documented facility effects. *Regime: Tidal Energy Round Robin Tests: A Comparison of Flow Measurements and Turbine Loading.* [direct_finding, experimental] (Rodrigo Martinez 2021, [doi:10.3390/jmse9040425](https://doi.org/10.3390/jmse9040425))
+- **C1028.** Experiments show that wind above irregular laboratory waves can change wave-induced load statistics, so open-sea-to-basin translation must account for missing or imposed aerodynamic forcing. *Regime: Experimental study of the effect of wind above irregular waves on the wave-induced load statistics.* [direct_finding, experimental] (Julie Carøe Kristoffersen 2021, [doi:10.1016/j.coastaleng.2021.103940](https://doi.org/10.1016/j.coastaleng.2021.103940))
+- **C1029.** A validated procedure generates repeatable periodic focused waves in a flume, linking target wave specification, wavemaker control, measurement, and achieved focus. *Regime: Methodology and experimental validation for generating periodic focused waves in a wave flume.* [direct_finding, experimental] (Fang 2020, [doi:10.1016/j.oceaneng.2020.107394](https://doi.org/10.1016/j.oceaneng.2020.107394))
+- **C1030.** Large-scale physical experiments distinguish tsunami source and wave characteristics generated by submarine volcanic eruptions and provide a controlled benchmark for source-to-wave models. *Regime: Physical Modeling of Tsunamis Generated by Submarine Volcanic Eruptions.* [direct_finding, experimental] (Yibin Liu 2024, [doi:10.1029/2023jc020796](https://doi.org/10.1029/2023jc020796))
+- **C1031.** Controlled measurements of breaking-wave impact on a vertical cylinder resolve how breaker properties govern impulsive loads and establish a geometry- and regime-bounded validation dataset. *Regime: Experimental characterisation of breaking wave impact loads on a vertical cylinder.* [direct_finding, experimental] (Florian Hulin 2026, [doi:10.1017/jfm.2025.11028](https://doi.org/10.1017/jfm.2025.11028))
+- **C1032.** An experimental wave–current campaign determines forces and hydrodynamic coefficients on vertical cylinders representative of offshore structural elements under combined forcing. *Regime: Experimental Determination of Forces and Hydrodynamic Coefficients on Vertical Cylinders Under Wave and Current Conditions.* [direct_finding, experimental] (Oier Peña Vega 2026, [doi:10.3390/jmse14020129](https://doi.org/10.3390/jmse14020129))
+
+## Papers
+
+- Samuel Draycott (2019). Capture and simulation of the ocean environment for offshore renewable energy. *Renewable and Sustainable Energy Reviews*. [doi:10.1016/j.rser.2019.01.011](https://doi.org/10.1016/j.rser.2019.01.011)
+- C. Badoe (2022). Robust validation of a generalised actuator disk CFD model for tidal turbine analysis using the FloWave ocean energy research facility. *Renewable Energy*. [doi:10.1016/j.renene.2022.03.109](https://doi.org/10.1016/j.renene.2022.03.109)
+- Donald R. Noble (2021). Standardising Marine Renewable Energy Testing: Gap Analysis and Recommendations for Development of Standards. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse9090971](https://doi.org/10.3390/jmse9090971)
+- Dogan Kisacik (2020). Efficiency and Survivability of a Floating Oscillating Water Column Wave Energy Converter Moored to the Seabed: An Overview of the EsflOWC MaRINET2 Database. *Water*. [doi:10.3390/w12040992](https://doi.org/10.3390/w12040992)
+- Rodrigo Martinez (2021). Tidal Energy Round Robin Tests: A Comparison of Flow Measurements and Turbine Loading. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse9040425](https://doi.org/10.3390/jmse9040425)
+- Julie Carøe Kristoffersen (2021). Experimental study of the effect of wind above irregular waves on the wave-induced load statistics. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2021.103940](https://doi.org/10.1016/j.coastaleng.2021.103940)
+- Fang (2020). Methodology and experimental validation for generating periodic focused waves in a wave flume. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2020.107394](https://doi.org/10.1016/j.oceaneng.2020.107394)
+- Yibin Liu (2024). Physical Modeling of Tsunamis Generated by Submarine Volcanic Eruptions. *Journal of Geophysical Research Oceans*. [doi:10.1029/2023jc020796](https://doi.org/10.1029/2023jc020796)
+- Florian Hulin (2026). Experimental characterisation of breaking wave impact loads on a vertical cylinder. *Journal of Fluid Mechanics*. [doi:10.1017/jfm.2025.11028](https://doi.org/10.1017/jfm.2025.11028)
+- Oier Peña Vega (2026). Experimental Determination of Forces and Hydrodynamic Coefficients on Vertical Cylinders Under Wave and Current Conditions. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse14020129](https://doi.org/10.3390/jmse14020129)
+- Synolakis (2008). Validation and Verification of Tsunami Numerical Models. *Pure and Applied Geophysics*. [doi:10.1007/s00024-004-0427-y](https://doi.org/10.1007/s00024-004-0427-y)
+- Gourlay (2005). Wave-generated flow on coral reefs—an analysis for two-dimensional horizontal reef-tops with steep faces. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2004.11.007](https://doi.org/10.1016/j.coastaleng.2004.11.007)
+- Sandy Day (2015). Hydrodynamic modelling of marine renewable energy devices: A state of the art review. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2015.05.036](https://doi.org/10.1016/j.oceaneng.2015.05.036)
+- Ming He (2023). Wave interactions with multi-float structures: SPH model, experimental validation, and parametric study. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2023.104333](https://doi.org/10.1016/j.coastaleng.2023.104333)
+- Goseberg (2013). Reduction of maximum tsunami run-up due to the interaction with beachfront development – application of single sinusoidal waves. *Natural Hazards and Earth System Sciences*. [doi:10.5194/nhess-13-2991-2013](https://doi.org/10.5194/nhess-13-2991-2013)
+- Mahmoudof (2021). Experimental study of hydraulic response of smooth submerged breakwaters to irregular waves. *Oceanologia*. [doi:10.1016/j.oceano.2021.05.002](https://doi.org/10.1016/j.oceano.2021.05.002)

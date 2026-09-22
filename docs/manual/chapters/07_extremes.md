@@ -41,14 +41,14 @@ the usual choice for storm waves.
 **GPD fit.** With survivor function
 $1 - F(x) = (1 + \xi x/\sigma)^{-1/\xi}$ (exponential as $\xi \to 0$), the
 L-moment estimators from the mean $\lambda_1$ and L-CV
-$\tau = \lambda_2/\lambda_1$ of the excesses are
+$\tau = \lambda_2/\lambda_1$ of the excesses are given by @eq:gpd-lmom,
 
 $$ \xi = 2 - \frac{1}{\tau},\qquad \sigma = \lambda_1(1 - \xi). $$ {#eq:gpd-lmom}
 
 A shape at or above one means the fitted mean does not exist; the fit is
 returned and flagged rather than clipped.
 
-**POT return value.** With $\lambda$ peaks per year, the $T$-year value is
+**POT return value.** With $\lambda$ peaks per year, the $T$-year value is @eq:pot-return,
 
 $$ x_T = u + \frac{\sigma}{\xi}\left[(\lambda T)^{\xi} - 1\right], $$ {#eq:pot-return}
 

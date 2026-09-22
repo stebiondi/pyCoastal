@@ -1,7 +1,10 @@
 """
-Distil the CoastalWiki database into a JSON extract the browser app can load.
+Distil the PyCoaPedia source database into a JSON extract the browser app can load.
 
-The wiki database is 146 MB of SQLite, which no browser is going to open.
+Normally run through ``pedia/build_pedia.py``, which writes this extract,
+the shipped SQLite database and the Markdown pages from one snapshot.
+
+The source database is about 150 MB of SQLite, which no browser is going to open.
 What the app actually needs is small: the topic tree, the curated synthesis
 for each topic, the atomic claims with their regime bounds, the equations,
 and enough paper metadata to cite and link. That comes to a couple of
@@ -13,10 +16,10 @@ same shape of information as queryable data, with a DOI behind each piece,
 so the app can put the two side by side: here is the number, and here is
 what the literature says about the ground it stands on.
 
-Run it against the wiki checkout:
+Run it against the source database:
 
     python webapp/build_knowledge.py \
-        --db ../2026_coastalwiki/data/coastalwiki.db \
+        --db ../2026_CoastalWiki/data/coastalwiki.db \
         --out webapp/knowledge.json
 """
 
@@ -152,7 +155,10 @@ def build(db_path: Path) -> dict:
                      "FROM topic_synthesis_statements ORDER BY topic_id, section"):
         topic = topics.get(row["topic_id"])
         if topic and row["statement"]:
-            topic["synthesis"][row["section"]] = row["statement"]
+            # A section can hold several statements; keep them all.
+            previous = topic["synthesis"].get(row["section"])
+            topic["synthesis"][row["section"]] = (
+                f"{previous} {row['statement']}" if previous else row["statement"])
 
     wanted_papers: set[int] = set()
 
@@ -248,7 +254,7 @@ def build(db_path: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, required=True,
-                        help="Path to coastalwiki.db")
+                        help="Path to the PyCoaPedia source database (coastalwiki.db)")
     parser.add_argument("--out", type=Path,
                         default=Path(__file__).with_name("knowledge.json"))
     args = parser.parse_args()

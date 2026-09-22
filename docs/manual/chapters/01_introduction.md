@@ -97,10 +97,11 @@ block, and specification notes.
   `pyCoastal.tools`.
 - **Part IV** has one chapter per design application.
 - **Part V** covers the drafting layer: sections, sheets, and DXF export.
-- **Part VI** describes the Coastal Design Bench browser app.
-- **Part VII** describes the test suite and the verification of the browser
+- **Part VI** describes PyCoaTools, the browser version of the design
+  modules.
+- **Part VII** describes PyCoaPedia, the knowledge base of the coastal and
+  ocean engineering literature, how to navigate it, and how the repository
+  serves AI agents.
+- **Part VIII** describes the test suite and the verification of the browser
   engine against the Python.
-- **Part VIII** reproduces the CoastalWiki knowledge base shipped with the
-  app.
-- **Appendices** give the complete API reference, the full source of every
-  example, a list of symbols, and the reference lists.
+- **Appendices** give a list of symbols and the engineering references.

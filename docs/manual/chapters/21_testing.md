@@ -1,4 +1,4 @@
-# Part VII. Quality assurance {.part .unnumbered}
+# Part VIII. Quality assurance {.part .unnumbered}
 
 # The test suite {#sec:testing}
 
@@ -43,7 +43,7 @@ independent reference, and the kinds of check recur across modules:
 
 ## The browser engine
 
-The JavaScript engine of the Coastal Design Bench is checked against the
+The JavaScript engine of PyCoaTools is checked against the
 Python by `webapp/verify_engine.py` on the reference cases of
 `webapp/make_vectors.py`, and the page repeats the comparison on load
 (@sec:webapp). `webapp/verify_app.py` executes every module of the page

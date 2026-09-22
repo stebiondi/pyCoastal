@@ -1,0 +1,24 @@
+# pyCoastal
+
+> Python toolbox for coastal, port and ocean engineering: a design chain from a wave record to a dimensioned drawing (extremes, breakwaters, seawalls, piles, scour, channels, berthing, nourishment, surge), a small numerical framework, and PyCoaPedia, a searchable knowledge base of the peer-reviewed coastal and ocean engineering literature with regimes and DOIs.
+
+Start with AGENTS.md. Units are SI, levels to chart datum positive up, arrays x on axis 0.
+
+## Docs
+
+- [AGENTS.md](AGENTS.md): repository map, conventions, commands
+- [Manual chapters](docs/manual/chapters/): theory and usage, Markdown with LaTeX math (source of the PDF)
+- [API reference](docs/reference/README.md): one Markdown file per module, generated from docstrings
+- [Examples](docs/examples.md): every example script and what it demonstrates
+
+## PyCoaPedia (literature)
+
+- [Topic index](pedia/README.md): the topic tree with links to one page per topic
+- [By design module](pedia/modules.md): topics behind each pyCoastal module
+- [Database schema](pedia/SCHEMA.md): tables of pyCoastal/pedia/pycoapedia.sqlite and example SQL
+- Query: `python -m pyCoastal.pedia --json search "<words>"`, `topic <id>`, `module <name>`, `paper <id>`, `sql "<query>"`
+
+## Optional
+
+- [Human manual (PDF)](pyCoastal%20manual.pdf)
+- [PyCoaTools browser app](webapp/index.html) and [PyCoaPedia explorer](webapp/pedia.html)

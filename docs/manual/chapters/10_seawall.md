@@ -16,20 +16,20 @@ Goda's method (1974, 2010) gives a trapezoidal pressure distribution on the
 face of a vertical wall. With the design wave $H_\mathrm{max} = 1.8H_{m0}$,
 limited to $\gamma_b d$ in shallow water (`breaker_index=0.78`), the
 pressure at the still water level, the elevation of the distribution above
-it, and the pressure at the base of the upright are
+it, and the pressure at the base of the upright are given by @eq:goda:
 
 $$ p_1 = \tfrac12(1 + \cos\beta)(\alpha_1 + \alpha_2\cos^2\beta)\rho g H_\mathrm{max},\qquad
 \eta^* = 0.75(1 + \cos\beta)H_\mathrm{max},\qquad p_3 = \alpha_3 p_1, $$ {#eq:goda}
 
 with the pressure at the crest $p_4$ interpolated where the crest is below
 $\eta^*$, and a triangular uplift $p_u = \tfrac12(1 + \cos\beta)\alpha_1\alpha_3\rho g H_\mathrm{max}$
-at the seaward edge. The coefficients are
+at the seaward edge. The coefficients in @eq:goda are given by @eq:seawall-1:
 
 $$ \begin{aligned}
 \alpha_1 &= 0.6 + \frac12\left(\frac{4\pi h/L}{\sinh 4\pi h/L}\right)^2,\\
 \alpha_2 &= \min\left[\frac{h_b - d}{3h_b}\left(\frac{H_\mathrm{max}}{d}\right)^2, \frac{2d}{H_\mathrm{max}}\right],\\
 \alpha_3 &= 1 - \frac{h'}{h}\left[1 - \frac{1}{\cosh 2\pi h/L}\right],
-\end{aligned} $$
+\end{aligned} $$ {#eq:seawall-1}
 
 where $h_b$ is the depth five wave heights seaward (from the seabed slope),
 $d$ the depth over the berm, and $h'$ the depth to the underside of the

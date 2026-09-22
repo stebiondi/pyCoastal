@@ -6,17 +6,18 @@ can drift out of step with the code is generated here instead of typed:
 
 - the printed output of every worked example (``outputs/*.txt``, refreshed
   with ``--run-examples``);
-- the input tables of the Coastal Design Bench, parsed from ``webapp/app.js``;
+- the input tables of PyCoaTools, parsed from ``webapp/app.js``;
 - the test inventory, from ``tests/``;
-- the CoastalWiki part and its bibliography, from ``webapp/knowledge.json``;
-- the API reference, from the package docstrings;
-- the example listings, from ``examples/``.
+- the PyCoaPedia figures and module table, from the shipped database.
 
 The Markdown goes through pandoc (with pandoc-crossref for numbered figures,
 tables, equations and sections) to LaTeX, set in the style of the first
 edition: the article class in Computer Modern, with the wave on the cover.
-Tectonic (or latexmk with xelatex) typesets it. Every wiki equation is test
-compiled first, and any that LaTeX refuses is printed as code instead.
+Tectonic (or latexmk with xelatex) typesets it.
+
+The same run writes the Markdown that agents read instead of the PDF: the
+API reference in ``docs/reference/`` (one file per module, from the
+docstrings) and the example index ``docs/examples.md``.
 
 Run from the repository root:
 
@@ -32,7 +33,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 import os
 import re
 import shutil
@@ -58,7 +58,7 @@ ENGINEERING_EXAMPLES = [
     "nourishment_profile", "storm_surge_flooding",
 ]
 
-#: Example listing order for Appendix B, following the chapters.
+#: Example order in docs/examples.md, following the chapters.
 EXAMPLE_ORDER = [
     "numerics/water_drop.py", "waves2D.py", "wave2D_irregular.py", "current.py",
     "pollutant.py", "numerics/viscous_fluid.py", "numerics/2D_irr_turb.py",
@@ -69,7 +69,7 @@ EXAMPLE_ORDER = [
     "nourishment_profile.py", "storm_surge_flooding.py",
 ]
 
-#: Package modules for Appendix A, in the order a reader meets them.
+#: Package modules for docs/reference, in the order a reader meets them.
 API_MODULES = [
     "pyCoastal/__init__.py", "pyCoastal/config.py", "pyCoastal/io.py",
     "pyCoastal/numerics/grid.py", "pyCoastal/numerics/domain.py",
@@ -90,31 +90,8 @@ API_MODULES = [
     "pyCoastal/applications/nourishment.py", "pyCoastal/applications/surge.py",
     "pyCoastal/applications/sections.py",
     "pyCoastal/drafting.py", "pyCoastal/plotting.py",
+    "pyCoastal/pedia/__init__.py",
 ]
-
-#: Synthesis headings, in the order a reader wants them.
-SYNTHESIS_ORDER = [
-    ("well_established", "Well established"),
-    ("governing_physics", "Governing physics"),
-    ("dimensionless_parameters", "Dimensionless parameters"),
-    ("major_equations", "Major equations"),
-    ("typical_methods", "Typical methods"),
-    ("numerical_models", "Numerical models"),
-    ("experimental_datasets", "Experimental datasets"),
-    ("validated_ranges", "Validated ranges"),
-    ("recent_advances", "Recent advances"),
-    ("disagreements", "Disagreements"),
-    ("limitations", "Limitations"),
-    ("open_questions", "Open questions"),
-    ("seminal_papers", "Seminal papers"),
-]
-
-CONFIDENCE = {
-    "direct_finding": "direct finding",
-    "literature_review_statement": "review statement",
-    "inferred_relationship": "inferred",
-    "proposed_hypothesis": "hypothesis",
-}
 
 NOISE = (
     "Ignoring fixed", "UserWarning", "plt.show()", "FigureCanvasAgg",
@@ -140,12 +117,6 @@ def esc(text) -> str:
         lambda m: "^" + m.group(0).translate(_SUPERSCRIPT) + "^", text)
     # A line starting "12. " or "- " would become a list.
     return re.sub(r"^(\d+)\.", r"\1\\.", text)
-
-
-def surname(author) -> str:
-    """Sort key for a first-author string such as "A. Engelstad"."""
-    words = re.findall(r"[^\s.,]+", str(author or "").strip())
-    return (words[-1] if words else "~").lower()
 
 
 def slug(text: str) -> str:
@@ -292,282 +263,155 @@ def test_table() -> str:
 
 
 # ---------------------------------------------------------------------------
-# CoastalWiki
+# PyCoaPedia, read from the shipped database
 # ---------------------------------------------------------------------------
 
-class Wiki:
-    def __init__(self, path: Path):
-        self.data = json.loads(path.read_text(encoding="utf-8"))
-        self.topics = self.data["topics"]
-        self.papers = self.data["papers"]
-        # Number papers in bibliography order: first author, then year.
-        cited = set()
-        for t in self.topics.values():
-            for c in t.get("claims", []):
-                cited.add(str(c.get("paper")))
-            for e in t.get("equations", []):
-                cited.add(str(e.get("paper")))
-        keys = [k for k in self.papers if k in cited] or list(self.papers)
-        keys.sort(key=lambda k: (surname(self.papers[k].get("a")),
-                                 self.papers[k].get("y") or 0,
-                                 str(self.papers[k].get("t") or "").lower()))
-        self.number = {k: i + 1 for i, k in enumerate(keys)}
-        self.order = keys
-        #: Equations LaTeX accepts, filled by check_equations. None trusts all.
-        self.good_equations: set[str] | None = None
-        self.module_of: dict[str, list[str]] = {}
-        for m in self.data["modules"].values():
-            for t in m["topics"]:
-                self.module_of.setdefault(t, []).append(m["label"])
+def pedia_connection():
+    import sqlite3
+    path = ROOT / "pyCoastal" / "pedia" / "pycoapedia.sqlite"
+    if not path.exists():
+        sys.exit(f"No PyCoaPedia database at {path}; run pedia/build_pedia.py first.")
+    con = sqlite3.connect(path)
+    con.row_factory = sqlite3.Row
+    return con
 
-    def cite(self, paper) -> str:
-        n = self.number.get(str(paper))
-        return f"[[{n}]](#wbib-{n})" if n else ""
 
-    def anchor(self, tid: str) -> str:
-        return "wiki-" + slug(tid)
+def pedia_stats() -> str:
+    con = pedia_connection()
+    m = {r["key"]: r["value"] for r in con.execute("SELECT key, value FROM metadata")}
+    roots = con.execute("SELECT COUNT(*) FROM topics WHERE parent_id IS NULL").fetchone()[0]
+    links = con.execute("SELECT COUNT(*) FROM claim_relationships").fetchone()[0]
+    extracted = con.execute("SELECT COUNT(*) FROM paper_extractions").fetchone()[0]
+    return (f"The build shipped with this version of pyCoastal was generated on "
+            f"{m['generated']}. It holds {int(m['topics'])} topics in {roots} "
+            f"top-level branches, {int(m['claims']):,} claims linked by "
+            f"{links:,} claim-to-claim relationships, {int(m['equations'])} "
+            f"equations, and {int(m['papers']):,} papers, {extracted:,} of them "
+            f"with a structured extraction, drawn from "
+            f"{int(m['papers_screened_in_source']):,} papers screened.")
 
-    def stats(self) -> str:
-        c = self.data["corpus"]
-        inc = self.data["included"]
-        n_claims = sum(len(t.get("claims", [])) for t in self.topics.values())
-        n_eq = sum(len(t.get("equations", [])) for t in self.topics.values())
-        return (
-            f"The extract was generated on {self.data['generated']}. The full "
-            f"wiki holds {c['papers']:,} papers, {c['knowledge_claims']:,} "
-            f"claims, {c['equations']:,} equations, {c['topics']} topics, and "
-            f"{c['topic_synthesis_statements']:,} synthesis statements. The "
-            f"extract shipped with the app, and reproduced here, holds "
-            f"{inc['topics']} topics, {n_claims:,} claims, {n_eq} equations, "
-            f"and {len(self.order):,} cited papers.")
 
-    # -- rendering ---------------------------------------------------------
-
-    def topic(self, tid: str, level: int) -> str:
-        t = self.topics[tid]
-        h = "#" * level
-        parts = [f"{h} {esc(t['label'])} {{#{self.anchor(tid)}}}", ""]
-        meta = [f"Topic `{tid}`"]
-        if t.get("description"):
-            meta.append(esc(str(t["description"]).rstrip(". ")))
-        parts.append("*" + ". ".join(meta) + ".*")
-        counts = (f"Papers screened: {t.get('papers', 0)}. Claims: "
-                  f"{len(t.get('claims', []))}. Equations: "
-                  f"{len(t.get('equations', []))}.")
-        if tid in self.module_of:
-            counts += (" Shown in the Coastal Design Bench beside: "
-                       + ", ".join(self.module_of[tid]) + ".")
-        parts += ["", counts, ""]
-
-        syn = t.get("synthesis") or {}
-        if isinstance(syn, dict) and syn:
-            parts.append("::: {.synthesis}")
-            seen = set()
-            for key, title in SYNTHESIS_ORDER + [(k, k.replace("_", " ").capitalize())
-                                                 for k in syn if k not in dict(SYNTHESIS_ORDER)]:
-                if key in seen or key not in syn or not syn[key]:
-                    continue
-                seen.add(key)
-                value = syn[key]
-                if isinstance(value, (list, tuple)):
-                    value = "; ".join(str(v) for v in value)
-                elif isinstance(value, dict):
-                    value = "; ".join(f"{k}: {v}" for k, v in value.items())
-                parts.append(f"**{title}.** {esc(value)}\n")
-            parts.append(":::\n")
-
-        eqs = t.get("equations", [])
-        if eqs:
-            parts.append("**Equations**\n")
-            for e in eqs:
-                latex = str(e.get("latex", "")).strip().strip("$").strip()
-                latex = latex.replace("\n", " ")
-                parts.append(f"- *{esc(e.get('name', 'Equation'))}* "
-                             f"{self.cite(e.get('paper'))}")
-                if latex and (self.good_equations is None or latex in self.good_equations):
-                    parts.append(f"\n  $${latex}$$\n")
-                elif latex:
-                    # LaTeX refused it; keep the source rather than lose it.
-                    parts.append("\n  " + fence(latex, "latex").replace("\n", "\n  ") + "\n")
-                if e.get("regime"):
-                    parts.append(f"  Regime: {esc(e['regime'])}")
-                variables = e.get("variables")
-                if isinstance(variables, str):
-                    try:
-                        variables = json.loads(variables)
-                    except (ValueError, TypeError):
-                        variables = {"": variables}
-                if isinstance(variables, dict) and variables:
-                    vs = "; ".join(f"`{k}` {esc(v)}" if k else esc(v)
-                                   for k, v in variables.items())
-                    parts.append(f"  Variables: {vs}")
-                parts.append("")
-
-        claims = t.get("claims", [])
-        if claims:
-            parts.append("**Claims**\n")
-            parts.append("::: {.claims}")
-            for i, c in enumerate(claims, 1):
-                tag = ", ".join(x for x in (
-                    CONFIDENCE.get(c.get("confidence"), c.get("confidence") or ""),
-                    c.get("evidence") or "") if x)
-                line = f"{i}. {esc(c.get('text', ''))}"
-                if c.get("regime"):
-                    line += f" *Regime: {esc(c['regime'])}*"
-                if tag:
-                    line += f" [{esc(tag)}]{{.tag}}"
-                line += f" {self.cite(c.get('paper'))}"
-                parts.append(line)
-            parts.append(":::\n")
-        return "\n".join(parts)
-
-    def modules_chapter(self) -> str:
-        out = ["# The knowledge base by design module {#sec:wiki-modules}", "",
-               "Each design module of the Coastal Design Bench opens the "
-               "wiki topics below in its Theory and sources panel. The "
-               "topics themselves are reproduced in the chapters that follow.", ""]
-        for key, m in self.data["modules"].items():
-            out.append(f"## {esc(m['label'])}")
-            out.append("")
-            out.append(f"*{esc(m.get('blurb', ''))}* (module key `{key}`)")
-            out.append("")
-            out.append("| Topic | Papers | Claims | Equations |")
-            out.append("|------------------------------------------|------|------|------|")
-            for tid in m["topics"]:
-                t = self.topics.get(tid)
-                if not t:
-                    out.append(f"| `{tid}` (not in extract) | | | |")
-                    continue
-                out.append(f"| [{esc(t['label'])}](#{self.anchor(tid)}) (`{tid}`) | "
-                           f"{t.get('papers', 0)} | {len(t.get('claims', []))} | "
-                           f"{len(t.get('equations', []))} |")
-            out.append("")
-        return "\n".join(out)
-
-    def tree_chapters(self) -> str:
-        roots = [tid for tid, t in self.topics.items()
-                 if t.get("parent") in (None, "None", "") or int(t.get("level", 0)) == 0]
-        roots.sort()
-        children: dict[str, list[str]] = {}
-        for tid, t in self.topics.items():
-            parent = t.get("parent")
-            if parent not in (None, "None", "") and tid not in roots:
-                children.setdefault(parent, []).append(tid)
-        for v in children.values():
-            v.sort()
-        out = []
-        for root in roots:
-            t = self.topics[root]
-            out.append(f"# Wiki: {esc(t['label'])} {{#{self.anchor(root)}-ch}}")
-            out.append("")
-            out.append(self.topic(root, 2).replace(
-                f"## {esc(t['label'])}", f"## {esc(t['label'])}: overview", 1))
-            stack = [(c, 2) for c in reversed(children.get(root, []))]
-            while stack:
-                tid, level = stack.pop()
-                out.append(self.topic(tid, min(level, 5)))
-                for c in reversed(children.get(tid, [])):
-                    stack.append((c, level + 1))
-        return "\n\n".join(out)
-
-    def bibliography(self) -> str:
-        out = ["::: {.bibliography}"]
-        for k in self.order:
-            p = self.papers[k]
-            n = self.number[k]
-            doi = p.get("doi")
-            link = f" [doi:{esc(doi)}](https://doi.org/{doi})" if doi else ""
-            journal = f" *{esc(p['j'])}*." if p.get("j") else ""
-            out.append(f"[{n}]{{#wbib-{n} .bibno}} {esc(p.get('a') or 'Anon.')} "
-                       f"({p.get('y') or 'n.d.'}). {esc(p.get('t') or '')}."
-                       f"{journal}{link}\n")
-        out.append(":::")
-        return "\n".join(out)
+def pedia_modules() -> str:
+    con = pedia_connection()
+    rows = [": Design modules and their PyCoaPedia topics. {#tbl:pedia-modules}", "",
+            "| Module | Topics |", "|------------------|------------------------------------------------------|"]
+    mods: dict[str, list] = {}
+    labels = {}
+    for r in con.execute("SELECT m.module, m.module_label, t.label, t.id FROM module_topics m "
+                         "JOIN topics t ON t.id = m.topic_id ORDER BY m.module, m.position"):
+        mods.setdefault(r["module"], []).append(f"{esc(r['label'])} (`{r['id']}`)")
+        labels[r["module"]] = r["module_label"]
+    for key, topics in mods.items():
+        rows.append(f"| {esc(labels[key])} (`{key}`) | " + "; ".join(topics) + " |")
+    return "\n".join(rows)
 
 
 # ---------------------------------------------------------------------------
-# API reference and example listings
+# Markdown for agents: the API reference and the example index
 # ---------------------------------------------------------------------------
 
-def docblock(doc: str | None) -> str:
-    if not doc:
-        return ""
-    return "::: {.docstring}\n" + fence(doc, "text") + "\n:::"
+REFERENCE = ROOT / "docs" / "reference"
+EXAMPLES_MD = ROOT / "docs" / "examples.md"
 
 
-def api_reference() -> str:
-    out = []
+def module_name(rel: str) -> str:
+    """Dotted module name for a source path, e.g. pyCoastal.applications.scour."""
+    mod = rel[:-3].replace("/", ".")
+    return mod[: -len(".__init__")] if mod.endswith(".__init__") else mod
+
+
+def module_reference(rel: str) -> tuple[str, str]:
+    """One module's public API as Markdown: (module name, text)."""
+    tree = ast.parse((ROOT / rel).read_text(encoding="utf-8"))
+    mod = module_name(rel)
+    out = [f"# `{mod}`", "", f"Source: [`{rel}`](../../{rel})", ""]
+    doc = ast.get_docstring(tree)
+    if doc:
+        out += [doc, ""]
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith("_"):
+            sig = f"{node.name}({ast.unparse(node.args)})"
+            if node.returns is not None:
+                sig += f" -> {ast.unparse(node.returns)}"
+            out += [f"## `{node.name}`", "", fence("def " + sig, "python"), ""]
+            if ast.get_docstring(node):
+                out += [fence(ast.get_docstring(node), "text"), ""]
+        elif isinstance(node, ast.ClassDef) and not node.name.startswith("_"):
+            bases = ", ".join(ast.unparse(b) for b in node.bases)
+            head = [f"class {node.name}" + (f"({bases})" if bases else "")]
+            for item in node.body:
+                if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+                    head.append("    " + ast.unparse(item))
+            out += [f"## `{node.name}`", "", fence("\n".join(head), "python"), ""]
+            if ast.get_docstring(node):
+                out += [fence(ast.get_docstring(node), "text"), ""]
+            for item in node.body:
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and not item.name.startswith("_"):
+                    deco = [ast.unparse(d) for d in item.decorator_list]
+                    kind = "property" if "property" in deco else (
+                        "classmethod" if "classmethod" in deco else "method")
+                    sig = f"{node.name}.{item.name}({ast.unparse(item.args)})"
+                    if item.returns is not None:
+                        sig += f" -> {ast.unparse(item.returns)}"
+                    out += [f"### `{node.name}.{item.name}` ({kind})", "", fence(sig, "python"), ""]
+                    if ast.get_docstring(item):
+                        out += [fence(ast.get_docstring(item), "text"), ""]
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            names = [t.id for t in targets if isinstance(t, ast.Name)]
+            if names and all(n.isupper() and not n.startswith("_") for n in names):
+                value = ast.unparse(node.value) if node.value is not None else ""
+                if len(value) > 2000:
+                    value = value[:2000] + " ..."
+                out += [f"## `{names[0]}`", "", fence(f"{names[0]} = {value}", "python"), ""]
+    return mod, "\n".join(out)
+
+
+def write_reference() -> None:
+    # Overwrite in place and remove only stale pages: deleting the folder
+    # fails whenever a sync client or an editor holds it open.
+    REFERENCE.mkdir(parents=True, exist_ok=True)
+    expected = {(module_name(rel) + ".md") for rel in API_MODULES} | {"README.md"}
+    for stale in REFERENCE.glob("*.md"):
+        if stale.name not in expected:
+            stale.unlink()
+    index = ["# pyCoastal API reference", "",
+             "Generated from the docstrings by `docs/manual/build_manual.py`; "
+             "do not edit by hand. One file per module.", ""]
     for rel in API_MODULES:
-        path = ROOT / rel
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        mod = rel[:-3].replace("/", ".")
-        if mod.endswith(".__init__"):
-            mod = mod[: -len(".__init__")]
-        out.append(f"## `{mod}` {{.unnumbered #api-{slug(mod)}}}")
-        out.append(docblock(ast.get_docstring(tree)))
-        for node in tree.body:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith("_"):
-                sig = f"{node.name}({ast.unparse(node.args)})"
-                if node.returns is not None:
-                    sig += f" -> {ast.unparse(node.returns)}"
-                out.append(f"### `{node.name}` {{.unnumbered .apientry}}")
-                out.append(fence("def " + sig, "python"))
-                out.append(docblock(ast.get_docstring(node)))
-            elif isinstance(node, ast.ClassDef) and not node.name.startswith("_"):
-                bases = ", ".join(ast.unparse(b) for b in node.bases)
-                head = f"class {node.name}" + (f"({bases})" if bases else "")
-                lines = [head]
-                for item in node.body:
-                    if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
-                        lines.append("    " + ast.unparse(item))
-                out.append(f"### `{node.name}` {{.unnumbered .apientry}}")
-                out.append(fence("\n".join(lines), "python"))
-                out.append(docblock(ast.get_docstring(node)))
-                for item in node.body:
-                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and (
-                            not item.name.startswith("_")):
-                        deco = [ast.unparse(d) for d in item.decorator_list]
-                        kind = "property" if "property" in deco else (
-                            "classmethod" if "classmethod" in deco else "method")
-                        sig = f"{node.name}.{item.name}({ast.unparse(item.args)})"
-                        if item.returns is not None:
-                            sig += f" -> {ast.unparse(item.returns)}"
-                        out.append(f"**{kind}**\n\n" + fence(sig, "python"))
-                        d = ast.get_docstring(item)
-                        if d:
-                            out.append(docblock(d))
-            elif isinstance(node, (ast.Assign, ast.AnnAssign)):
-                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-                names = [t.id for t in targets if isinstance(t, ast.Name)]
-                if names and all(n.isupper() and not n.startswith("_") for n in names):
-                    value = ast.unparse(node.value) if node.value is not None else ""
-                    if len(value) > 1500:
-                        value = value[:1500] + " ..."
-                    out.append(f"### `{names[0]}` {{.unnumbered .apientry}}")
-                    out.append(fence(f"{names[0]} = {value}", "python"))
-        out.append("")
-    return "\n\n".join(x for x in out if x)
+        mod, text = module_reference(rel)
+        name = mod + ".md"
+        (REFERENCE / name).write_text(text + "\n", encoding="utf-8")
+        tree = ast.parse((ROOT / rel).read_text(encoding="utf-8"))
+        first = (ast.get_docstring(tree) or "").strip().split("\n")[0]
+        index.append(f"- [`{mod}`]({name}): {first}")
+    (REFERENCE / "README.md").write_text("\n".join(index) + "\n", encoding="utf-8")
 
 
-def example_listings() -> str:
-    out = []
-    for rel in EXAMPLE_ORDER:
-        path = ROOT / "examples" / rel
+def write_example_index() -> None:
+    out = ["# pyCoastal examples", "",
+           "Every script runs from the repository root (`python examples/<name>.py`). "
+           "The engineering examples print a design report and write figures to "
+           "`media/`; their captured output is in `docs/manual/outputs/`. The "
+           "numerical examples animate on screen and read `examples/configs/*.yaml`.", ""]
+    listed = [ROOT / "examples" / r for r in EXAMPLE_ORDER]
+    rest = [p for p in sorted((ROOT / "examples").rglob("*.py")) if p not in listed]
+    for path in listed + rest:
         if not path.exists():
             continue
-        out.append(f"## `examples/{rel}` {{.unnumbered}}")
-        out.append(fence(path.read_text(encoding="utf-8"), "python"))
-    listed = {ROOT / "examples" / r for r in EXAMPLE_ORDER}
-    for path in sorted((ROOT / "examples").rglob("*.py")):
-        if path not in listed:
-            rel = path.relative_to(ROOT / "examples").as_posix()
-            out.append(f"## `examples/{rel}` {{.unnumbered}}")
-            out.append(fence(path.read_text(encoding="utf-8"), "python"))
-    out.append("## Case files in `examples/configs/` {.unnumbered}")
-    for path in sorted((ROOT / "examples" / "configs").glob("*.yaml")):
-        out.append(f"**`{path.name}`**\n")
-        out.append(fence(path.read_text(encoding="utf-8"), "yaml"))
-    return "\n\n".join(out)
+        rel = path.relative_to(ROOT).as_posix()
+        doc = ast.get_docstring(ast.parse(path.read_text(encoding="utf-8"))) or ""
+        paras = [p for p in doc.strip().split("\n\n") if not p.strip().startswith(("Run from", "python "))]
+        summary = " ".join(" ".join(paras[:2]).split()) if paras else "(no description)"
+        out.append(f"## [`{rel}`](../{rel})")
+        out.append("")
+        out.append(summary)
+        output = OUTPUTS / f"{path.stem}.txt"
+        if output.exists() and path.stem in ENGINEERING_EXAMPLES:
+            out.append("")
+            out.append(f"Captured output: [`docs/manual/outputs/{output.name}`](manual/outputs/{output.name})")
+        out.append("")
+    EXAMPLES_MD.write_text("\n".join(out), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -614,7 +458,7 @@ def latex(code: str) -> str:
     return "```{=latex}\n" + code.strip() + "\n```"
 
 
-def assemble(wiki: Wiki) -> str:
+def assemble() -> str:
     parts = []
     for path in sorted(CHAPTERS.glob("*.md")):
         parts.append(path.read_text(encoding="utf-8"))
@@ -630,26 +474,15 @@ def assemble(wiki: Wiki) -> str:
     replacements = {
         "<!-- webapp-inputs -->": webapp_inputs,
         "<!-- test-table -->": test_table,
-        "<!-- wiki-stats -->": wiki.stats,
-        # The wiki is set a size down, and its topics are kept out of the
-        # contents, which would otherwise run to a dozen pages.
-        "<!-- wiki -->": lambda: "\n\n".join([
-            latex("\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{1}}\n"
-                  "\\begingroup\\small"),
-            wiki.modules_chapter(), wiki.tree_chapters(),
-            latex("\\endgroup\n"
-                  "\\addtocontents{toc}{\\protect\\setcounter{tocdepth}{2}}")]),
-        "<!-- wiki-bib -->": lambda: "\n\n".join([
-            latex("\\begingroup\\footnotesize\\begin{multicols}{2}\\raggedright"),
-            wiki.bibliography(),
-            latex("\\end{multicols}\\endgroup")]),
-        "<!-- api -->": lambda: "\n\n".join([
-            latex("\\begingroup\\small"), api_reference(), latex("\\endgroup")]),
-        "<!-- examples -->": example_listings,
+        "<!-- pedia-stats -->": pedia_stats,
+        "<!-- pedia-modules -->": pedia_modules,
     }
     for key, fn in replacements.items():
         if key in text:
             text = text.replace(key, fn())
+    leftover = re.findall(r"<!-- [\w-]+(?::[^>]*)? -->", text)
+    if leftover:
+        sys.exit(f"Unfilled placeholders: {leftover}")
     return text
 
 
@@ -665,7 +498,7 @@ def package_version() -> str:
 
 #: Preamble additions. The look is the first edition's: the standard article
 #: class in Computer Modern, 11 pt on A4. Computer Modern Unicode is used
-#: for text rather than Latin Modern because the wiki quotes authors and
+#: for text rather than Latin Modern because the text quotes authors and
 #: symbols (Fredsoe with its slashed o, Greek letters, inequality signs)
 #: that Latin Modern does not carry.
 HEADER = r"""
@@ -758,56 +591,16 @@ def run_tex(engine: list[str], tex: Path) -> subprocess.CompletedProcess:
                           encoding="utf-8", errors="replace")
 
 
-def equation_source(e: dict) -> str:
-    return str(e.get("latex", "")).strip().strip("$").strip().replace("\n", " ")
-
-
-def check_equations(wiki: "Wiki", engine: list[str]) -> None:
-    """Compile every wiki equation once and demote any that will not set.
-
-    The equations come out of a database written by many hands, and one bad
-    brace would stop a five-hundred-page build. Each is tried on its own
-    line of a test document; the ones LaTeX refuses are printed as code
-    instead, which keeps the information and loses only the typesetting.
-    Verdicts are cached against the equation text.
-    """
-    cache_path = BUILD / "equation_check.json"
-    cache = json.loads(cache_path.read_text(encoding="utf-8")) if cache_path.exists() else {}
-    todo = []
-    for t in wiki.topics.values():
-        for e in t.get("equations", []):
-            src = equation_source(e)
-            if src and src not in cache and src not in todo:
-                todo.append(src)
-    if todo:
-        print(f"  checking {len(todo)} wiki equations with LaTeX ...")
-        work = BUILD / "eqcheck"
-        work.mkdir(exist_ok=True)
-        while todo:
-            head = ["\\documentclass{article}", "\\usepackage{amsmath,amssymb}",
-                    "\\begin{document}"]
-            first = len(head) + 1
-            body = [f"\\[{src}\\]" for src in todo]
-            tex = work / "eq.tex"
-            tex.write_text("\n".join(head + body + ["\\end{document}"]), encoding="utf-8")
-            proc = run_tex(engine, tex)
-            if proc.returncode == 0:
-                for src in todo:
-                    cache[src] = True
-                break
-            m = re.search(r"eq\.tex:(\d+)", proc.stderr + proc.stdout)
-            if not m:
-                for src in todo:
-                    cache[src] = False
-                break
-            bad = min(max(int(m.group(1)) - first, 0), len(todo) - 1)
-            for src in todo[:bad]:
-                cache[src] = True
-            cache[todo[bad]] = False
-            print(f"    demoted: {todo[bad][:70]}")
-            todo = todo[bad + 1:]
-        cache_path.write_text(json.dumps(cache, indent=0), encoding="utf-8")
-    wiki.good_equations = {k for k, v in cache.items() if v}
+def write_crossref_metadata() -> Path:
+    """Singular and plural prefixes, so a group of references reads "Equations 5-7"."""
+    path = BUILD / "crossref.yaml"
+    path.write_text(
+        "figPrefix: [Figure, Figures]\n"
+        "tblPrefix: [Table, Tables]\n"
+        "eqnPrefix: [Equation, Equations]\n"
+        "secPrefix: [Section, Sections]\n"
+        "rangeDelim: \"--\"\n", encoding="utf-8")
+    return path
 
 
 def pandoc_latex(markdown: str, pandoc: str, crossref: str | None) -> Path:
@@ -830,8 +623,7 @@ def pandoc_latex(markdown: str, pandoc: str, crossref: str | None) -> Path:
     if crossref:
         cmd[2:2] = ["--filter", crossref,
                     "-M", "linkReferences=true", "-M", "nameInLink=true",
-                    "-M", "figPrefix=Figure", "-M", "tblPrefix=Table",
-                    "-M", "eqnPrefix=Equation", "-M", "secPrefix=Section",
+                    "--metadata-file", str(write_crossref_metadata()),
                     "-M", "autoSectionLabels=false"]
     print("  pandoc ...")
     proc = subprocess.run(cmd, cwd=BUILD, capture_output=True, text=True, encoding="utf-8")
@@ -856,11 +648,13 @@ def main() -> None:
         print("Running examples")
         run_examples()
 
+    print("Writing the API reference and the example index")
+    write_reference()
+    write_example_index()
+
     engine = find_tectonic()
     print("Assembling")
-    wiki = Wiki(ROOT / "webapp" / "knowledge.json")
-    check_equations(wiki, engine)
-    markdown = prepare_images(assemble(wiki))
+    markdown = prepare_images(assemble())
     from PIL import Image
     with Image.open(ROOT / "media" / "manual_cover.jpeg") as im:
         im.convert("RGB").save(BUILD / "media" / "manual-cover.jpg", quality=95)

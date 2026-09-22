@@ -70,9 +70,13 @@ pyCoastal/
 │   ├── config.py, io.py     case-file reading and VTK output
 ├── examples/                worked examples and their YAML configs
 ├── tests/                   the pytest suite
-├── webapp/                  Coastal Design Bench (browser app)
+├── pyCoastal/pedia/         PyCoaPedia reader and its SQLite database
+├── pedia/                   PyCoaPedia as Markdown, its schema, and the builder
+├── webapp/                  PyCoaTools and the PyCoaPedia explorer (browser)
 ├── media/                   figures, animations, drawing sheets, DXF files
-├── docs/                    Sphinx sources and this manual (docs/manual)
+├── docs/                    this manual (docs/manual), the API reference
+│                            (docs/reference) and the example index
+├── AGENTS.md, llms.txt      the repository map for AI agents
 ├── paper/                   JOSS-style paper
 └── pyCoastal manual.pdf     this manual
 ```
@@ -142,8 +146,7 @@ python examples/breakwater_design.py
 python examples/design_wave.py
 ```
 
-and writes its figures to `media/`. Appendix B lists the full source of
-each one.
+and writes its figures to `media/`. `docs/examples.md` lists them all.
 
 ## Reading case files
 

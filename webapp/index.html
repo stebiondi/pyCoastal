@@ -1,4 +1,5 @@
-<title>Coastal Design Bench</title>
+<meta charset="utf-8">
+<title>PyCoaTools</title>
 <!-- No webfont is fetched. The page is set in the faces the desktop
      already has, which is the only way it renders correctly on the first
      frame rather than reflowing once the network answers. -->
@@ -825,6 +826,12 @@
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
+  .pedia-link {
+    font-size: 0.86em; padding: 0.25em 0.7em; margin-right: 0.6em;
+    border: 1px solid var(--rule); border-radius: 3px;
+    color: var(--sea); text-decoration: none; white-space: nowrap;
+  }
+  .pedia-link:hover { border-color: var(--sea); }
 </style>
 
 <script>
@@ -845,12 +852,13 @@
 </script>
 
 <header>
-  <h1>Coastal Design Bench</h1>
+  <h1>PyCoaTools</h1>
   <p class="lede">
     Size a structure with the pyCoastal relations, then read what the
     literature says about the ground they stand on.
   </p>
   <span class="spacer"></span>
+  <a class="pedia-link" href="pedia.html" title="Browse the whole knowledge base">PyCoaPedia &#8599;</a>
   <span id="verify" class="verify" hidden></span>
 </header>
 
@@ -907,7 +915,7 @@
     <div id="topics"></div>
     <div id="knowledge"></div>
     <p class="note">
-      Claims, equations and synthesis come from <strong>CoastalWiki</strong>,
+      Claims, equations and synthesis come from <strong><a href="pedia.html">PyCoaPedia</a></strong>,
       a provenance-first corpus of peer-reviewed coastal engineering. Each
       entry carries the regime it was established in, because a relation
       quoted outside its range is the most expensive kind of mistake.

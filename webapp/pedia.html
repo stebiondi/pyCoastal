@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PyCoaPedia</title>
+<!-- KaTeX renders the equations when it can be fetched; without it the
+     LaTeX source is shown, which loses the typesetting and nothing else. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+  :root {
+    --ink: #16181a; --soft: #54514b; --faint: #85817a;
+    --paper: #f2f0ea; --panel: #fbfaf7; --sheet: #ffffff;
+    --rule: #c9c7c0; --rule-soft: #e2dfd8;
+    --sea: #1b6fa0; --sea-deep: #0b3554; --sea-wash: #dcebf2;
+    --mark: #f6ecdd;
+    --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: Consolas, ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #eceae4; --soft: #a8a49b; --faint: #7d7973;
+      --paper: #16181b; --panel: #1e2125; --sheet: #1b1e22;
+      --rule: #34383d; --rule-soft: #282c31;
+      --sea: #63b2d8; --sea-deep: #9fd0e6; --sea-wash: #14313f; --mark: #3a2f1d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font: 14px/1.55 var(--sans); color: var(--ink); background: var(--paper);
+         display: flex; flex-direction: column; }
+  a { color: var(--sea); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header { display: flex; align-items: baseline; gap: 1em; padding: 0.7em 1.2em;
+           border-bottom: 1px solid var(--rule); background: var(--panel); flex-wrap: wrap; }
+  header h1 { font-size: 1.25em; margin: 0; color: var(--sea-deep); }
+  header .lede { color: var(--soft); margin: 0; flex: 1 1 20em; }
+  header .stats { color: var(--faint); font-size: 0.9em; }
+  .shell { flex: 1 1 auto; display: flex; min-height: 0; }
+  aside { width: 22em; min-width: 16em; border-right: 1px solid var(--rule);
+          background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
+  .searchbox { padding: 0.8em; border-bottom: 1px solid var(--rule-soft); }
+  .searchbox input { width: 100%; padding: 0.5em 0.6em; font: inherit; color: var(--ink);
+                     background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px; }
+  .modules { display: flex; flex-wrap: wrap; gap: 0.3em; margin-top: 0.6em; }
+  .chip { font-size: 0.8em; padding: 0.15em 0.55em; border: 1px solid var(--rule);
+          border-radius: 99px; cursor: pointer; background: var(--sheet); color: var(--soft); }
+  .chip.on { background: var(--sea-wash); border-color: var(--sea); color: var(--sea-deep); }
+  #tree { overflow: auto; padding: 0.4em 0.4em 2em; flex: 1 1 auto; }
+  .node { display: flex; align-items: baseline; gap: 0.3em; padding: 0.1em 0.3em;
+          border-radius: 3px; cursor: pointer; white-space: nowrap; }
+  .node:hover { background: var(--rule-soft); }
+  .node.sel { background: var(--sea-wash); color: var(--sea-deep); }
+  .node .tw { width: 1em; color: var(--faint); flex: 0 0 1em; text-align: center; }
+  .node .n { color: var(--faint); font-size: 0.8em; margin-left: auto; padding-left: 0.6em; }
+  .node.dim { opacity: 0.35; }
+  main { flex: 1 1 auto; overflow: auto; padding: 1.4em 2em 4em; min-width: 0; }
+  .wrap { max-width: 60em; }
+  .crumbs { color: var(--faint); font-size: 0.9em; }
+  h2 { margin: 0.2em 0 0.2em; color: var(--sea-deep); font-size: 1.6em; }
+  h3 { margin: 1.6em 0 0.5em; font-size: 1.05em; text-transform: uppercase;
+       letter-spacing: 0.04em; color: var(--soft); border-bottom: 1px solid var(--rule-soft);
+       padding-bottom: 0.2em; }
+  .meta { color: var(--soft); }
+  .tid { font-family: var(--mono); font-size: 0.9em; color: var(--faint); }
+  dl.syn dt { font-weight: 600; margin-top: 0.7em; }
+  dl.syn dd { margin: 0.1em 0 0 0; }
+  .eq { background: var(--sheet); border: 1px solid var(--rule-soft); border-radius: 4px;
+        padding: 0.7em 1em; margin: 0.6em 0; }
+  .eq .name { font-weight: 600; }
+  .eq .tex { overflow-x: auto; padding: 0.4em 0; }
+  .eq code, code { font-family: var(--mono); font-size: 0.9em; }
+  .small { font-size: 0.88em; color: var(--soft); }
+  .filters { display: flex; gap: 0.4em; flex-wrap: wrap; margin: 0.4em 0 0.8em; }
+  ol.claims { padding-left: 1.6em; }
+  ol.claims li { margin: 0.55em 0; }
+  ol.claims li.flash { background: var(--mark); }
+  .tag { font-size: 0.78em; color: var(--faint); margin-left: 0.3em; }
+  .cite { font-size: 0.9em; white-space: nowrap; }
+  .regime { font-style: italic; color: var(--soft); }
+  .results li { margin: 0.7em 0; list-style: none; }
+  .results { padding: 0; }
+  .results .kind { font-size: 0.75em; text-transform: uppercase; color: var(--faint);
+                   letter-spacing: 0.05em; }
+  mark { background: var(--mark); color: inherit; padding: 0 0.1em; }
+  .empty { color: var(--faint); }
+  .kids a { margin-right: 0.8em; }
+  @media (max-width: 760px) {
+    .shell { flex-direction: column; }
+    aside { width: auto; max-height: 45vh; border-right: 0; border-bottom: 1px solid var(--rule); }
+    main { padding: 1em; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>PyCoaPedia</h1>
+  <p class="lede">The coastal and ocean engineering literature, distilled: topics,
+     synthesis, claims with the regime each holds in, equations. Every piece has a DOI.</p>
+  <span class="stats" id="stats">loading&hellip;</span>
+  <a href="index.html">PyCoaTools &#8599;</a>
+</header>
+<div class="shell">
+  <aside>
+    <div class="searchbox">
+      <input id="q" type="search" placeholder="Search topics, claims, equations&hellip;"
+             autocomplete="off" aria-label="Search PyCoaPedia">
+      <div class="modules" id="modules" aria-label="Filter by pyCoastal design module"></div>
+    </div>
+    <nav id="tree" aria-label="Topic tree"></nav>
+  </aside>
+  <main><div class="wrap" id="view"><p class="empty">Loading the knowledge base&hellip;</p></div></main>
+</div>
+
+<script>
+"use strict";
+var K = null;                  // knowledge.json
+var KIDS = {};                 // topic id -> child ids
+var OPEN = {};                 // expanded tree nodes
+var MODULE = null;             // active module filter
+var SECTIONS = [
+  ["well_established", "Well established"], ["governing_physics", "Governing physics"],
+  ["dimensionless_parameters", "Dimensionless parameters"], ["major_equations", "Major equations"],
+  ["typical_methods", "Typical methods"], ["numerical_models", "Numerical models"],
+  ["experimental_datasets", "Experimental datasets"], ["validated_ranges", "Validated ranges"],
+  ["recent_advances", "Recent advances"], ["disagreements", "Disagreements"],
+  ["limitations", "Limitations"], ["open_questions", "Open questions"],
+  ["seminal_papers", "Seminal papers"]
+];
+var CONF = { direct_finding: "direct finding", literature_review_statement: "review statement",
+             inferred_relationship: "inferred", proposed_hypothesis: "hypothesis" };
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+  });
+}
+function el(id) { return document.getElementById(id); }
+
+function cite(pid) {
+  var p = K.papers[String(pid)];
+  if (!p) return "";
+  var who = esc(p.a || "Anon.") + " " + esc(p.y || "n.d.");
+  var title = esc(p.t) + (p.j ? ". " + esc(p.j) : "");
+  return p.doi
+    ? '<a class="cite" href="https://doi.org/' + esc(p.doi) + '" target="_blank" rel="noopener" title="' + title + '">(' + who + ')</a>'
+    : '<span class="cite" title="' + title + '">(' + who + ")</span>";
+}
+
+function tex(latex) {
+  if (window.katex) {
+    try { return katex.renderToString(latex, { displayMode: true, throwOnError: true }); }
+    catch (e) { /* fall through to source */ }
+  }
+  return "<code>" + esc(latex) + "</code>";
+}
+
+/* ---------------- tree ---------------- */
+
+function inModule(tid) {
+  if (!MODULE) return true;
+  var ts = K.modules[MODULE].topics;
+  for (var i = 0; i < ts.length; i++) {
+    if (tid === ts[i] || ts[i].indexOf(tid + ".") === 0) return true;
+  }
+  return false;
+}
+
+function renderTree(selected) {
+  var out = [];
+  function walk(tid, depth) {
+    var t = K.topics[tid], kids = KIDS[tid] || [];
+    var open = OPEN[tid] || MODULE;
+    var dim = MODULE && !inModule(tid);
+    out.push('<div class="node' + (tid === selected ? " sel" : "") + (dim ? " dim" : "") +
+      '" style="padding-left:' + (0.3 + depth * 1.05) + 'em" data-id="' + esc(tid) + '">' +
+      '<span class="tw" data-toggle="' + esc(tid) + '">' + (kids.length ? (open ? "&#9662;" : "&#9656;") : "") + "</span>" +
+      "<span>" + esc(t.label) + '</span><span class="n">' + t.claims.length + "</span></div>");
+    if (open) kids.forEach(function (k) { walk(k, depth + 1); });
+  }
+  (KIDS[""] || []).forEach(function (r) { walk(r, 0); });
+  el("tree").innerHTML = out.join("");
+}
+
+function revealInTree(tid) {
+  var p = K.topics[tid] && K.topics[tid].parent;
+  while (p && K.topics[p]) { OPEN[p] = true; p = K.topics[p].parent; }
+}
+
+/* ---------------- topic view ---------------- */
+
+function showTopic(tid, flashClaim) {
+  var t = K.topics[tid];
+  if (!t) { showHome(); return; }
+  revealInTree(tid);
+  renderTree(tid);
+  var crumbs = [], p = t.parent;
+  while (p && K.topics[p]) {
+    crumbs.unshift('<a href="#topic=' + esc(p) + '">' + esc(K.topics[p].label) + "</a>");
+    p = K.topics[p].parent;
+  }
+  var mods = Object.keys(K.modules).filter(function (m) {
+    return K.modules[m].topics.indexOf(tid) >= 0;
+  }).map(function (m) { return K.modules[m].label; });
+  var h = [];
+  h.push('<div class="crumbs">' + (crumbs.join(" &rsaquo; ") || "PyCoaPedia") + "</div>");
+  h.push("<h2>" + esc(t.label) + "</h2>");
+  h.push('<div class="meta">' + esc(t.description) + ' <span class="tid">' + esc(tid) + "</span></div>");
+  h.push('<div class="small">' + t.papers + " papers screened &middot; " + t.claims.length +
+         " claims &middot; " + t.equations.length + " equations" +
+         (mods.length ? " &middot; used by pyCoastal: " + esc(mods.join(", ")) : "") + "</div>");
+  var kids = KIDS[tid] || [];
+  if (kids.length) {
+    h.push('<p class="kids small">Subtopics: ' + kids.map(function (k) {
+      return '<a href="#topic=' + esc(k) + '">' + esc(K.topics[k].label) + "</a>";
+    }).join("") + "</p>");
+  }
+  var syn = t.synthesis || {};
+  if (Object.keys(syn).length) {
+    h.push("<h3>Synthesis</h3><dl class=\"syn\">");
+    SECTIONS.forEach(function (s) {
+      if (syn[s[0]]) h.push("<dt>" + s[1] + "</dt><dd>" + esc(syn[s[0]]) + "</dd>");
+    });
+    h.push("</dl>");
+  }
+  if (t.equations.length) {
+    h.push("<h3>Equations</h3>");
+    t.equations.forEach(function (e) {
+      var vars = e.variables;
+      try { vars = typeof vars === "string" && vars ? JSON.parse(vars) : vars; } catch (x) { /* keep text */ }
+      var vtxt = vars && typeof vars === "object"
+        ? Object.keys(vars).map(function (k) { return "<code>" + esc(k) + "</code> " + esc(vars[k]); }).join("; ")
+        : esc(vars || "");
+      h.push('<div class="eq"><div class="name">' + esc(e.name) + " " + cite(e.paper) + "</div>" +
+        '<div class="tex">' + tex(e.latex) + "</div>" +
+        (e.regime ? '<div class="small"><span class="regime">Regime:</span> ' + esc(e.regime) + "</div>" : "") +
+        (vtxt ? '<div class="small">Variables: ' + vtxt + "</div>" : "") + "</div>");
+    });
+  }
+  if (t.claims.length) {
+    var ev = {}, cf = {};
+    t.claims.forEach(function (c) { ev[c.evidence] = 1; cf[c.confidence] = 1; });
+    h.push("<h3>Claims</h3>");
+    h.push('<div class="filters" id="cfilters">' +
+      Object.keys(ev).filter(Boolean).map(function (k) {
+        return '<span class="chip" data-ev="' + esc(k) + '">' + esc(k) + "</span>";
+      }).join("") + "</div>");
+    h.push('<ol class="claims" id="claims">');
+    t.claims.forEach(function (c, i) {
+      h.push('<li id="c' + i + '" data-ev="' + esc(c.evidence) + '"' + (flashClaim === i ? ' class="flash"' : "") + ">" +
+        esc(c.text) + (c.regime ? ' <span class="regime">Regime: ' + esc(c.regime) + "</span>" : "") +
+        '<span class="tag">' + esc([CONF[c.confidence] || c.confidence, c.evidence].filter(Boolean).join(", ")) +
+        "</span> " + cite(c.paper) + "</li>");
+    });
+    h.push("</ol>");
+  }
+  el("view").innerHTML = h.join("");
+  el("view").parentNode.scrollTop = 0;
+  if (flashClaim != null && el("c" + flashClaim)) el("c" + flashClaim).scrollIntoView({ block: "center" });
+  var active = null;
+  el("view").querySelectorAll("#cfilters .chip").forEach(function (chip) {
+    chip.onclick = function () {
+      active = active === chip.dataset.ev ? null : chip.dataset.ev;
+      el("view").querySelectorAll("#cfilters .chip").forEach(function (c) {
+        c.classList.toggle("on", c.dataset.ev === active);
+      });
+      el("view").querySelectorAll("#claims li").forEach(function (li) {
+        li.style.display = !active || li.dataset.ev === active ? "" : "none";
+      });
+    };
+  });
+}
+
+function showHome() {
+  renderTree(null);
+  var roots = KIDS[""] || [];
+  var h = ["<h2>Coastal and ocean engineering knowledge</h2>",
+    '<p class="meta">Pick a branch on the left, search, or start from a pyCoastal design module. ' +
+    "Each topic carries a curated synthesis, its claims with the regime each was established in, " +
+    "and its equations, and every claim links to its paper.</p><h3>Branches</h3><ul>"];
+  roots.forEach(function (r) {
+    var t = K.topics[r];
+    h.push('<li><a href="#topic=' + esc(r) + '">' + esc(t.label) + "</a> " +
+           '<span class="small">' + esc(t.description) + "</span></li>");
+  });
+  h.push("</ul><h3>By design module</h3><ul>");
+  Object.keys(K.modules).forEach(function (m) {
+    var mod = K.modules[m];
+    h.push("<li><strong>" + esc(mod.label) + "</strong> <span class=\"small\">" + esc(mod.blurb) + "</span><br>" +
+      mod.topics.filter(function (t) { return K.topics[t]; }).map(function (t) {
+        return '<a href="#topic=' + esc(t) + '">' + esc(K.topics[t].label) + "</a>";
+      }).join(" &middot; ") + "</li>");
+  });
+  h.push("</ul>");
+  el("view").innerHTML = h.join("");
+}
+
+/* ---------------- search ---------------- */
+
+var INDEX = [];
+function buildIndex() {
+  Object.keys(K.topics).forEach(function (tid) {
+    var t = K.topics[tid];
+    INDEX.push({ kind: "topic", tid: tid, title: t.label, body: t.label + " " + t.description });
+    Object.keys(t.synthesis || {}).forEach(function (s) {
+      INDEX.push({ kind: "synthesis", tid: tid, title: t.label + ": " + s.replace(/_/g, " "), body: t.synthesis[s] });
+    });
+    t.claims.forEach(function (c, i) {
+      INDEX.push({ kind: "claim", tid: tid, i: i, title: t.label, body: c.text + " " + (c.regime || "") });
+    });
+    t.equations.forEach(function (e) {
+      INDEX.push({ kind: "equation", tid: tid, title: t.label, body: e.name + " " + (e.regime || "") + " " + e.latex });
+    });
+  });
+  INDEX.forEach(function (d) { d.lc = d.body.toLowerCase(); });
+}
+
+function runSearch(q) {
+  var words = q.toLowerCase().split(/\s+/).filter(function (w) { return w.length > 1; });
+  if (!words.length) { route(); return; }
+  var hits = [];
+  INDEX.forEach(function (d) {
+    if (MODULE && !inModule(d.tid)) return;
+    var score = 0;
+    for (var i = 0; i < words.length; i++) {
+      var at = d.lc.indexOf(words[i]);
+      if (at < 0) return;
+      score += 1 + (d.title.toLowerCase().indexOf(words[i]) >= 0 ? 2 : 0);
+    }
+    score += { topic: 3, synthesis: 1, claim: 0, equation: 1 }[d.kind];
+    hits.push([score, d]);
+  });
+  hits.sort(function (a, b) { return b[0] - a[0]; });
+  var re = new RegExp("(" + words.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")", "gi");
+  var h = ["<h2>" + hits.length + " results</h2>", '<ul class="results">'];
+  hits.slice(0, 150).forEach(function (x) {
+    var d = x[1], body = d.body;
+    var first = d.lc.indexOf(words[0]);
+    var snip = (first > 90 ? "&hellip;" : "") + esc(body.slice(Math.max(0, first - 90), first + 220)) + (body.length > first + 220 ? "&hellip;" : "");
+    var href = "#topic=" + encodeURIComponent(d.tid) + (d.kind === "claim" ? "&claim=" + d.i : "");
+    h.push('<li><span class="kind">' + d.kind + '</span> <a href="' + href + '">' + esc(d.title) +
+           '</a> <span class="tid">' + esc(d.tid) + "</span><br>" + snip.replace(re, "<mark>$1</mark>") + "</li>");
+  });
+  h.push("</ul>");
+  el("view").innerHTML = h.join("");
+}
+
+/* ---------------- routing and events ---------------- */
+
+function route() {
+  var m = /topic=([^&]+)(?:&claim=(\d+))?/.exec(location.hash);
+  if (m) showTopic(decodeURIComponent(m[1]), m[2] != null ? +m[2] : null);
+  else showHome();
+}
+
+function init(k) {
+  K = k;
+  Object.keys(K.topics).forEach(function (tid) {
+    var p = K.topics[tid].parent;
+    var key = p && K.topics[p] ? p : "";
+    (KIDS[key] = KIDS[key] || []).push(tid);
+  });
+  Object.keys(KIDS).forEach(function (k2) { KIDS[k2].sort(); });
+  var nClaims = 0;
+  Object.keys(K.topics).forEach(function (t) { nClaims += K.topics[t].claims.length; });
+  el("stats").textContent = Object.keys(K.topics).length + " topics · " + nClaims + " claims · " +
+    Object.keys(K.papers).length + " papers · " + K.generated;
+  el("modules").innerHTML = Object.keys(K.modules).map(function (m) {
+    return '<span class="chip" data-m="' + esc(m) + '">' + esc(K.modules[m].label) + "</span>";
+  }).join("");
+  el("modules").onclick = function (e) {
+    var m = e.target.dataset && e.target.dataset.m;
+    if (!m) return;
+    MODULE = MODULE === m ? null : m;
+    el("modules").querySelectorAll(".chip").forEach(function (c) { c.classList.toggle("on", c.dataset.m === MODULE); });
+    if (el("q").value.trim()) runSearch(el("q").value); else route();
+  };
+  el("tree").onclick = function (e) {
+    var tog = e.target.closest("[data-toggle]");
+    if (tog && tog.textContent) {
+      OPEN[tog.dataset.toggle] = !OPEN[tog.dataset.toggle];
+      renderTree((/topic=([^&]+)/.exec(location.hash) || [])[1]);
+      return;
+    }
+    var node = e.target.closest(".node");
+    if (node) { el("q").value = ""; location.hash = "topic=" + encodeURIComponent(node.dataset.id); }
+  };
+  var timer = null;
+  el("q").oninput = function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () { runSearch(el("q").value); }, 150);
+  };
+  window.onhashchange = route;
+  buildIndex();
+  route();
+}
+
+fetch("knowledge.json").then(function (r) { return r.json(); }).then(init).catch(function () {
+  el("view").innerHTML = '<p class="empty">Could not load knowledge.json. Serve this folder ' +
+    "(for example <code>python -m http.server</code> inside <code>webapp/</code>) rather than " +
+    "opening the file directly.</p>";
+});
+</script>
+</body>
+</html>

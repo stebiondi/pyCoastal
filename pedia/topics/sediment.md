@@ -1,0 +1,66 @@
+# Sediment transport
+
+`sediment` | Entrainment, suspension, and transport of coastal sediment.
+
+Subtopics: [Bedload transport](sediment.bedload.md), [Cohesive sediment](sediment.cohesive.md), [Mixed sediment](sediment.mixed.md), [Sheet flow](sediment.sheetflow.md), [Suspended sediment transport](sediment.suspended.md)
+
+Papers: 15. Claims: 10. Equations: 0.
+
+## Synthesis
+
+**Well established.** Coastal sediment transport is a coupled source–pathway–sink system in which intermittent entrainment, bedload, suspension and sheet flow respond to waves, currents, water levels and morphology while sorting, storage and bed change feed back on the forcing.
+
+**Governing physics.** Fluid stress and turbulent impulses compete with submerged weight, friction, cohesion and hiding/exposure; moving grains exchange momentum with the flow, settle and diffuse, organize bedforms, change roughness and permeability, and redistribute mass through cross-shore, longshore and vertical pathways.
+
+**Dimensionless parameters.** Controls include Shields and mobility numbers, shear-to-settling velocity, Rouse number, grain Reynolds number, relative roughness, fall-velocity and suspension parameters, Stokes number, wave orbital excursion, asymmetry and skewness, concentration, slope, mobility duration and transport-to-storage ratios.
+
+**Major equations.** Core formulations include Shields mobility, bedload and sheet-flow relations, advection–diffusion–settling for suspension, Rouse-type profiles, wave–current boundary layers, energetics transport, two-phase momentum, Exner sediment continuity, active-layer sorting and source–pathway–sink mass balance.
+
+**Typical methods.** Methods combine synchronized velocity, pressure, concentration and bed measurements; tracers and grain-size analysis; acoustic, optical and conductivity profilers; traps and samplers; repeat bathymetry; movable-bed experiments; transport formulae, two-phase or advection-diffusion models; and sediment-budget closure.
+
+**Numerical models.** Models range from practical bedload/suspended-load formulae and energetics closures to boundary-layer, two-phase, RANS/LES sediment, wave-resolving, morphodynamic, active-layer sorting and network/source-to-sink models coupled through sediment continuity.
+
+**Experimental datasets.** Evidence includes BARDEX II barrier response, combined wave–current bedform observations, bichromatic offshore- and onshore-bar experiments, wave-group suspension tests, regional estuary/shelf synthesis and source-to-sink signal studies.
+
+**Validated ranges.** The reviewed evidence spans sandy swash, surf and nearshore zones, barriers, bedforms, estuaries and shelves, weak transport through sheet flow, monochromatic and grouped waves, combined currents and event-to-long-term sediment routing; each result remains regime-specific.
+
+**Recent advances.** Recent work resolves mode transitions with two-phase models, measures bedload and suspension simultaneously, uses dense acoustic/optical profiling, conducts large-scale grouped-wave bar experiments, compares migration directions, and embeds event transport within source-to-sink signal propagation.
+
+**Disagreements.** A single critical stress cannot represent intermittent onset and cessation; equivalent monochromatic waves may not reproduce group-driven flux; bedload and suspension boundaries shift with concentration and turbulence; instantaneous formula skill need not yield correct morphology; deposits can lag or erase source signals.
+
+**Limitations.** Direct flux is difficult to measure, instruments disagree in intense transport, concentration alters turbulence, bedforms evolve, cohesive and mixed grains violate uniform-sand assumptions, boundaries and scale distort experiments, budgets omit exchanges and short records miss rare dominant events.
+
+**Open questions.** Priorities include probabilistic entrainment and cessation, mixed/cohesive beds, high-concentration two-phase feedback, wave-group and infragravity effects, three-dimensional pathways, biology and vegetation, event dominance, source-to-sink memory, intervention attribution and uncertainty-aware budget closure.
+
+**Seminal papers.** Classical Shields mobility, Einstein/Bagnold transport, Rouse suspension, wave–current boundary-layer theory, energetics formulae and Exner continuity established the grain-to-morphology framework later extended to sheet flow, sorting and two-phase dynamics.
+
+## Claims
+
+- **C1039.** A synthesis of sediment initiation and cessation shows that entrainment thresholds, transport onset, and stopping depend on turbulent fluctuations, grain-bed interactions, history, and regime rather than one universal critical stress. *Regime: The Physics of Sediment Transport Initiation, Cessation, and Entrainment Across Aeolian and Fluvial Environments.* [literature_review_statement, review] (Thomas Pähtz 2020, [doi:10.1029/2019rg000679](https://doi.org/10.1029/2019rg000679))
+- **C1040.** Source-to-sink signals propagate through sediment systems with storage, shredding, lag, and selective preservation, so downstream deposits need not track forcing synchronously. *Regime: Times Associated With Source-to-Sink Propagation of Environmental Signals During Landscape Transience.* [literature_review_statement, review] (Stefanie Tofelde 2021, [doi:10.3389/feart.2021.628315](https://doi.org/10.3389/feart.2021.628315))
+- **C1041.** A two-phase formulation organizes the transition from bedload to suspended load using shear velocity, settling velocity, and particle–fluid coupling, linking transport modes within one mechanics framework. *Regime: A two-phase flow model of sediment transport: transition from bedload to suspended load.* [direct_finding, analytical] (Chiodi 2014, [doi:10.1017/jfm.2014.422](https://doi.org/10.1017/jfm.2014.422))
+- **C1042.** BARDEX II provides an integrated large-scale dataset of waves, water levels, sediment transport, groundwater, overwash, and barrier morphology with documented experimental design and instrumentation. *Regime: Large-scale Barrier Dynamics Experiment II (BARDEX II): Experimental design, instrumentation, test program, and data set.* [direct_finding, experimental] (Gerd Masselink 2015, [doi:10.1016/j.coastaleng.2015.07.009](https://doi.org/10.1016/j.coastaleng.2015.07.009))
+- **C1043.** A review of swash-zone sand-transport models finds that uprush–backwash asymmetry, infiltration, turbulence, acceleration, bed slope, grain properties, and morphological feedback complicate transferable prediction. *Regime: A review of practical models of sand transport in the swash zone.* [literature_review_statement, review] (W. Chen 2023, [doi:10.1016/j.earscirev.2023.104355](https://doi.org/10.1016/j.earscirev.2023.104355))
+- **C1044.** A regional review integrates estuarine and inner-shelf physical oceanography with sediment sources, transport pathways, deposits, and coastal morphology across New Zealand settings. *Regime: Coastal oceanography and sedimentology in New Zealand, 1967–91.* [literature_review_statement, review] (Terry M. Hume 1992, [doi:10.1080/00288330.1992.9516497](https://doi.org/10.1080/00288330.1992.9516497))
+- **C1045.** Field observations connect bedform migration to net bedload under combined wave–current forcing, showing that transport inference must retain evolving roughness and bedform kinematics. *Regime: Observations of Bedform Migration and Bedload Sediment Transport in Combined Wave‐Current Flows.* [direct_finding, field] (M. E. Wengrove 2019, [doi:10.1029/2018jc014555](https://doi.org/10.1029/2018jc014555))
+- **C1046.** Large-scale offshore-bar experiments resolve near-bed hydrodynamics and sediment fluxes under bichromatic wave groups and connect event-scale transport to bar migration. *Regime: Near‐Bed Sediment Transport During Offshore Bar Migration in Large‐Scale Experiments.* [direct_finding, experimental] (Florian Grossmann 2022, [doi:10.1029/2021jc017756](https://doi.org/10.1029/2021jc017756))
+- **C1047.** Large-scale onshore-bar experiments reveal transport processes that differ from offshore migration and enable controlled comparison of direction-dependent near-bed flux mechanisms. *Regime: Near‐Bed Sediment Transport Processes During Onshore Bar Migration in Large‐Scale Experiments: Comparison With Offshore Bar Migration.* [direct_finding, experimental] (Florian Grossmann 2023, [doi:10.1029/2022jc018998](https://doi.org/10.1029/2022jc018998))
+- **C1048.** Comparison of wave groups with equivalent monochromatic waves shows that group-scale hydrodynamics alter sand suspension and flux, limiting representative-wave substitutions. *Regime: Sand suspension and fluxes by wave groups and equivalent monochromatic waves.* [direct_finding, experimental] (Joep van der Zanden 2019, [doi:10.1016/j.csr.2019.04.005](https://doi.org/10.1016/j.csr.2019.04.005))
+
+## Papers
+
+- Thomas Pähtz (2020). The Physics of Sediment Transport Initiation, Cessation, and Entrainment Across Aeolian and Fluvial Environments. *Reviews of Geophysics*. [doi:10.1029/2019rg000679](https://doi.org/10.1029/2019rg000679)
+- Stefanie Tofelde (2021). Times Associated With Source-to-Sink Propagation of Environmental Signals During Landscape Transience. *Frontiers in Earth Science*. [doi:10.3389/feart.2021.628315](https://doi.org/10.3389/feart.2021.628315)
+- Chiodi (2014). A two-phase flow model of sediment transport: transition from bedload to suspended load. *Journal of Fluid Mechanics*. [doi:10.1017/jfm.2014.422](https://doi.org/10.1017/jfm.2014.422)
+- Bonnie C. Ludka (2018). Nourishment evolution and impacts at four southern California beaches: A sand volume analysis. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2018.02.003](https://doi.org/10.1016/j.coastaleng.2018.02.003)
+- Gerd Masselink (2015). Large-scale Barrier Dynamics Experiment II (BARDEX II): Experimental design, instrumentation, test program, and data set. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2015.07.009](https://doi.org/10.1016/j.coastaleng.2015.07.009)
+- W. Chen (2023). A review of practical models of sand transport in the swash zone. *Earth-Science Reviews*. [doi:10.1016/j.earscirev.2023.104355](https://doi.org/10.1016/j.earscirev.2023.104355)
+- Anthony (2011). Chronic offshore loss of nourishment on Nice beach, French Riviera: A case of over-nourishment of a steep beach?. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2010.11.001](https://doi.org/10.1016/j.coastaleng.2010.11.001)
+- Terry M. Hume (1992). Coastal oceanography and sedimentology in New Zealand, 1967–91. *New Zealand Journal of Marine and Freshwater Research*. [doi:10.1080/00288330.1992.9516497](https://doi.org/10.1080/00288330.1992.9516497)
+- Florian Grossmann (2022). Near‐Bed Sediment Transport During Offshore Bar Migration in Large‐Scale Experiments. *Journal of Geophysical Research Oceans*. [doi:10.1029/2021jc017756](https://doi.org/10.1029/2021jc017756)
+- M. E. Wengrove (2019). Observations of Bedform Migration and Bedload Sediment Transport in Combined Wave‐Current Flows. *Journal of Geophysical Research: Oceans*. [doi:10.1029/2018jc014555](https://doi.org/10.1029/2018jc014555)
+- Florian Grossmann (2023). Near‐Bed Sediment Transport Processes During Onshore Bar Migration in Large‐Scale Experiments: Comparison With Offshore Bar Migration. *Journal of Geophysical Research Oceans*. [doi:10.1029/2022jc018998](https://doi.org/10.1029/2022jc018998)
+- Joep van der Zanden (2019). Sand suspension and fluxes by wave groups and equivalent monochromatic waves. *Continental Shelf Research*. [doi:10.1016/j.csr.2019.04.005](https://doi.org/10.1016/j.csr.2019.04.005)
+- Manon Besset (2019). Multi-decadal variations in delta shorelines and their relationship to river sediment supply: An assessment and review. *Earth-Science Reviews*. [doi:10.1016/j.earscirev.2019.04.018](https://doi.org/10.1016/j.earscirev.2019.04.018)
+- Edward J. Anthony (2020). The lower shoreface: Morphodynamics and sediment connectivity with the upper shoreface and beach. *Earth-Science Reviews*. [doi:10.1016/j.earscirev.2020.103334](https://doi.org/10.1016/j.earscirev.2020.103334)
+- Klervi Hamon-Kerivel (2020). Shoreface mesoscale morphodynamics: A review. *Earth-Science Reviews*. [doi:10.1016/j.earscirev.2020.103330](https://doi.org/10.1016/j.earscirev.2020.103330)

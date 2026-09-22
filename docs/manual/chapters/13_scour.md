@@ -22,20 +22,20 @@ interesting failure lives. A buried pile cap does nothing until the scour
 hole reaches it; then it is exposed, it is wider than the stem, and the
 scour deepens because of it, which exposes more of it. The obstacle is
 reduced to one width by weighting each element over the depth of flow it
-occupies:
+occupies (@eq:equiv-diameter):
 
 $$ D_e = \frac{D_\mathrm{base}h_\mathrm{base} + D_\mathrm{stem}(h - h_\mathrm{base})}{h}, $$ {#eq:equiv-diameter}
 
 where $h_\mathrm{base}$ is how much of the base stands proud of the
 *scoured* bed. Each element carries the HEC-18 shape factor $K_1$
-(`SHAPE_FACTOR`) and the alignment factor
+(`SHAPE_FACTOR`) and the alignment factor (@eq:k2)
 
 $$ K_2 = \left(\cos\theta + \frac{L}{a}\sin\theta\right)^{0.65},\qquad L/a \le 12. $$ {#eq:k2}
 
 A base set square to the ebb is skewed to the flood (the flood skew is taken
 as the supplement), which is what makes a tidal estuary awkward.
 
-**Combined waves and current.** Sumer and Fredsoe (2001):
+**Combined waves and current.** Sumer and Fredsoe (2001) (@eq:sumer-fredsoe):
 
 $$ \frac{S}{D} = 1.3\left\{1 - \exp\left[-A(KC - B)\right]\right\},\qquad
 A = 0.03 + \tfrac34 U_{cw}^{2.6},\qquad B = 6\exp(-4.7U_{cw}), $$ {#eq:sumer-fredsoe}
@@ -61,7 +61,7 @@ applies $\tanh(h/D)$ (Breusers et al. 1977), worth nothing above
 $h/D = 3$ and a quarter below $h/D = 1$. The skin-friction Shields
 parameter under the current uses $u_* = U\kappa/\ln(11h/k_s)$ with
 $k_s = 2.5d_{50}$, and the time scale (Sumer, Christiansen and Fredsoe 1992)
-is
+is given by @eq:scour-time,
 
 $$ T^* = \frac{1}{2000}\frac{h}{D}\theta^{-2.2},\qquad T = T^*\frac{D^2}{\sqrt{g(s-1)d_{50}^3}},\qquad S(t) = S_\mathrm{eq}\left[1 - e^{-t/T}\right]. $$ {#eq:scour-time}
 
@@ -140,12 +140,12 @@ estuary returns a hole deeper than the water.
 
 **Contraction scour.** Two modes, switched by the critical velocity
 $V_c = 6.19\,y^{1/6}D_{50}^{1/3}$ (HEC-18 eq. 6.1). Live bed, Laursen
-(1960):
+(1960) (@eq:laursen):
 
 $$ \frac{y_2}{y_1} = \left(\frac{Q_2}{Q_1}\right)^{6/7}\left(\frac{W_1}{W_2}\right)^{k_1}, $$ {#eq:laursen}
 
 with $k_1$ = 0.59, 0.64, or 0.69 as $V_*/w$ is below 0.5, between 0.5 and 2,
-or above 2 (`transport_exponent`). Clear water (HEC-18 eq. 6.4):
+or above 2 (`transport_exponent`). Clear water (HEC-18 eq. 6.4) (@eq:clear-water):
 
 $$ y_2 = \left[\frac{0.025\,Q_2^2}{D_m^{2/3}W_2^2}\right]^{3/7}. $$ {#eq:clear-water}
 
@@ -156,7 +156,7 @@ relations were fitted separately and do not meet at the threshold;
 demand so the step can be seen.
 
 **Abutment scour.** Froehlich (1989) for $L'/y < 25$ and HIRE for longer
-abutments:
+abutments (@eq:abutment):
 
 $$ \frac{y_s}{y_a} = 2.27K_1K_2\left(\frac{L'}{y_a}\right)^{0.43}Fr^{0.61} + 1,\qquad
 \frac{y_s}{y_a} = 4Fr^{0.33}\frac{K_1}{0.55}K_2, $$ {#eq:abutment}

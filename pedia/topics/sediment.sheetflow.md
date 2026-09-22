@@ -1,0 +1,73 @@
+# Sheet flow
+
+`sediment.sheetflow` | High-concentration mobile layers.
+
+Parent: [Sediment transport](sediment.md)
+
+Papers: 16. Claims: 16. Equations: 0.
+
+## Synthesis
+
+**Well established.** Sheet flow is a thin, dense mobile layer produced when energetic forcing washes out ripples; concentration falls from near packed-bed values toward dilute suspension while grains move through frictional, collisional and turbulence-coupled regimes.
+
+**Governing physics.** Instantaneous transport reflects shear and pressure gradient, granular friction/collisions, pickup and settling, phase lag, velocity/acceleration asymmetry, progressive and waveshape streaming, mobile-bed roughness, turbulence damping, density stratification, undertow, and bore-generated turbulence.
+
+**Dimensionless parameters.** Controls include Shields and mobility numbers, grain Reynolds number, density ratio, relative sheet thickness in grain diameters, wave orbital excursion/roughness, velocity and acceleration skewness, settling time/wave period, phase lag, relative depth kh, and sediment concentration.
+
+**Major equations.** Models use two-phase fluid/sediment mass and momentum, drag and buoyancy coupling, μ(I) or kinetic-theory particle stress, turbulent closure, dilatancy and Rouse profiles, Shields/mobility forcing, advection–diffusion, boundary-layer streaming, and power-law transport with phase-lag correction.
+
+**Typical methods.** Methods include full-scale oscillating water tunnels, large wave flumes, swash field CCP profiles, conductivity concentration meters, ACVP/ADV and laser Doppler velocity, natural and synthetic grains, free-surface-resolving Eulerian two-phase CFD, dense rheology, and 1DV turbulence models.
+
+**Numerical models.** Models include SedFoam-2.0, SedWaveFoam, μ(I) dense-granular and kinetic-theory closures, k–ω and k–ε boundary layers, free-surface InterFoam/waves2Foam coupling, Rouse/dilatancy layers, semianalytical thickness ODEs, and Eulerian–Lagrangian mixed-grain coupling.
+
+**Experimental datasets.** Evidence covers 1.2 m/s and 7 s asymmetric tunnel flows, natural-sand prototype waves, Delft LOWT grain-size tests, sand/PVC/acrylic mobile layers, first field swash profiles, large plunging breakers, shoaling asymmetric waves, near-breaking transients, and mixed-grain simulations.
+
+**Validated ranges.** Observed sheet layers span about 10–60 grain diameters, near-bed volume concentration around 0.6, swash thickness 6–18 mm with a 0.20–0.30 concentration transition, sand 0.13 to at least 0.21 mm, and cases where quasi-steady transport is underpredicted by about 60%.
+
+**Recent advances.** Recent work resolves free surface, bottom boundary layer and two sediment phases together; diagnoses wave stirring, undertow and stratification; measures large-scale breaking layers acoustically; extends phase-lag formulas to skewed-asymmetric shoaling waves; and treats mixed grains with DEM coupling.
+
+**Disagreements.** Tunnel and free-surface wave tests can predict opposite fine-sand transport direction because streaming and horizontal advection are absent under a rigid lid. Phase lag dominates some fine-grain asymmetric cases but is minor in others; neither simple suspension nor collisional models alone span the full dense-to-dilute layer.
+
+**Limitations.** Near-bed concentration and velocity are difficult to measure simultaneously; conductivity/acoustic probes have distinct bounds; many models are 1DV; closures are calibrated to uniform spherical grains; pore pressure, grain shape, graded beds, breaking intermittency and swash infiltration remain limited.
+
+**Open questions.** Needs include unified dense-to-dilute closure, pore-pressure feedback, graded and natural sediment, three-dimensional turbulence, breaker and bore intermittency, swash infiltration, coherent structures, sheet-layer top definition, and computationally efficient morphodynamic parameterization.
+
+**Seminal papers.** The branch advances from oscillatory mobile-layer observations and full-scale prototype-wave measurements to dense μ(I) rheology, streaming-aware transport, field swash profiles, free-surface two-phase CFD, breaking-wave sheet layers, and graded-bed plug flow.
+
+## Claims
+
+- **C745.** For 1.2 m/s, 7 s asymmetric oscillatory flows over medium sand, net transport arose from unequal opposing half-cycle fluxes; phase lag was secondary to shear-stress skewness. *Regime: Observations of velocities, sand concentrations, and fluxes under velocity-asymmetric oscillatory flows.* [direct_finding, experimental] (Gerben Ruessink 2011, [doi:10.1029/2010jc006443](https://doi.org/10.1029/2010jc006443))
+- **C746.** SedFoam-2.0 represents sheet flow with Eulerian fluid and sediment phases, kinetic-theory or μ(I) intergranular stress, and multiple turbulence closures. *Regime: SedFoam-2.0: a 3-D two-phase flow numerical model for sediment transport.* [direct_finding, numerical] (Julien Chauchat 2017, [doi:10.5194/gmd-10-4367-2017](https://doi.org/10.5194/gmd-10-4367-2017))
+- **C747.** Prototype waves produced a sheet-flow layer 10–60 grain diameters thick with near-bed volume concentration near 0.6; neither tested single-phase nor collisional model captured both velocity and concentration across the layer. *Regime: Sheet flow dynamics under monochromatic nonbreaking waves.* [direct_finding, experimental] (Catarine M. Dohmen-Janssen 2002, [doi:10.1029/2001jc001045](https://doi.org/10.1029/2001jc001045))
+- **C748.** Fine 0.13 mm sand produced thicker erosion and sheet-flow layers than sand at or above 0.21 mm, increasing roughness and turbulence damping. *Regime: Mobile‐bed effects in oscillatory sheet flow.* [direct_finding, experimental] (Catarine M. Dohmen-Janssen 2001, [doi:10.1029/2000jc000513](https://doi.org/10.1029/2000jc000513))
+- **C749.** A two-phase μ(I) dense-granular model reproduced velocity, concentration, transport, thickness, roughness, and the collision-to-turbulence transition in sheet flow. *Regime: A two‐phase model for sheet flow regime based on dense granular flow rheology.* [direct_finding, mixed] (Thibaut Revil-Baudard 2012, [doi:10.1029/2012jc008306](https://doi.org/10.1029/2012jc008306))
+- **C750.** Oscillatory mobile-layer behavior depends on a pressure-gradient/inertia parameter; at higher values sediment stopped at reversal and remobilized as plug flow. *Regime: Mobile layer in oscillatory sheet flow.* [direct_finding, experimental] (Nicolas Zala Flores 1998, [doi:10.1029/98jc00691](https://doi.org/10.1029/98jc00691))
+- **C751.** A modified transitional k–ω model reproduced stress phase lag and secondary humps and predicted observed suspension ejections during deceleration above sheet flow. *Regime: 1DV bottom boundary layer modeling under combined wave and current: Turbulent separation and phase lag effects.* [direct_finding, mixed] (Katell Guizien 2003, [doi:10.1029/2001jc001292](https://doi.org/10.1029/2001jc001292))
+- **C752.** Free-surface progressive streaming substantially increased onshore sheet-flow transport and reversed fine-sand direction relative to rigid-lid tunnels, with horizontal advection also important. *Regime: Sand transport beneath waves: The role of progressive wave streaming and other free surface effects.* [direct_finding, mixed] (Wouter M. Kranenburg 2012, [doi:10.1029/2012jf002427](https://doi.org/10.1029/2012jf002427))
+- **C753.** Progressive-wave streaming drives onshore boundary-layer current while velocity- and acceleration-skewness drive offshore streaming; relative depth and roughness set their balance. *Regime: Net currents in the wave bottom boundary layer: On waveshape streaming and progressive wave streaming.* [direct_finding, numerical] (Wouter M. Kranenburg 2012, [doi:10.1029/2011jf002070](https://doi.org/10.1029/2011jf002070))
+- **C754.** Field swash sheet-flow profiles were self-similar over 6–18 mm thickness, transitioning from linear to power-law concentration at volume fraction 0.20–0.30. *Regime: Comprehensive Field Study of Swash-Zone Processes. II: Sheet Flow Sediment Concentrations during Quasi-Steady Backwash.* [direct_finding, field] (Thijs Lanckriet 2013, [doi:10.1061/(asce)ww.1943-5460.0000209](https://doi.org/10.1061/(asce)ww.1943-5460.0000209))
+- **C755.** Free-surface-resolving SedWaveFoam showed progressive streaming and nonlinear wave stirring strongly enhance onshore suspended flux relative to an oscillating tunnel. *Regime: A Numerical Study of Sheet Flow Under Monochromatic Nonbreaking Waves Using a Free Surface Resolving Eulerian Two‐Phase Flow Model.* [direct_finding, numerical] (Yeulwoo Kim 2018, [doi:10.1029/2018jc013930](https://doi.org/10.1029/2018jc013930))
+- **C756.** Shear and pressure gradient explain tunnel sheet thickness, but bore turbulence is needed to reproduce intense initial-uprush sheet flow in prototype-scale swash. *Regime: A semianalytical model for sheet flow layer thickness with application to the swash zone.* [direct_finding, mixed] (Thijs Lanckriet 2015, [doi:10.1002/2014jc010378](https://doi.org/10.1002/2014jc010378))
+- **C757.** Large-scale plunging waves produced lower pickup and upper sheet layers; shoaling transport was skewed-wave dominated, while outer-surf-zone layering arose from undertow rather than phase lag. *Regime: Wave Boundary Layer Hydrodynamics and Sheet Flow Properties Under Large‐Scale Plunging‐Type Breaking Waves.* [direct_finding, experimental] (Guillaume Fromant 2018, [doi:10.1029/2018jc014406](https://doi.org/10.1029/2018jc014406))
+- **C758.** A bimodal bed with 30% coarse and 70% medium sand behaved like coarse sand but transported slightly more through inverse grading and a smoother mobile foundation; strong waves produced plug flow. *Regime: Entrainment and Transport of Well‐Sorted and Mixed Sediment Under Wave Motion.* [direct_finding, numerical] (Yashar Rafati 2022, [doi:10.1029/2022jc018686](https://doi.org/10.1029/2022jc018686))
+- **C759.** Near-breaking-wave suspension created stable density stratification that damped turbulence and bed shear, shifting transport toward suspended load. *Regime: Numerical investigation of sheet flow driven by a near-breaking transient wave using SedFoam.* [direct_finding, numerical] (Marie‐Pierre C. Delisle 2022, [doi:10.1016/j.euromechflu.2022.07.002](https://doi.org/10.1016/j.euromechflu.2022.07.002))
+- **C760.** For skewed-asymmetric shoaling waves, separate half-cycle boundary-layer development was essential; a quasi-steady method underpredicted transport by about 60%, especially for fine sand. *Regime: A Numerical Study of Sheet Flow Driven by Skewed-Asymmetric Shoaling Waves Using SedWaveFoam.* [direct_finding, numerical] (Yeulwoo Kim 2021, [doi:10.3390/jmse9090936](https://doi.org/10.3390/jmse9090936))
+
+## Papers
+
+- Gerben Ruessink (2011). Observations of velocities, sand concentrations, and fluxes under velocity-asymmetric oscillatory flows. *Journal of Geophysical Research Atmospheres*. [doi:10.1029/2010jc006443](https://doi.org/10.1029/2010jc006443)
+- Julien Chauchat (2017). SedFoam-2.0: a 3-D two-phase flow numerical model for sediment transport. *Geoscientific Model Development*. [doi:10.5194/gmd-10-4367-2017](https://doi.org/10.5194/gmd-10-4367-2017)
+- Catarine M. Dohmen-Janssen (2001). Mobile‐bed effects in oscillatory sheet flow. *Journal of Geophysical Research: Oceans*. [doi:10.1029/2000jc000513](https://doi.org/10.1029/2000jc000513)
+- Thibaut Revil-Baudard (2012). A two‐phase model for sheet flow regime based on dense granular flow rheology. *Journal of Geophysical Research Oceans*. [doi:10.1029/2012jc008306](https://doi.org/10.1029/2012jc008306)
+- Catarine M. Dohmen-Janssen (2002). Sheet flow dynamics under monochromatic nonbreaking waves. *Journal of Geophysical Research: Oceans*. [doi:10.1029/2001jc001045](https://doi.org/10.1029/2001jc001045)
+- Nicolas Zala Flores (1998). Mobile layer in oscillatory sheet flow. *Journal of Geophysical Research Atmospheres*. [doi:10.1029/98jc00691](https://doi.org/10.1029/98jc00691)
+- Katell Guizien (2003). 1DV bottom boundary layer modeling under combined wave and current: Turbulent separation and phase lag effects. *Journal of Geophysical Research Atmospheres*. [doi:10.1029/2001jc001292](https://doi.org/10.1029/2001jc001292)
+- Wouter M. Kranenburg (2012). Sand transport beneath waves: The role of progressive wave streaming and other free surface effects. *Journal of Geophysical Research Earth Surface*. [doi:10.1029/2012jf002427](https://doi.org/10.1029/2012jf002427)
+- Thijs Lanckriet (2013). Comprehensive Field Study of Swash-Zone Processes. II: Sheet Flow Sediment Concentrations during Quasi-Steady Backwash. *Journal of Waterway Port Coastal and Ocean Engineering*. [doi:10.1061/(asce)ww.1943-5460.0000209](https://doi.org/10.1061/(asce)ww.1943-5460.0000209)
+- Yeulwoo Kim (2018). A Numerical Study of Sheet Flow Under Monochromatic Nonbreaking Waves Using a Free Surface Resolving Eulerian Two‐Phase Flow Model. *Journal of Geophysical Research Oceans*. [doi:10.1029/2018jc013930](https://doi.org/10.1029/2018jc013930)
+- Wouter M. Kranenburg (2012). Net currents in the wave bottom boundary layer: On waveshape streaming and progressive wave streaming. *Journal of Geophysical Research: Earth Surface*. [doi:10.1029/2011jf002070](https://doi.org/10.1029/2011jf002070)
+- Thijs Lanckriet (2015). A semianalytical model for sheet flow layer thickness with application to the swash zone. *Journal of Geophysical Research Oceans*. [doi:10.1002/2014jc010378](https://doi.org/10.1002/2014jc010378)
+- Guillaume Fromant (2018). Wave Boundary Layer Hydrodynamics and Sheet Flow Properties Under Large‐Scale Plunging‐Type Breaking Waves. *Journal of Geophysical Research Oceans*. [doi:10.1029/2018jc014406](https://doi.org/10.1029/2018jc014406)
+- Yashar Rafati (2022). Entrainment and Transport of Well‐Sorted and Mixed Sediment Under Wave Motion. *Journal of Geophysical Research Oceans*. [doi:10.1029/2022jc018686](https://doi.org/10.1029/2022jc018686)
+- Marie‐Pierre C. Delisle (2022). Numerical investigation of sheet flow driven by a near-breaking transient wave using SedFoam. *European Journal of Mechanics - B/Fluids*. [doi:10.1016/j.euromechflu.2022.07.002](https://doi.org/10.1016/j.euromechflu.2022.07.002)
+- Yeulwoo Kim (2021). A Numerical Study of Sheet Flow Driven by Skewed-Asymmetric Shoaling Waves Using SedWaveFoam. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse9090936](https://doi.org/10.3390/jmse9090936)

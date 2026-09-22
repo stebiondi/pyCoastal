@@ -42,16 +42,21 @@ seawall_sheet(wall, size="A3").save("seawall.png")
 | Coastline | `applications.nourishment`, `surge`, `sediment` |
 | Drawings | `drafting`, `applications.sections` (drawing sheets and DXF) |
 | Numerics | `numerics`, `physics`, `tools` (grids, operators, SWE, NS, waves) |
+| Literature | `pedia` (PyCoaPedia: topics, synthesis, claims, equations, papers) |
 
-Worked examples live in `examples/`, and `webapp/` holds the Coastal Design
-Bench, a browser version of the design modules with the CoastalWiki
-literature extract.
+**PyCoaTools** (`webapp/index.html`) runs the design modules in the browser.
+**PyCoaPedia** is the knowledge base of the coastal and ocean engineering
+literature, every claim with its regime and DOI: browse it in
+`webapp/pedia.html`, query it with `python -m pyCoastal.pedia search "..."`,
+or read `pedia/`.
 
 ## Documentation
 
-The full manual, covering theory, every module, every example and the
-CoastalWiki knowledge base, is [`pyCoastal manual.pdf`](pyCoastal%20manual.pdf).
-It is built from `docs/manual/` with `python docs/manual/build_manual.py`.
+- For people: [`pyCoastal manual.pdf`](pyCoastal%20manual.pdf), built from
+  `docs/manual/` with `python docs/manual/build_manual.py`.
+- For AI agents: [`AGENTS.md`](AGENTS.md) and [`llms.txt`](llms.txt), the
+  Markdown API reference in `docs/reference/`, and the PyCoaPedia SQLite
+  database (`pedia/SCHEMA.md`).
 
 ## Citation
 

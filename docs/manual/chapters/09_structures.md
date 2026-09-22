@@ -16,20 +16,20 @@ the functions compute outside a range when asked but say so.
 the wave and water level at the toe. `DesignConditions.from_peak_period(Hm0,
 Tp, ...)` converts with $T_{m-1,0} = T_p/1.1$ for a single-peaked spectrum.
 Derived properties are the wave count $N = t_\mathrm{storm}/T_m$, the deep
-and local wavelengths, and the surf similarity
+and local wavelengths, and the surf similarity (@eq:structures-1)
 
-$$ \xi_{m-1,0} = \frac{\tan\alpha}{\sqrt{H_{m0}/L_{m-1,0}}},\qquad L_{m-1,0} = \frac{gT_{m-1,0}^2}{2\pi}. $$
+$$ \xi_{m-1,0} = \frac{\tan\alpha}{\sqrt{H_{m0}/L_{m-1,0}}},\qquad L_{m-1,0} = \frac{gT_{m-1,0}^2}{2\pi}. $$ {#eq:structures-1}
 
 ## Armor stability
 
 **Van der Meer (1988).** Two regimes, selected by the surf similarity against
-a critical value:
+a critical value ([@eq:vdm-plunging; @eq:vdm-surging; @eq:structures-2]):
 
 $$ \frac{H_s}{\Delta D_{n50}} = 6.2\,P^{0.18}\left(\frac{S}{\sqrt N}\right)^{0.2}\xi^{-0.5}\qquad (\xi < \xi_{cr},\ \text{plunging}), $$ {#eq:vdm-plunging}
 
 $$ \frac{H_s}{\Delta D_{n50}} = 1.0\,P^{-0.13}\left(\frac{S}{\sqrt N}\right)^{0.2}\sqrt{\cot\alpha}\,\xi^{P}\qquad (\xi \ge \xi_{cr},\ \text{surging}), $$ {#eq:vdm-surging}
 
-$$ \xi_{cr} = \left(6.2\,P^{0.31}\sqrt{\tan\alpha}\right)^{1/(P + 0.5)}. $$
+$$ \xi_{cr} = \left(6.2\,P^{0.31}\sqrt{\tan\alpha}\right)^{1/(P + 0.5)}. $$ {#eq:structures-2}
 
 $\Delta = \rho_s/\rho_w - 1$ (1.585 for 2650 kg/m$^3$ rock in seawater), $P$ is
 the notional permeability (0.1 impermeable core with a filter, 0.4
@@ -54,13 +54,13 @@ $t = n k_t D_{n50}$ and the number of stones per square meter.
 ## Overtopping
 
 For a sloping structure, EurOtop (2018) takes the lesser of the breaking
-and the maximum expressions:
+and the maximum expressions ([@eq:eurotop-breaking; @eq:eurotop-max]):
 
 $$ \frac{q}{\sqrt{gH_{m0}^3}} = \frac{0.023}{\sqrt{\tan\alpha}}\gamma_b\xi\exp\left[-\left(2.7\frac{R_c}{\xi H_{m0}\gamma_b\gamma_f\gamma_\beta\gamma_v}\right)^{1.3}\right], $$ {#eq:eurotop-breaking}
 
 $$ \frac{q}{\sqrt{gH_{m0}^3}} = 0.09\exp\left[-\left(1.5\frac{R_c}{H_{m0}\gamma_f\gamma_\beta}\right)^{1.3}\right]. $$ {#eq:eurotop-max}
 
-For a plain vertical wall in non-impulsive conditions (EurOtop eq. 7.1):
+For a plain vertical wall in non-impulsive conditions (EurOtop eq. 7.1) (@eq:eurotop-vertical):
 
 $$ \frac{q}{\sqrt{gH_{m0}^3}} = 0.047\exp\left[-\left(2.35\frac{R_c}{H_{m0}\gamma_\beta}\right)^{1.3}\right], $$ {#eq:eurotop-vertical}
 
@@ -78,11 +78,11 @@ band, and `required_crest_freeboard(conditions, q_allowable, cot_alpha,
 ...)` inverts the relation by bisection. `assess_overtopping(q)` lists which
 uses a discharge is tolerable for (@tbl:tolerable).
 
-: Tolerable mean discharges (`TOLERABLE_DISCHARGE`, EurOtop 2018). {#tbl:tolerable}
+: Tolerable mean discharges $q$ in l/s/m (`TOLERABLE_DISCHARGE`, EurOtop 2018). {#tbl:tolerable}
 
-| Key | $q$ (l/s/m) | Use |
-|-----|-------------|-----|
-| `pedestrians_unaware` | 0.03 | unaware pedestrians, narrow walkway, clear view of the sea |
+| Key | $q$ | Use |
+|-------------------------------|----|-----------------------------------------------------------------|
+| `pedestrians_unaware` | 0.03 | unaware pedestrians, narrow walkway, sea in view |
 | `pedestrians_aware` | 0.1 | aware pedestrians, able to see and avoid the hazard |
 | `harbour_quay_equipment` | 0.4 | equipment set back 5 to 10 m from the crest |
 | `trained_staff` | 1 | trained staff, well shod and protected, wide walkway |

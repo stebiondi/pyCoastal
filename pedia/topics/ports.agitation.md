@@ -1,0 +1,88 @@
+# Harbor agitation and resonance
+
+`ports.agitation` | Wave penetration and basin modes.
+
+Parent: [Ports and harbors](ports.md)
+
+Papers: 14. Claims: 17. Equations: 1.
+
+Used by pyCoastal design modules: Harbour agitation.
+
+## Synthesis
+
+**Well established.** Harbor wave agitation can be strongly multidirectional and multireflective: entrance penetration, diffraction, and reflections from harbor structures create spatially different local spectra that a single wave-height statistic cannot uniquely describe.
+
+**Governing physics.** In the reviewed Africa-basin case, direct southeasterly penetration primarily affected the western basin, while northern-to-northeasterly waves reflected from Reina Sofia breakwater contributed strongly to energetic conditions in eastern control areas.
+
+**Dimensionless parameters.** Period-dependent reflection coefficient Kr(T), explained variance, correlation coefficients, and spectral-type occurrence probability are key dimensionless descriptors in the reviewed workflow; no universal threshold values are established from this single harbor.
+
+**Major equations.** The reviewed directional reconstruction represents local complex free-surface elevation as a finite sum of frequency-direction components and estimates their Fourier coefficients by least squares; clustering performance is summarized by EV=1-SSE/SSE_T.
+
+**Typical methods.** The reviewed long-term workflow nests phase-averaged offshore-to-port downscaling with a phase-resolving monochromatic catalog, reconstructs hourly local directional spectra, reduces them with PCA/EOFs, and clusters representative spectral types with K-means.
+
+**Numerical models.** The reviewed chain uses SWAN for nonstationary offshore-to-near-port spectra, MSPv2.0 for elliptic mild-slope monochromatic propagation with dynamic boundary reflection, r-DPRA for directional decomposition, and Wavespectra for spectral partitioning.
+
+**Experimental datasets.** Africa-basin validation combines eight months of hourly 20-minute records from six 5-Hz ultrasonic wave gauges with one month of AWAC directional information sampled through pressure, velocity, and acoustic surface tracking. Reviewed evidence includes eight months of scalar gauges and one month of AWAC directional information in Africa basin, plus older regular/irregular hydraulic tests in two nearly closed natural-harbor models; full geometry and ranges of the latter remain inaccessible.
+
+**Validated ranges.** Validation is bounded to Africa basin: 40 years of reconstructed hourly climate, a 2.0 by 5.4 km harbor domain, eight months of scalar gauges, and one month of directional AWAC data. Internal outer-spectrum reconstruction achieved aggregate R-squared of 0.999-1.000, but weaker third partitions fell to R-squared 0.720 for wave height.
+
+**Recent advances.** A recent advance is compression of spatially variable, 40-year hourly frequency-direction agitation histories into representative local spectral types that retain distinct forcing mechanisms hidden by similar aggregate Hm0 values.
+
+**Disagreements.** No direct cross-study contradiction is yet defensible. The 1989 laboratory study found that grouped-wave long-period energy was not attributable to resonance in its two tested harbors, whereas the 2023 field-numerical study resolves multimodal transformation but does not test that attribution; their regimes and questions differ.
+
+**Limitations.** Current evidence is site-specific; directional field validation covers one month, local decomposition assumes linear superposition, homogeneous fields and constant depth, and the paper does not demonstrate that richer spectra improve ship-motion or downtime predictions. Current evidence is site-specific; directional field validation covers one month, local decomposition assumes linear superposition, homogeneous fields and constant depth, the older laboratory record is abstract-limited, and neither study demonstrates that richer spectra improve ship-motion or downtime predictions.
+
+**Open questions.** Needed evidence includes transfer across harbor geometries and climates, multi-season independent directional validation, propagation of offshore/model uncertainty into spectral types, and coupled tests showing whether spectral characterization materially improves vessel-response and operability decisions.
+
+**Seminal papers.** Ouellet and Theriault (1989) is the earliest reviewed journal experiment in this branch, explicitly comparing regular- and irregular-wave diffraction/reflection and warning that large transfer values outside the energetic band need not imply energetic resonance.
+
+## Equations
+
+### Directional phase-resolving free-surface reconstruction
+
+$$
+b_{n,p}=\sum_{v=1}^{L}\exp[i\mathbf{k}_{n,v}\cdot(\mathbf{x}_p-\mathbf{x}_r)]z_{n,v}+\varepsilon_{n,p}
+$$
+
+Regime: Locally homogeneous, constant-depth, linear superposition of a finite set of multidirectional long-crested regular waves around an in-port target point.
+
+Variables: `b_n_p` known complex free-surface elevation for frequency n at position p; `k_n_v` wavenumber vector for direction v; `x_p` analysis-node position; `x_r` target position; `z_n_v` Fourier coefficient for the frequency-direction component; `epsilon_n_p` reconstruction deviation; `L` number of analyzed directional components
+
+Source: (Romano-Moreno 2023, [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271))
+
+## Claims
+
+- **C15.** The Catania scenario excited persistent modeled harbor oscillations with periods of approximately 15-20 min. *Regime: Present-day Catania harbor geometry and the paper's corrected source scenario; no field validation of the oscillations is reported..* [direct_finding, numerical] (Tinti 2013, [doi:10.5194/nhess-13-1795-2013](https://doi.org/10.5194/nhess-13-1795-2013))
+- **C100.** At the Africa-basin near-port reference point, 81.6% of the 40-year hourly sea states had two or more spectral peaks, while 18.4% were unimodal. *Regime: GOW2/CFS/GOT/GOS-driven SWAN hindcast at point R6 outside Africa basin; the percentages characterize this site and reconstruction, not harbors generally..* [direct_finding, numerical] (Romano-Moreno 2023, [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271))
+- **C101.** For reconstructed outer-port spectra, aggregated wave height and period parameters had R-squared values of 0.999-1.000 and aggregate directional parameters had circular correlations of 0.995-0.999 against the forcing spectra. *Regime: Outer boundary reconstruction test in the MSPv2.0 Africa-basin domain; this is an internal numerical-consistency test rather than independent field validation..* [direct_finding, numerical] (Romano-Moreno 2023, [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271))
+- **C102.** Reconstruction accuracy declined for weaker secondary and tertiary wave systems, with wave-height R-squared decreasing from 0.994 for the main partition to 0.943 and 0.720 for the second and third partitions. *Regime: The same internal outer-spectrum reconstruction validation; partitioning differences can split or merge nearby peaks..* [direct_finding, numerical] (Romano-Moreno 2023, [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271))
+- **C104.** At control point A7, spectral types containing direct or combined southeasterly forcing comprised about 9.8% of an average year but included four of the five most energetic agitation types. *Regime: Africa-basin point A7 under the reconstructed 40-year climate and the paper's spectral-type classification..* [direct_finding, numerical] (Romano-Moreno 2023, [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271))
+- **C106.** Two locally energetic conditions with similar aggregated significant-wave-height statistics at point D2 had distinctly different in-port and outer-port frequency-direction spectral shapes. *Regime: Africa-basin point D2 and its reconstructed historical spectra; the comparison demonstrates information loss from Hm0 alone at this site..* [direct_finding, numerical] (Romano-Moreno 2023, [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271))
+- **C108.** Within the frequency band containing most incident energy, irregular-wave diffraction-reflection coefficients varied less than coefficients derived from regular-wave tests. *Regime: Two tested nearly closed natural-harbor physical configurations and the incident spectral energy band; detailed geometry and wave ranges require full text..* [direct_finding, experimental] (Quellet 1989, [doi:10.1061/(asce)0733-950x(1989)115:3(363)](https://doi.org/10.1061/(asce)0733-950x(1989)115:3(363)))
+- **C109.** Large low- and high-frequency transfer-function estimates outside the main incident-energy band contained relatively little wave energy in the tested harbor models. *Regime: The reported regular/irregular harbor-model tests; no universal transfer threshold is available from the abstract..* [direct_finding, experimental] (Quellet 1989, [doi:10.1061/(asce)0733-950x(1989)115:3(363)](https://doi.org/10.1061/(asce)0733-950x(1989)115:3(363)))
+- **C110.** The long-wave energy associated with irregular wave grouping could not be attributed to harbor resonance in the reported experiments. *Regime: The two nearly closed harbor models, tested wave grouping factors, and experimental frequency range; this does not rule out group-forced resonance in other harbors..* [direct_finding, experimental] (Quellet 1989, [doi:10.1061/(asce)0733-950x(1989)115:3(363)](https://doi.org/10.1061/(asce)0733-950x(1989)115:3(363)))
+- **C1415.** Modal analysis identifies the natural oscillation structure of semi-enclosed basins relevant to harbor resonance and agitation. *Regime: Modal analysis of semi-enclosed basins.* [direct_finding, analytical] (Giorgio Bellotti 2012, [doi:10.1016/j.coastaleng.2012.02.002](https://doi.org/10.1016/j.coastaleng.2012.02.002))
+- **C1416.** A computational model provides faster, reliable assessment of wave agitation within harbors for layout and operational evaluation. *Regime: An improved model for fast and reliable harbour wave agitation assessment.* [direct_finding, numerical] (Gabriel Díaz‐Hernández 2021, [doi:10.1016/j.coastaleng.2021.104011](https://doi.org/10.1016/j.coastaleng.2021.104011))
+- **C1417.** Numerical reconstruction of the 2003 Boumerdès earthquake examines rupture-dependent tsunami generation and resulting wave response in affected ports. *Regime: 21 May 2003 Boumerdès Earthquake: Numerical Investigations of the Rupture Mechanism Effects on the Induced Tsunami and Its Impact in Harbors.* [direct_finding, numerical] (Masina 2020, [doi:10.3390/jmse8110933](https://doi.org/10.3390/jmse8110933))
+- **C1478.** Analytical and numerical spectral analysis relates incident swell to wave oscillations and hazards in the irregularly shaped Pohang New Harbor. *Regime: Spectral Density Analysis for Wave Characteristics in Pohang New Harbor.* [direct_finding, numerical] (Prashant Kumar 2013, [doi:10.1007/s00024-013-0710-x](https://doi.org/10.1007/s00024-013-0710-x))
+- **C1660.** FUNWAVE simulations show that Bragg reflection from periodic arc-shaped seabed bars can suppress long-period harbor oscillations because reduced transmitted energy outweighs blockage of harbor-radiated waves; optimal bar wavelength differs between resonant and non-resonant forcing. *Regime: The modeled rectangular harbor, monochromatic long waves and arc-shaped sinusoidal bars across the documented number, amplitude and wavelength ranges..* [direct_finding, numerical] (Junliang Gao 2023, [doi:10.1016/j.oceaneng.2023.114923](https://doi.org/10.1016/j.oceaneng.2023.114923))
+- **C1706.** At Kumaishi Fishing Port, small-boat mooring disturbance occurs when offshore significant wave height exceeds about 2.0 m and harbor long-period wave height exceeds 0.10 m; a 0.25 m long-period-wave limit and the H1/3>2.0 m indicator support evacuation decisions. *Regime: Small fishing boats moored at Kumaishi Fishing Port under low-pressure/typhoon events and long-period harbor oscillations..* [direct_finding, mixed] (Abeshima 2005, [doi:10.9749/jin.112.345](https://doi.org/10.9749/jin.112.345))
+- **C1710.** Validated OpenFOAM simulations show that free heave of the upstream of two boxes reduces narrow-gap wave amplification and shifts resonance upward toward the box heave natural frequency, with resonance frequency decreasing as incident wave height increases. *Regime: Regular waves interacting with two closely spaced rectangular boxes, with either both fixed or the upstream box free to heave..* [direct_finding, numerical] (Junliang Gao 2021, [doi:10.1016/j.oceaneng.2021.108753](https://doi.org/10.1016/j.oceaneng.2021.108753))
+- **C1719.** Wave and circulation simulations for Busan New Port predict that channel and basin deepening plus reclamation generally increase harbor response without basin-wide severe agitation, although particular locations require typhoon preparedness. *Regime: Busan New Port after Typhoon Maemi, with navigation-channel and basin dredging plus modified Ungdong Bay reclamation..* [direct_finding, mixed] (Lee 2006, [doi:10.5394/kinpr.2006.30.1.097](https://doi.org/10.5394/kinpr.2006.30.1.097))
+
+## Papers
+
+- Junliang Gao (2023). Mechanism analysis on the mitigation of harbor resonance by periodic undulating topography. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2023.114923](https://doi.org/10.1016/j.oceaneng.2023.114923)
+- Junliang Gao (2021). Effects of free heave motion on wave resonance inside a narrow gap between two boxes under wave actions. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2021.108753](https://doi.org/10.1016/j.oceaneng.2021.108753)
+- Giorgio Bellotti (2012). Modal analysis of semi-enclosed basins. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2012.02.002](https://doi.org/10.1016/j.coastaleng.2012.02.002)
+- Prashant Kumar (2013). Spectral Density Analysis for Wave Characteristics in Pohang New Harbor. *Pure and Applied Geophysics*. [doi:10.1007/s00024-013-0710-x](https://doi.org/10.1007/s00024-013-0710-x)
+- Gabriel Díaz‐Hernández (2021). An improved model for fast and reliable harbour wave agitation assessment. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2021.104011](https://doi.org/10.1016/j.coastaleng.2021.104011)
+- Romano-Moreno (2023). Multimodal harbor wave climate characterization based on wave agitation spectral types. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271)
+- Masina (2020). 21 May 2003 Boumerdès Earthquake: Numerical Investigations of the Rupture Mechanism Effects on the Induced Tsunami and Its Impact in Harbors. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse8110933](https://doi.org/10.3390/jmse8110933)
+- Quellet (1989). Wave Grouping Effect in Irregular Wave Agitation in Harbors. *Journal of Waterway, Port, Coastal, and Ocean Engineering*. [doi:10.1061/(asce)0733-950x(1989)115:3(363)](https://doi.org/10.1061/(asce)0733-950x(1989)115:3(363))
+- Abeshima (2005). Mooring Limit of Small Fishing Boat at Kumaishi Fishing Port. *The Journal of Japan Institute of Navigation*. [doi:10.9749/jin.112.345](https://doi.org/10.9749/jin.112.345)
+- Lee (2006). Analysis of Harbor Responses due to the Dredging Work at Waterway and Mooring Basin in Busan New Port. *Journal of Korean navigation and port research*. [doi:10.5394/kinpr.2006.30.1.097](https://doi.org/10.5394/kinpr.2006.30.1.097)
+- Xavier Bertin (2018). Infragravity waves: From driving mechanisms to impacts. *Earth-Science Reviews*. [doi:10.1016/j.earscirev.2018.01.002](https://doi.org/10.1016/j.earscirev.2018.01.002)
+- Tinti (2013). The UBO-TSUFD tsunami inundation model: validation and application to a tsunami case study focused on the city of Catania, Italy. *Natural Hazards and Earth System Sciences*. [doi:10.5194/nhess-13-1795-2013](https://doi.org/10.5194/nhess-13-1795-2013)
+- Dirk P. Rijnsdorp (2016). Simulating waves and their interactions with a restrained ship using a non-hydrostatic wave-flow model. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.04.018](https://doi.org/10.1016/j.coastaleng.2016.04.018)
+- Jung (2007). A Practical Application of Multiple Wave Models to the Small Fishery Harbor Entrance. *Journal of Navigation and Port Research*. [doi:10.5394/kinpr.2007.31.7.579](https://doi.org/10.5394/kinpr.2007.31.7.579)

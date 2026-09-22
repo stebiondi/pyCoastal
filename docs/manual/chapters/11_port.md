@@ -11,7 +11,7 @@ and reflected energy leaves the domain instead of ringing around it.
 
 ## The solver
 
-The model integrates the second-order wave equation in flux form,
+The model integrates the second-order wave equation in flux form (@eq:port-wave),
 
 $$ \frac{\partial^2\eta}{\partial t^2} = \nabla\cdot\left(c^2\nabla\eta\right), $$ {#eq:port-wave}
 
@@ -24,9 +24,9 @@ frequency it is run at. It is not a spectral model and does not represent
 breaking, wave-current interaction, refraction over a varying bed, or
 nonlinear transfers.
 
-Harbor performance is the disturbance coefficient
+Harbor performance is the disturbance coefficient (@eq:port-1)
 
-$$ K_d = \frac{H_\mathrm{local}}{H_\mathrm{reference}}, $$
+$$ K_d = \frac{H_\mathrm{local}}{H_\mathrm{reference}}, $$ {#eq:port-1}
 
 with the reference height measured at a probe in open water outside the
 harbor, which makes the result independent of how the source is calibrated.

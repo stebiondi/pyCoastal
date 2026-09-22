@@ -27,7 +27,7 @@ the squat as the ship moves, its vertical response to waves, the net
 clearance over the bed, and the tolerances the dredger and the survey cannot
 beat. What is left is the dredge level.
 
-**Squat.** ICORELS (1980), as given by PIANC:
+**Squat.** ICORELS (1980), as given by PIANC (@eq:icorels):
 
 $$ S = C_s\frac{\nabla}{L_{pp}^2}\frac{F_{nh}^2}{\sqrt{1 - F_{nh}^2}},\qquad F_{nh} = \frac{V}{\sqrt{gh}}, $$ {#eq:icorels}
 

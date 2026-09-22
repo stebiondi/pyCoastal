@@ -19,7 +19,7 @@ rectangular). Roughness is a Manning $n$ or a key into `MANNING`: 0.013 and
 earth, 0.028 gravel, 0.035 cobbles, 0.030 and 0.045 for clean and weedy
 natural channels, and 0.035, 0.07, 0.10 for pasture, brush, and wooded
 floodplains. The section provides `area`, `perimeter`, `top_width`,
-`hydraulic_radius`, `velocity`, and the conveyance
+`hydraulic_radius`, `velocity`, and the conveyance (@eq:conveyance)
 
 $$ K = \frac{A R^{2/3}}{n},\qquad Q = K\sqrt{S}. $$ {#eq:conveyance}
 
@@ -41,7 +41,7 @@ drawdown to a free overfall, S1 behind a structure on a steep reach.
 ## Gradually varied flow
 
 `gvf_profile(channel, discharge, slope, control_depth, steps=200,
-approach=0.99)` integrates the direct step method,
+approach=0.99)` integrates the direct step method (@eq:direct-step),
 
 $$ \Delta x = \frac{\Delta E}{S_0 - S_f},\qquad S_f = \left(\frac{Qn}{AR^{2/3}}\right)^2, $$ {#eq:direct-step}
 
@@ -57,7 +57,7 @@ which. The result carries `distance`, `depth`, `water_surface`,
 
 ## Afflux at bridge piers
 
-Yarnell (1934):
+Yarnell (1934) (@eq:yarnell):
 
 $$ \Delta H = K(K + 5Fr^2 - 0.6)(a + 15a^4)Fr^2\,y, $$ {#eq:yarnell}
 
@@ -73,7 +73,7 @@ shape="semicircular_nose")` returns the afflux and the upstream depth.
 ## Flow distribution
 
 `flow_distribution(main, main_depth, slope, floodplains=[(Channel,
-depth), ...])` splits the discharge by conveyance,
+depth), ...])` splits the discharge by conveyance (@eq:flow-split),
 
 $$ \frac{Q_i}{Q} = \frac{K_i}{\sum_j K_j}. $$ {#eq:flow-split}
 

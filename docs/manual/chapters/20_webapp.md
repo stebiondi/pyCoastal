@@ -1,10 +1,10 @@
-# Part VI. The Coastal Design Bench {.part .unnumbered}
+# Part VI. PyCoaTools {.part .unnumbered}
 
 # The browser app {#sec:webapp}
 
 *Directory:* `webapp/`.
 
-The Coastal Design Bench is a static web page that runs the pyCoastal design
+PyCoaTools is a static web page that runs the pyCoastal design
 modules in the browser, draws the result as a sheet, writes the design
 report, and puts next to it what the peer-reviewed literature says about the
 ground the relations stand on. Its tagline is the whole idea: size a
@@ -56,22 +56,18 @@ toggle, and the defaults follow the worked examples of Part IV.
 
 ## Theory and sources
 
-The Theory and sources panel reads `knowledge.json`, an extract of the
-CoastalWiki database built by `build_knowledge.py`. The wiki database is
-146 MB of SQLite, which no browser will open; the app needs the topic tree,
+The Theory and sources panel reads `knowledge.json`, the extract of
+PyCoaPedia that `pedia/build_pedia.py` writes. The source database is about
+150 MB of SQLite, which no browser will open; the app needs the topic tree,
 the curated synthesis for each topic, the atomic claims with their regime
 bounds, the equations, and enough paper metadata to cite and link, which
-comes to under 2 MB. Each design module is mapped to the wiki topics that
+comes to under 2 MB. Each design module is mapped to the PyCoaPedia topics that
 bear on it (the mapping is deliberately generous, because a design relation
 sits where several topics meet), and the panel shows each topic's synthesis,
 claims, and equations with a DOI behind every piece. Coverage is uneven by
-design: the wiki records what has been screened, not what exists. Part VIII
-of this manual reproduces the whole extract.
-
-```bash
-python webapp/build_knowledge.py --db ../2026_coastalwiki/data/coastalwiki.db \
-                                 --out webapp/knowledge.json
-```
+design: PyCoaPedia records what has been screened, not what exists. The
+PyCoaPedia button in the masthead opens the full explorer, described with
+the rest of the knowledge base in @sec:pedia.
 
 ## Verification and review tools
 

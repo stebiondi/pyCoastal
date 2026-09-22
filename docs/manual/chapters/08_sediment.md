@@ -29,7 +29,7 @@ names the options on a bad key.
 : The built-in material catalogue. {#tbl:sediments}
 
 | Key | $d_{50}$ (mm) | $\phi'$ (deg) | Description |
-|-----|---------------|---------------|-------------|
+|------------------|------------|------------|------------------------------------------|
 | `soft_clay` | cohesive | 22 | normally consolidated, undrained strength governs |
 | `stiff_clay` | cohesive | 26 | overconsolidated |
 | `silt` | 0.03 | 28 | mobile at almost any wave |
@@ -44,7 +44,7 @@ names the options on a bad key.
 ## Mobility
 
 The dimensionless grain size, the critical Shields parameter (Soulsby and
-Whitehouse 1997), and the settling velocity (Soulsby 1997) are
+Whitehouse 1997), and the settling velocity (Soulsby 1997) are given by @eq:soulsby:
 
 $$ \begin{aligned}
 D_* &= d_{50}\left[\frac{g(s-1)}{\nu^2}\right]^{1/3},\\
@@ -58,7 +58,7 @@ preferred to Stokes at one end and a drag law at the other.
 Under waves, `wave_orbital_velocity(Hs, T, depth)` gives the near-bed
 orbital amplitude from linear theory and `wave_shields(material, Hs, T,
 depth)` the Shields parameter, with the Swart friction factor for a rough
-turbulent bed and a Nikuradse roughness $k_s = 2.5\,d_{50}$:
+turbulent bed and a Nikuradse roughness $k_s = 2.5\,d_{50}$ (@eq:swart):
 
 $$ f_w = \exp\left[5.213\left(\frac{A}{k_s}\right)^{-0.194} - 5.977\right],\quad f_w \le 0.3. $$ {#eq:swart}
 

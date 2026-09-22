@@ -68,7 +68,7 @@ wave modeling.
 Centered operators combine values symmetrically around the point of
 interest, which keeps the approximation free of directional bias and gives
 higher accuracy for smooth solutions. For first derivatives and the
-Laplacian:
+Laplacian ([@eq:central; @eq:laplacian]):
 
 $$
 \left.\frac{\partial f}{\partial x}\right|_{i,j} \approx \frac{f_{i+1,j}-f_{i-1,j}}{2\Delta x},
@@ -85,7 +85,7 @@ $$ {#eq:laplacian}
 
 For an advection term with velocity $u$ the solution at a point is
 determined by what arrives from upstream, so the stencil is taken from the
-upstream side:
+upstream side (@eq:upwind):
 
 $$
 \left.\frac{\partial f}{\partial x}\right|_{i} \approx
@@ -132,23 +132,23 @@ information at the current level only, which makes them simple to apply and
 to check. The choice of integrator controls stability, accuracy, and how
 fast information moves through the grid.
 
-**Forward Euler** (first order) treats the rate as constant over the step:
+**Forward Euler** (first order) treats the rate as constant over the step (@eq:numerics-1):
 
-$$ u^{n+1} = u^n + \Delta t\,\mathrm{RHS}(u^n). $$
+$$ u^{n+1} = u^n + \Delta t\,\mathrm{RHS}(u^n). $$ {#eq:numerics-1}
 
 **Heun / RK2** (second order) averages the slopes at the start and the end of
-the step:
+the step (@eq:numerics-2):
 
 $$ k_1 = \mathrm{RHS}(u^n,t),\quad k_2 = \mathrm{RHS}(u^n + \Delta t\,k_1, t+\Delta t),\quad
-u^{n+1} = u^n + \tfrac{\Delta t}{2}(k_1 + k_2). $$
+u^{n+1} = u^n + \tfrac{\Delta t}{2}(k_1 + k_2). $$ {#eq:numerics-2}
 
-**Classical RK4** (fourth order):
+**Classical RK4** (fourth order) is @eq:numerics-3:
 
-$$ u^{n+1} = u^n + \tfrac{\Delta t}{6}\,(k_1 + 2k_2 + 2k_3 + k_4). $$
+$$ u^{n+1} = u^n + \tfrac{\Delta t}{6}\,(k_1 + 2k_2 + 2k_3 + k_4). $$ {#eq:numerics-3}
 
 **SSP RK3** (third order, strong stability preserving) blends each stage with
 the earlier state, which keeps monotonicity for advection-dominated problems
-under a CFL limit:
+under a CFL limit (@eq:ssprk3):
 
 $$
 \begin{aligned}
@@ -161,9 +161,9 @@ $$ {#eq:ssprk3}
 SSP RK3 is the recommended all-rounder for wave and transport demonstrations.
 
 **Adams-Bashforth 2** (second order, multistep) reuses the previous
-right-hand side, and needs one starting step from another method:
+right-hand side, and needs one starting step from another method (@eq:numerics-4):
 
-$$ u^{n+1} = u^n + \tfrac{\Delta t}{2}\left(3\,\mathrm{RHS}(u^n) - \mathrm{RHS}(u^{n-1})\right). $$
+$$ u^{n+1} = u^n + \tfrac{\Delta t}{2}\left(3\,\mathrm{RHS}(u^n) - \mathrm{RHS}(u^{n-1})\right). $$ {#eq:numerics-4}
 
 These live in `pyCoastal.numerics.time_intg` as array functions,
 `euler_step(u, t, dt, rhs)`, `rk2_step`, `rk4_step`, `rk3_ssp_step`, and
@@ -189,11 +189,11 @@ applies the boundary conditions, takes one step, and calls
 ### Stability
 
 The CFL condition states that information carried by advection cannot move
-farther than one cell per step. For an advective speed $c$:
+farther than one cell per step. For an advective speed $c$ (@eq:cfl):
 
 $$ \mathrm{CFL} = \max\left(\frac{c\,\Delta t}{\Delta x}, \frac{c\,\Delta t}{\Delta y}\right) < 1. $$ {#eq:cfl}
 
-Diffusion imposes its own, often more severe, limit:
+Diffusion imposes its own, often more severe, limit (@eq:diffusive):
 
 $$ \Delta t \le \frac{1}{2\nu}\left(\frac{1}{\Delta x^2}+\frac{1}{\Delta y^2}\right)^{-1}. $$ {#eq:diffusive}
 
@@ -220,7 +220,7 @@ For a cell-centered scheme the classical formulas at $x = 0$ are:
   antisymmetrically; free slip mirrors the tangential velocity
   symmetrically, no slip antisymmetrically.
 - **Sponge layer** (wave absorption): a damping zone relaxes the solution
-  toward a reference state,
+  toward a reference state (@eq:sponge),
 
 $$ \frac{\partial q}{\partial t} = -\sigma(x)\,[q - q_\mathrm{ref}], \qquad
 \sigma(s) = \sigma_\mathrm{max}\sin^2\!\left(\frac{\pi s}{2}\right),\quad s = \frac{x - x_0}{L_\mathrm{sp}}\in[0,1]. $$ {#eq:sponge}
@@ -270,4 +270,4 @@ bcs.apply_all(fields, grid, t=0.0)
 ```
 
 The complete version of this demonstration is
-`examples/numerics/2D_irr_turb.py` (Appendix B).
+`examples/numerics/2D_irr_turb.py`.
