@@ -87,3 +87,45 @@ def land_overlay(land: np.ndarray) -> np.ndarray:
     material rather than as an extreme value of the field.
     """
     return np.where(land, 1.0, np.nan)
+
+
+def panel_labels(axes, labels=None, loc: str = "upper left",
+                 fontsize: float = 10.0, offset: float = 0.02):
+    """Label each panel of a multi-panel figure with (a), (b), (c), ...
+
+    The figures in ``examples/`` carry no titles. Panel letters identify the
+    panels, and the caption of the figure states what each one shows.
+
+    Parameters
+    ----------
+    axes : sequence of matplotlib Axes
+        Panels in reading order. A 2D array from ``plt.subplots`` is
+        flattened.
+    labels : sequence of str, optional
+        Replacement labels. Defaults to "(a)", "(b)", ...
+    loc : {"upper left", "upper right", "lower left", "lower right"}
+        Corner of the panel, in axes coordinates.
+    offset : float
+        Inset from the corner, as a fraction of the panel.
+
+    Returns
+    -------
+    list
+        The created text artists.
+    """
+    import numpy as _np
+
+    flat = list(_np.ravel(_np.asarray(axes, dtype=object)))
+    if labels is None:
+        labels = [f"({chr(ord('a') + i)})" for i in range(len(flat))]
+    vertical, horizontal = loc.split()
+    x = offset if horizontal == "left" else 1.0 - offset
+    y = 1.0 - offset if vertical == "upper" else offset
+    out = []
+    for ax, label in zip(flat, labels):
+        out.append(ax.text(
+            x, y, label, transform=ax.transAxes, fontsize=fontsize,
+            fontweight="bold", ha=horizontal, va="top" if vertical == "upper" else "bottom",
+            bbox=dict(boxstyle="round,pad=0.22", fc="white", ec="#c9c7c0", alpha=0.85),
+        ))
+    return out

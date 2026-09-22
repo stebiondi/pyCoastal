@@ -1,4 +1,3 @@
-Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
 Pier 2.5 m on a 7 x 12 m base, top -1.5 m to the bed
 Peak ebb 1.50 m/s, peak flood 0.70 m/s
 

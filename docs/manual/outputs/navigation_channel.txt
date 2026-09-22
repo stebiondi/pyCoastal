@@ -1,4 +1,3 @@
-Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
 Design vessel       Post-Panamax container ship
                     336 x 48.2 x 14.5 m, Cb = 0.68, 157,130 t
 Speed               8.0 knots (Fnh = 0.31)

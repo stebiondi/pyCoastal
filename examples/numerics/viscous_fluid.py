@@ -70,7 +70,12 @@ def main():
     pcm = ax.pcolormesh(X, Y, speed, cmap="inferno", shading="auto")
     fig.colorbar(pcm, ax=ax, label="speed")
     ax.set_aspect("equal")
-    title = ax.set_title("t = 0.00 s")
+    title = ax.text(
+        0.02, 0.98, "t = 0.00 s", transform=ax.transAxes,
+        ha="left", va="top", fontsize=9,
+        bbox=dict(boxstyle="round,pad=0.25", fc="white",
+                  ec="#c9c7c0", alpha=0.85),
+    )
 
     # --------------------------------------------------------------
     # 4) Update function

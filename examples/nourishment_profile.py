@@ -18,6 +18,7 @@ Run from the repository root:
 """
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.nourishment import (
@@ -133,7 +134,6 @@ for key, colour in zip(SOURCES, palette):
 ax.axhline(0.0, color="#54514b", lw=0.8)
 ax.set_xlabel("placed volume (m3 per metre of beach)")
 ax.set_ylabel("dry beach gained (m)")
-ax.set_title("What a cubic metre buys, by borrow source")
 ax.legend(loc="upper left", fontsize=8)
 ax.grid(True, which="both", alpha=0.3)
 ax.minorticks_on()
@@ -153,16 +153,11 @@ ax2.annotate(f"closure {CLOSURE:.0f} m", xy=(300, -CLOSURE), xytext=(0, 6),
 ax2.set_ylim(-9, 0.5)
 ax2.set_xlabel("distance offshore (m)")
 ax2.set_ylabel("depth (m)")
-ax2.set_title("Equilibrium profiles, h = A y$^{2/3}$")
 ax2.legend(loc="lower left", fontsize=8)
 ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
 
-fig.suptitle(
-    f"Nourishment on {sediment(NATIVE).name.lower()}: the borrow grain size "
-    "decides what the sand is worth",
-    y=0.98, fontsize=12, fontweight="bold",
-)
+panel_labels([ax, ax2])
 fig.tight_layout(rect=(0, 0, 1, 0.94))
 fig.savefig("media/nourishment_borrow.png", dpi=600, bbox_inches="tight")
 print("Wrote media/nourishment_borrow.png")

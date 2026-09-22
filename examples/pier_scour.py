@@ -25,6 +25,7 @@ Run from the repository root:
 """
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.scour import (
@@ -111,7 +112,6 @@ ax.annotate("slack water demands nothing,\nbut the hole stays",
 
 ax.set_xlabel("tidal phase (deg)")
 ax.set_ylabel("equilibrium scour (m)")
-ax.set_title("The deepest hole is not at the fastest flow")
 ax.set_xlim(0, 360)
 ax.set_ylim(0, 1.35 * scour.max())
 ax.set_xticks(range(0, 361, 90))
@@ -147,7 +147,7 @@ ax2.annotate(f"bare stem alone: {bare:.2f} m", xy=(-6.8, bare),
              xytext=(0, 8), textcoords="offset points", fontsize=9,
              color="#0b3554")
 ax2.axvline(-bare, color="#54514b", lw=1.0, ls=":")
-ax2.annotate("bury the base below this\nand the hole never finds it",
+ax2.annotate("base below this level:\nscour of the bare stem",
              xy=(-bare, 0.5 * (bare + depths_for.max())), xytext=(-10, 0),
              textcoords="offset points", fontsize=9, ha="right",
              color="#54514b")
@@ -156,14 +156,10 @@ ax2.fill_between(tops, bare, depths_for, where=depths_for > bare + 1e-6,
                  color="#8a2f24", alpha=0.12)
 ax2.set_xlabel("level of the base top, relative to the initial bed (m)")
 ax2.set_ylabel("equilibrium scour (m)")
-ax2.set_title("Burial depth is a cliff, not a slope")
 ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
 
-fig.suptitle(
-    "Estuary pier scour: the worst phase and the burial depth both "
-    "behave unlike the design values they are built from",
-    y=0.98, fontsize=12, fontweight="bold")
+panel_labels([ax, ax2])
 fig.tight_layout(rect=(0, 0, 1, 0.93))
 fig.savefig("media/pier_scour_tide.png", dpi=600, bbox_inches="tight")
 

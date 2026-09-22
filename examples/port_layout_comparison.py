@@ -11,6 +11,7 @@ Run from the repository root:
 
 import matplotlib
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 from matplotlib.colors import ListedColormap, LogNorm
 
@@ -98,7 +99,6 @@ for ax, (name, (layout, result, mean_kd, _)) in zip(axes, results.items()):
         extent=[0, layout.Lx, 0, layout.Ly],
         origin="lower", cmap=land_cmap, interpolation="nearest",
     )
-    ax.set_title(f"{TITLES[name]}\nmean basin $K_d$ = {mean_kd:.2f}", fontsize=10)
     ax.set_xlim(VIEW_X0, layout.Lx)
     ax.set_xlabel("x (m)")
     ax.set_aspect("equal")
@@ -109,10 +109,6 @@ axes[0].set_ylabel("y (m)")
 cb = fig.colorbar(cf, ax=axes, label="$K_d = H / H_i$  (log scale)",
                   shrink=0.8, pad=0.02, ticks=[0.005, 0.02, 0.05, 0.2, 0.5, 1.0])
 cb.ax.set_yticklabels(["0.005", "0.02", "0.05", "0.2", "0.5", "1.0"])
-fig.suptitle(
-    f"Harbour layouts under H = {WAVE.height} m, T = {WAVE.period} s, "
-    f"armour absorption {ABSORPTION}",
-    y=1.02,
-)
+panel_labels(axes, labels=[TITLES[name] for name in results])
 fig.savefig("media/port_layouts.png", dpi=600, bbox_inches="tight")
 print("\nWrote media/port_layouts.png")

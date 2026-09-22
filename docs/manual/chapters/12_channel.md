@@ -105,4 +105,4 @@ as vertical vessel motion, moves the dredge level by 0.35 m over the range
 
 ![Navigation channel drawing sheet: the channel section at a stated vertical exaggeration, and the underkeel clearance at true scale.](media/navigation_channel_sheet.png){#fig:channel-sheet}
 
-![The depth chain and its sensitivity to each input.](media/channel_depth_chain.png){#fig:channel-chain}
+![Navigation channel depth. (a) The depth chain, as allowances below the design water level. (b) Capital dredging volume against the wave response factor.](media/channel_depth_chain.png){#fig:channel-chain}

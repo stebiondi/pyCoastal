@@ -83,4 +83,4 @@ stranded = isolated_low_ground(terrain, levels["still_water_level"], seed=sea)
 Connectivity matters: on the synthetic barrier island, a single breach in
 the barrier is the difference between 5.45 km$^2$ and 18.82 km$^2$ flooded.
 
-![Storm surge flood mapping on a barrier-island terrain: threshold-only against connected flooding, with the inlet open and sealed.](media/storm_surge_flooding.png){#fig:surge}
+![Storm surge flooding on a barrier-island terrain. (a) Terrain with the still water level contour. (b) Connected flooding and the low ground the sea cannot reach. (c) and (d) Cross-shore transects through the intact barrier and through the inlet.](media/storm_surge_flooding.png){#fig:surge}

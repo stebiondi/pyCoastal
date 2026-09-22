@@ -103,7 +103,7 @@ split["main_fraction"]
 
 <!-- output: backwater -->
 
-![The backwater profile and the extent convention. The plotted variable is depth. Over this reach the bed rises 4 m while the depth changes by 7 cm.](media/backwater.png){#fig:backwater}
+![Backwater at the crossing. (a) Depth along the reach upstream of the bridge, against normal depth; the plotted variable is depth, since the bed rises 4 m over the reach while the depth changes by 7 cm. (b) Quoted extent of backwater against the termination criterion.](media/backwater.png){#fig:backwater}
 
 In the example the channel occupies 26% of the section width and carries
 84% of the discharge. The computed fraction gives a contraction scour of

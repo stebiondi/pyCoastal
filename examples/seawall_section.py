@@ -49,7 +49,6 @@ for use, check in assess_overtopping(design.q_upper).items():
 # --- drawing ---------------------------------------------------------------
 dwg = seawall_section(
     design,
-    title="Promenade seawall, typical cross-section",
     sea_extent=24.0,
     land_extent=9.0,
 )

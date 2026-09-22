@@ -1,5 +1,3 @@
-Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
-Ignoring fixed x limits to fulfill fixed data aspect with adjustable data limits.
 Native beach: Medium sand, d50 = 0.38 mm, A = 0.141
 Berm 2.0 m, closure 6.0 m, fill 250 m3 per metre
 

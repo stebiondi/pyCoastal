@@ -12,6 +12,7 @@ Run from the repository root:
 
 import matplotlib
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 from matplotlib.colors import ListedColormap
 
@@ -121,23 +122,24 @@ fig = plt.figure(figsize=(13, 8.5))
 gs = fig.add_gridspec(2, 2, height_ratios=[1.35, 1.0], hspace=0.28, wspace=0.18)
 
 extent = [0, nx * dx / 1000.0, 0, ny * dx / 1000.0]
+panels = []
 ax = fig.add_subplot(gs[0, 0])
+panels.append(ax)
 im = ax.imshow(terrain.T, extent=extent, origin="lower", cmap="terrain",
                vmin=-6, vmax=8, aspect="equal")
 ax.contour(X / 1000.0, Y / 1000.0, terrain, levels=[swl], colors="k", linewidths=0.8)
-ax.set_title("Terrain, with the still water level contour")
 ax.set_xlabel("x (km)")
 ax.set_ylabel("y (km)")
 fig.colorbar(im, ax=ax, label="elevation (m)", shrink=0.85)
 
 ax = fig.add_subplot(gs[0, 1])
+panels.append(ax)
 ax.imshow(terrain.T, extent=extent, origin="lower", cmap="gray",
           vmin=-10, vmax=12, aspect="equal", alpha=0.85)
 ax.imshow(np.where(connected, 1.0, np.nan).T, extent=extent, origin="lower",
           cmap=ListedColormap(["#1b6fa0"]), aspect="equal", alpha=0.85)
 ax.imshow(np.where(isolated, 1.0, np.nan).T, extent=extent, origin="lower",
           cmap=ListedColormap(["#d94a3d"]), aspect="equal", alpha=0.9)
-ax.set_title("Flooded (blue) vs low ground the sea cannot reach (red)")
 ax.set_xlabel("x (km)")
 ax.set_ylabel("y (km)")
 
@@ -145,6 +147,7 @@ for col, (j, label, limit) in enumerate(
     ((j_intact, "intact barrier", limit_intact), (j_breach, "tidal inlet", limit_breach))
 ):
     ax = fig.add_subplot(gs[1, col])
+    panels.append(ax)
     z = terrain[:, j]
     ax.fill_between(x / 1000.0, -8, z, color="#c8b89a", zorder=2)
     # Fill only as far as water can actually reach. Filling every cell below
@@ -165,7 +168,6 @@ for col, (j, label, limit) in enumerate(
     ax.axvline(limit / 1000.0, color="k", lw=1.0, alpha=0.6)
     ax.annotate(f"limit {limit:.0f} m", xy=(limit / 1000.0, 7.5),
                 xytext=(6, 0), textcoords="offset points", fontsize=8)
-    ax.set_title(f"Cross-shore transect, {label}")
     ax.set_xlabel("x (km)")
     ax.set_ylabel("elevation (m)")
     ax.set_ylim(-8, 9)
@@ -173,11 +175,6 @@ for col, (j, label, limit) in enumerate(
     ax.grid(True, which="both", alpha=0.3)
     ax.minorticks_on()
 
-fig.suptitle(
-    f"Storm surge flooding:  {storm.wind_speed:.0f} m/s, "
-    f"{storm.central_pressure / 100:.0f} hPa, Hm0 = {storm.Hm0:.1f} m, "
-    f"tide {storm.tide:.1f} m",
-    y=0.965,
-)
+panel_labels(panels)
 fig.savefig("media/storm_surge_flooding.png", dpi=600, bbox_inches="tight")
 print("\nWrote media/storm_surge_flooding.png")

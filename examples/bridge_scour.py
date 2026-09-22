@@ -30,6 +30,7 @@ Run from the repository root:
 """
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.scour import (
@@ -110,7 +111,6 @@ ax.plot(phases, design.component("total"), lw=2.6, color="#8a2f24",
 
 ax.set_xlabel("tidal phase (deg)")
 ax.set_ylabel("scour depth (m)")
-ax.set_title("Each component peaks at its own phase")
 ax.set_xlim(0, 360)
 ax.set_xticks(range(0, 361, 90))
 ax.grid(True, which="both", alpha=0.3)
@@ -148,7 +148,6 @@ ax2.annotate(f"threshold of motion\n{Vc:.2f} m/s", xy=(Vc, max(actual) * 0.72),
 
 ax2.set_xlabel("approach velocity (m/s)")
 ax2.set_ylabel("contraction scour (m)")
-ax2.set_title("Live bed ignores velocity; clear water is all velocity")
 ax2.set_ylim(0, max(actual) * 1.25)
 step = abs(np.interp(Vc * 1.001, speeds, actual)
            - np.interp(Vc * 0.999, speeds, actual))
@@ -160,10 +159,7 @@ ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
 ax2.legend(loc="upper left", fontsize=8.5)
 
-fig.suptitle(
-    "Total scour at a crossing: three components, three timings, and two "
-    "contraction regimes that disagree at the threshold between them",
-    y=0.98, fontsize=12, fontweight="bold")
+panel_labels([ax, ax2])
 fig.tight_layout(rect=(0, 0, 1, 0.93))
 fig.savefig("media/bridge_scour_components.png", dpi=600, bbox_inches="tight")
 

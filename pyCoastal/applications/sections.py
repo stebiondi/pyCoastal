@@ -361,7 +361,7 @@ def seawall_notes(design) -> list[str]:
 
 def seawall_section(
     design,
-    title: str = "Vertical seawall, typical cross-section",
+    title: str = "",
     sea_extent: float = 22.0,
     land_extent: float = 8.0,
     figsize: tuple[float, float] = (14.5, 8.5),
@@ -748,7 +748,7 @@ def rubble_mound_section(
     seabed_level: float,
     cot_land: float | None = None,
     crest_width: float | None = None,
-    title: str = "Rubble-mound breakwater, typical cross-section",
+    title: str = "",
     figsize: tuple[float, float] = (14.5, 8.0),
     margin: float = 12.0,
     ax=None,
@@ -1066,7 +1066,7 @@ def channel_notes(design) -> list[str]:
 
 def channel_section(
     design,
-    title: str = "Navigation channel, typical cross-section",
+    title: str = "",
     figsize: tuple[float, float] = (14.5, 8.0),
     margin: float = 60.0,
     exaggeration: float = 8.0,
@@ -1501,7 +1501,7 @@ def nourishment_notes(result, native, borrow, berm_height: float,
 def nourishment_section(
     result, native, borrow, berm_height: float, closure_depth: float,
     water_level: float = 0.0,
-    title: str = "Beach nourishment, design profile",
+    title: str = "",
     figsize: tuple[float, float] = (14.0, 7.0),
     exaggeration: float | None = None,
     ax=None,
@@ -1802,7 +1802,7 @@ def _recentre_free(design, x: np.ndarray):
 
 def nourishment_plan_section(
     design, climate, years=None,
-    title: str = "Beach nourishment, planform evolution",
+    title: str = "",
     figsize: tuple[float, float] = (14.0, 6.5),
     exaggeration: float | None = None,
     ax=None,
@@ -2042,7 +2042,7 @@ def pier_scour_notes(design) -> list[str]:
 
 
 def pier_scour_section(design,
-                       title: str = "Pier scour, estuary",
+                       title: str = "",
                        figsize: tuple[float, float] = (11.0, 7.0),
                        protected: bool = False,
                        exaggeration: float = 1.0,
@@ -2336,7 +2336,7 @@ def bridge_scour_notes(design) -> list[str]:
 
 
 def bridge_scour_section(design,
-                         title: str = "Bridge scour, total",
+                         title: str = "",
                          figsize: tuple[float, float] = (13.0, 7.0),
                          exaggeration: float | None = None,
                          ax=None) -> Section:

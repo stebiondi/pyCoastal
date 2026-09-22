@@ -68,7 +68,12 @@ c_new = np.zeros_like(c)
 # -------------------------------------------------------------------
 fig, ax = plt.subplots(figsize=(6, 3))
 pcm = ax.pcolormesh(X, Y, c, cmap="viridis", vmin=0, vmax=1)
-title = ax.set_title("t = 0.00 s")
+title = ax.text(
+    0.02, 0.98, "t = 0.00 s", transform=ax.transAxes,
+    ha="left", va="top", fontsize=9,
+    bbox=dict(boxstyle="round,pad=0.25", fc="white",
+              ec="#c9c7c0", alpha=0.85),
+)
 ax.set_xlabel("x (m)")
 ax.set_ylabel("y (m)")
 cb = fig.colorbar(pcm, ax=ax, label="C")

@@ -111,7 +111,7 @@ with that spread.
 
 <!-- output: design_wave -->
 
-![Extreme value analysis of a 40-year record: threshold diagnostics, return level plot with bootstrap band, and the sampling spread of the 100-year estimate.](media/design_wave.png){#fig:design-wave}
+![Extreme value analysis of a 40-year record. (a) The first three years of the record, with the threshold and the declustered peaks. (b) Mean residual life against threshold. (c) Fitted shape against threshold. (d) Return level plot with the 90% bootstrap band, the annual maxima fit and the design value.](media/design_wave.png){#fig:design-wave}
 
 The bootstrap band from the single record has a width of 1.45 m against a
 sampling spread across records of 1.32 m, and contains the target value of

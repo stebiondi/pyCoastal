@@ -18,6 +18,7 @@ Run from the repository root:
 """
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.extremes import (
@@ -180,7 +181,6 @@ in_view = pot.positions < window
 ax.plot(t[pot.positions[in_view]], pot.data[in_view], "o", ms=4.5,
         markerfacecolor="white", markeredgecolor="#8a2f24",
         markeredgewidth=1.0, label="declustered peaks")
-ax.set_title("Hindcast, first three years")
 ax.set_xlabel("years")
 ax.set_ylabel("Hm0 (m)")
 ax.legend(loc="upper right", fontsize=8)
@@ -192,7 +192,6 @@ ax.errorbar(mrl["thresholds"], mrl["mean_excess"], yerr=1.96 * mrl["stderr"],
             color="#14567f", ecolor="#9fc4d6", lw=1.3, elinewidth=0.8,
             capsize=0)
 ax.axvline(THRESHOLD, color="#8a2f24", lw=1.2, ls="--")
-ax.set_title("Mean residual life: straight above a valid threshold")
 ax.set_xlabel("threshold (m)")
 ax.set_ylabel("mean excess (m)")
 ax.grid(True, which="both", alpha=0.3)
@@ -205,7 +204,6 @@ ax.axhline(TRUE_SHAPE, color="#4a7c3f", lw=1.1, ls=":",
            label=f"true shape {TRUE_SHAPE:+.2f}")
 ax.axvline(THRESHOLD, color="#8a2f24", lw=1.2, ls="--")
 ax.set_ylim(-0.6, 0.6)
-ax.set_title("Shape against threshold: flat where the model holds")
 ax.set_xlabel("threshold (m)")
 ax.set_ylabel("shape")
 ax.legend(loc="lower left", fontsize=8)
@@ -239,16 +237,9 @@ ax.plot([DESIGN_PERIOD], [Hs100], "*", ms=14, color="#c47f1a",
 ax.set_xscale("log")
 ax.set_xlabel("return period (years)")
 ax.set_ylabel("Hm0 (m)")
-ax.set_title(f"Return level (dotted line at the {YEARS}-year record length)")
 ax.legend(loc="upper left", fontsize=7.5)
 ax.grid(True, which="both", alpha=0.3)
 
-fig.suptitle(
-    f"Design wave from a {YEARS}-year record: "
-    f"{DESIGN_PERIOD:.0f}-year Hm0 = {Hs100:.2f} m "
-    f"({band['lower'][0]:.2f} to {band['upper'][0]:.2f} m), "
-    f"true value {truth:.2f} m",
-    y=0.975, fontsize=12, fontweight="bold",
-)
+panel_labels(axes)
 fig.savefig("media/design_wave.png", dpi=600, bbox_inches="tight")
 print("\nWrote media/design_wave.png")

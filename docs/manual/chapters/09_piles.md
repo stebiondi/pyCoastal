@@ -85,4 +85,4 @@ diameter table gives the transition from drag to inertia dominance with
 increasing diameter. At $KC = 6.3$ the wave-induced scour is 0.10 m; the
 steady-current value for the same pile is 10.40 m.
 
-![Morison loads on an 8 m monopile: load profiles at the crest and worst phases, and force and moment through the wave cycle.](media/pile_wave_loads.png){#fig:pile-loads}
+![Morison loads on an 8 m monopile. (a) Load profile at the governing phase. (b) Load profile at the crest phase. (c) Base shear through the wave cycle. (d) Mudline moment through the wave cycle.](media/pile_wave_loads.png){#fig:pile-loads}

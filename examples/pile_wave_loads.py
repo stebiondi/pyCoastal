@@ -19,6 +19,7 @@ Run from the repository root:
 import math
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.piles import (
@@ -96,7 +97,6 @@ ax.axhline(worst.eta, color="#8a2f24", lw=1.2, ls="--",
 ax.axhline(-DEPTH, color="#6d6243", lw=1.6)
 ax.set_xlabel("load (kN/m)")
 ax.set_ylabel("elevation (m)")
-ax.set_title(f"Load profile at {math.degrees(worst.phase):.0f} degrees")
 ax.annotate(f"{worst.moment / 1e6:.0f} MNm", xy=(0.95, 0.06),
             xycoords="axes fraction", ha="right", fontsize=9,
             fontweight="bold")
@@ -119,7 +119,6 @@ ax.axhline(crest.eta, color="#8a2f24", lw=1.2, ls="--",
            label=f"crest {crest.eta:+.2f} m")
 ax.axhline(-DEPTH, color="#6d6243", lw=1.6)
 ax.set_xlabel("load (kN/m)")
-ax.set_title("Load profile under the crest")
 ax.annotate(f"{crest.moment / 1e6:.0f} MNm", xy=(0.95, 0.06),
             xycoords="axes fraction", ha="right", fontsize=9,
             fontweight="bold")
@@ -135,7 +134,6 @@ ax.plot(degrees, sweep["force"] / 1e3, color="#0b3554", lw=1.8,
 ax.axvline(math.degrees(sweep["phase_of_max_force"]), color="#0b3554",
            lw=1.0, ls=":")
 ax.set_ylabel("base shear (kN)")
-ax.set_title("Load through the wave cycle")
 ax.grid(True, which="both", alpha=0.3)
 ax.minorticks_on()
 ax.legend(loc="upper right", fontsize=8)
@@ -165,11 +163,6 @@ ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
 ax2.legend(loc="upper right", fontsize=8)
 
-fig.suptitle(
-    f"Monopile {DIAMETER:.0f} m in {DEPTH:.0f} m: H = {H:.0f} m, T = {T:.0f} s. "
-    f"{worst.force / 1e3:,.0f} kN and {worst.moment / 1e6:,.0f} MNm, "
-    f"{100 * worst.inertia_fraction:.0f}% inertia",
-    y=0.975, fontsize=12, fontweight="bold",
-)
+panel_labels(fig.axes)
 fig.savefig("media/pile_wave_loads.png", dpi=600, bbox_inches="tight")
 print("\nWrote media/pile_wave_loads.png")

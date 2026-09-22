@@ -162,6 +162,6 @@ base = mound_foundation(design, depth=12.0, bed="medium_sand")
 
 <!-- output: breakwater_design -->
 
-![Breakwater design curves: armor size against slope, and overtopping against crest freeboard with the EurOtop scatter band.](media/breakwater_design.png){#fig:breakwater-design}
+![Breakwater design curves. (a) Nominal stone diameter against slope. (b) Mean overtopping discharge against crest freeboard, with the EurOtop scatter band.](media/breakwater_design.png){#fig:breakwater-design}
 
 ![The same design issued as a drawing sheet: trunk and head sections with the armor drawn as individual stones at the computed $D_{n50}$, the bedding blanket, toe berms, crown wall, and generated specification notes.](media/breakwater_sheet.png){#fig:breakwater-sheet}

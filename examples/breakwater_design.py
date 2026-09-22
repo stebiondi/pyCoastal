@@ -12,6 +12,7 @@ Run from the repository root:
 
 import matplotlib
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.structures import (
@@ -88,7 +89,6 @@ ax1.annotate(
 )
 ax1.set_xlabel(r"Slope, cot $\alpha$")
 ax1.set_ylabel("Nominal stone diameter $D_{n50}$ (m)")
-ax1.set_title(f"Armour size, $H_{{m0}}$ = {conditions.Hm0} m, S = 2")
 ax1.legend(frameon=False, fontsize=9)
 ax1.grid(True, which="both", alpha=0.3)
 ax1.minorticks_on()
@@ -111,10 +111,10 @@ ax2.annotate(
 )
 ax2.set_xlabel("Crest freeboard $R_c$ (m)")
 ax2.set_ylabel("Mean overtopping discharge $q$ (l/s per m)")
-ax2.set_title("Overtopping, EurOtop (2018)")
 ax2.set_ylim(1e-4, 1e3)
 ax2.grid(True, which="both", alpha=0.3)
 
+panel_labels([ax1, ax2])
 fig.tight_layout()
 fig.savefig("media/breakwater_design.png", dpi=600)
 print("\nWrote media/breakwater_design.png")

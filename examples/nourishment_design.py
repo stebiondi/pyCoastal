@@ -12,6 +12,7 @@ Run from the repository root:
 
 import matplotlib
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.nourishment import (
@@ -84,7 +85,6 @@ ax1.plot(
 )
 ax1.set_xlabel("Alongshore distance (km)")
 ax1.set_ylabel("Shoreline offset (m)")
-ax1.set_title("Fill planform evolution")
 ax1.legend(frameon=False, fontsize=9)
 ax1.grid(True, which="both", alpha=0.3)
 ax1.minorticks_on()
@@ -102,11 +102,11 @@ if np.isfinite(life):
     )
 ax2.set_xlabel("Time (yr)")
 ax2.set_ylabel("Volume retained in project area (%)")
-ax2.set_title("Fill retention")
 ax2.set_ylim(0, 105)
 ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
 
+panel_labels([ax1, ax2])
 fig.tight_layout()
 fig.savefig("media/nourishment_design.png", dpi=600)
 print("\nWrote media/nourishment_design.png")

@@ -110,7 +110,6 @@ def main():
     ax.set_aspect("equal", adjustable="box")
     ax.set_xlabel("x (m)")
     ax.set_ylabel("y (m)")
-    ax.set_title("Equilibrium shoreline")
     ax.legend(loc="upper right")
 
     # Dimensional annotations

@@ -110,7 +110,7 @@ design.equilibrium, design.tidal_limited, design.undermined, design.protection
 
 ![Pier scour assessment sheet. View A is the predicted scour without protection. View B is the proposed apron on an intact bed. The two states are drawn separately.](media/pier_scour_sheet.png){#fig:pier-sheet}
 
-![Scour through the tidal cycle and against the burial depth of the base.](media/pier_scour_tide.png){#fig:pier-tide}
+![Pier scour. (a) Equilibrium scour, current and depth through the tidal cycle. (b) Equilibrium scour against the level of the top of the base.](media/pier_scour_tide.png){#fig:pier-tide}
 
 Two results follow from the phase sweep. **The governing phase differs from
 the phase of peak current.** The effective diameter is weighted over the
@@ -198,7 +198,7 @@ design.total_at_pier, design.total_at_abutment, design.component("pier")
 
 ![Bridge scour assessment sheet. The three components are drawn on a single bed line, which gives the deepest point at each location.](media/bridge_scour_sheet.png){#fig:bridge-sheet}
 
-![Scour components through the tidal cycle. The components reach their maxima at different phases and are enveloped separately.](media/bridge_scour_components.png){#fig:bridge-components}
+![Bridge scour. (a) The three components through the tidal cycle; each reaches its maximum at a different phase and is enveloped separately. (b) Contraction scour against approach velocity, across the live-bed and clear-water modes.](media/bridge_scour_components.png){#fig:bridge-components}
 
 ## Limitations
 

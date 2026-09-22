@@ -22,6 +22,7 @@ Run from the repository root:
 """
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.river import (
@@ -112,11 +113,11 @@ ax.axhline(yn, lw=1.3, ls="--", color="#2c6b46",
 # and squash the whole backwater, which spans seven centimetres, into a
 # line. It matters for naming the profile and not for its shape, so it
 # belongs in the title.
-ax.annotate(f"bridge holds {afflux['afflux'] * 1000:.0f} mm",
+ax.annotate(f"afflux {afflux['afflux'] * 1000:.0f} mm",
             xy=(0, profile.depth[0]), xytext=(34, -6),
             textcoords="offset points", fontsize=9, color="#0b3554",
             arrowprops=dict(arrowstyle="->", lw=0.9, color="#0b3554"))
-ax.annotate("approaching, never arriving",
+ax.annotate("asymptotic to normal depth",
             xy=(x[-1], profile.depth[-1]), xytext=(-14, 20),
             textcoords="offset points", fontsize=9, ha="right",
             color="#2c6b46",
@@ -126,8 +127,6 @@ span = profile.depth[0] - yn
 ax.set_xlabel("distance upstream of the bridge (km)")
 ax.set_ylabel("depth (m)")
 ax.set_ylim(yn - 0.18 * span, profile.depth[0] + 0.30 * span)
-ax.set_title(f"{profile.profile} on a mild reach "
-             f"(critical depth {yc:.2f} m, far below this view)")
 ax.grid(True, which="both", alpha=0.3)
 ax.minorticks_on()
 ax.legend(loc="upper right", fontsize=8.5)
@@ -147,16 +146,12 @@ for mark in (0.90, 0.95, 0.99):
                  textcoords="offset points", fontsize=9, ha="right",
                  color="#8a2f24")
 
-ax2.set_xlabel("how close to normal depth you decide to call it (%)")
+ax2.set_xlabel("termination criterion, approach to normal depth (%)")
 ax2.set_ylabel("quoted extent of backwater (km)")
-ax2.set_title("An asymptote has no end, so this is a choice")
 ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
 
-fig.suptitle(
-    "Backwater at a bridge: the profile is physics, the extent quoted for "
-    "it is a convention",
-    y=0.98, fontsize=12, fontweight="bold")
+panel_labels([ax, ax2])
 fig.tight_layout(rect=(0, 0, 1, 0.93))
 fig.savefig("media/backwater.png", dpi=600, bbox_inches="tight")
 

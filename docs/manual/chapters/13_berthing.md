@@ -117,4 +117,4 @@ increases it. The design energy of 2360 kNm is of the same order as the
 kinetic energy of 2018 kNm at contact. The intermediate values are reported
 at each step of the chain.
 
-![The berthing energy chain and the sensitivity to each input.](media/berth_energy.png){#fig:berth-energy}
+![Berthing energy. (a) The PIANC energy chain, from kinetic energy to design energy. (b) Design energy against berthing velocity.](media/berth_energy.png){#fig:berth-energy}

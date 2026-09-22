@@ -18,6 +18,7 @@ Run from the repository root:
 """
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.berthing import (
@@ -88,7 +89,6 @@ for i, value in enumerate(values):
                 textcoords="offset points", ha="center", fontsize=9)
 ax.axhline(n["kinetic"], color="#54514b", lw=1.0, ls=":")
 ax.set_ylabel("energy (kNm)")
-ax.set_title("Only the added water makes it bigger")
 ax.grid(True, axis="y", alpha=0.3)
 ax.set_axisbelow(True)
 
@@ -116,16 +116,12 @@ ax2.annotate(f"design {design.velocity:.2f} m/s",
 
 ax2.set_xlabel("berthing velocity (m/s)")
 ax2.set_ylabel("design energy (kNm)")
-ax2.set_title("Velocity is squared, so it decides the fender")
 ax2.set_ylim(0, 9000)
 ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
 ax2.legend(loc="upper left", fontsize=8.5)
 
-fig.suptitle(
-    "Berthing energy: three of the four PIANC factors reduce it, and the "
-    "abnormal allowance puts most of it back",
-    y=0.98, fontsize=12, fontweight="bold")
+panel_labels([ax, ax2])
 fig.tight_layout(rect=(0, 0, 1, 0.93))
 fig.savefig("media/berth_energy.png", dpi=600, bbox_inches="tight")
 

@@ -1,4 +1,3 @@
-Ignoring fixed y limits to fulfill fixed data aspect with adjustable data limits.
 Design condition    Hm0 = 2.80 m, Tm-1,0 = 8.64 s
 Water level         SWL +2.90 m CD, depth at wall 8.50 m
 

@@ -16,6 +16,7 @@ Run from the repository root:
 """
 
 import matplotlib.pyplot as plt
+from pyCoastal.plotting import panel_labels
 import numpy as np
 
 from pyCoastal.applications.channel import (
@@ -164,7 +165,6 @@ ax.set_xlim(0, sum(values) * 1.02)
 ax.set_ylim(-0.5, 1.5)
 ax.set_yticks([])
 ax.set_xlabel("depth below the design water level (m)")
-ax.set_title(f"Depth chain: {sum(values):.2f} m required")
 ax.grid(True, axis="x", which="both", alpha=0.3)
 ax.minorticks_on()
 
@@ -186,7 +186,6 @@ ax2.axvline(0.5, color="#8a2f24", lw=1.2, ls="--", label="value used, 0.50")
 ax2.fill_between(factors, volumes, min(volumes), color="#9fc4d6", alpha=0.35)
 ax2.set_xlabel("wave response allowance, as a fraction of Hs")
 ax2.set_ylabel("capital dredging (thousand m3 per km)")
-ax2.set_title("One judgement call, and what it costs")
 ax2.legend(loc="upper left")
 ax2.grid(True, which="both", alpha=0.3)
 ax2.minorticks_on()
@@ -197,11 +196,7 @@ ax2.annotate(
     xytext=(0, 0), textcoords="offset points", fontsize=8.5, ha="center",
 )
 
-fig.suptitle(
-    f"Approach channel for {vessel.name}: dredge level "
-    f"{design.dredge_level:+.2f} m CD, {design.width:.0f} m wide",
-    y=0.98, fontsize=12, fontweight="bold",
-)
 fig.subplots_adjust(wspace=0.26, top=0.84)
+panel_labels([ax, ax2])
 fig.savefig("media/channel_depth_chain.png", dpi=600, bbox_inches="tight")
 print("Wrote media/channel_depth_chain.png")

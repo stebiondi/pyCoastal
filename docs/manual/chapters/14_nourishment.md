@@ -52,7 +52,7 @@ in the test suite.
 
 <!-- output: nourishment_design -->
 
-![Nourishment design study: planform evolution against the Pelnard-Considere solution, retained volume, and the renourishment cycle.](media/nourishment_design.png){#fig:nourishment-design}
+![Nourishment planform. (a) Shoreline offset alongshore at the output times, against the Pelnard-Considere solution. (b) Volume retained in the project area against time, with the renourishment threshold.](media/nourishment_design.png){#fig:nourishment-design}
 
 ## The profile: borrow material and shoreline advance
 
@@ -96,7 +96,7 @@ compares the phi means and sortings
 
 ![Profiles for borrow sources from very fine sand to fine gravel on a medium sand beach.](media/nourishment_profile.png){#fig:nourishment-profile}
 
-![The cost of borrow sources: volume per meter of beach for the same dry beach width.](media/nourishment_borrow.png){#fig:nourishment-borrow}
+![Borrow material. (a) Dry beach gained against placed volume, by borrow source. (b) Equilibrium profiles of the native beach and of each borrow source.](media/nourishment_borrow.png){#fig:nourishment-borrow}
 
 ![Planform spreading alongshore from the analytical solution, at times taken from the fill's own half-life. The cross-shore axis is stretched to fill the sheet and the factor is stated on the drawing.](media/nourishment_plan.png){#fig:nourishment-plan}
 

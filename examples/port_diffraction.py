@@ -123,7 +123,6 @@ for name, (bx, by) in berths.items():
 ax.set_xlim(VIEW_X0, Lx)
 ax.set_xlabel("x (m)")
 ax.set_ylabel("y (m)")
-ax.set_title(f"Disturbance coefficient, H = {wave.height} m, T = {wave.period} s")
 ax.set_aspect("equal")
 ax.grid(True, which="both", alpha=0.25)
 ax.minorticks_on()
@@ -150,7 +149,12 @@ ax2.set_xlim(VIEW_X0, Lx)
 ax2.set_xlabel("x (m)")
 ax2.set_ylabel("y (m)")
 ax2.set_aspect("equal")
-title = ax2.set_title("")
+title = ax2.text(
+    0.02, 0.98, "", transform=ax2.transAxes,
+    ha="left", va="top", fontsize=9,
+    bbox=dict(boxstyle="round,pad=0.25", fc="white",
+              ec="#c9c7c0", alpha=0.85),
+)
 fig2.colorbar(im, ax=ax2, label="surface elevation (m)", shrink=0.85)
 fig2.tight_layout()
 
@@ -158,8 +162,6 @@ fig2.tight_layout()
 def update(frame):
     im.set_data(result.snapshots[frame].T)
     title.set_text(
-        f"Wave diffraction into the harbour, "
-        f"{APPROACH_ANGLE:.0f} deg incidence   "
         f"t = {result.times[frame]:.0f} s   "
         f"({result.times[frame] / wave.period:.1f} wave periods)"
     )

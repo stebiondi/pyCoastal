@@ -124,4 +124,4 @@ design wave and ranks them by basin agitation:
 
 <!-- output: port_layout_comparison -->
 
-![The five built-in layouts under the same design wave.](media/port_layouts.png){#fig:port-layouts}
+![The five built-in layouts under the same design wave, each panel labeled with its layout and mean basin $K_d$.](media/port_layouts.png){#fig:port-layouts}
