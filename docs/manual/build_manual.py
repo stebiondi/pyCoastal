@@ -537,10 +537,27 @@ HEADER = r"""
 \RecustomVerbatimEnvironment{verbatim}{Verbatim}{}
 \setcounter{tocdepth}{2}
 \setcounter{secnumdepth}{3}
-\AtBeginDocument{\hypersetup{colorlinks=true, linkcolor=black,
-  citecolor=black, urlcolor=blue!50!black}}
+% A live contents: every entry (title and page number) jumps to its page,
+% internal links are coloured so they read as links, the bookmark panel
+% opens with the outline numbered, and every page number in the footer
+% jumps back to the contents.
+\definecolor{linkblue}{rgb}{0.05,0.25,0.50}
+\AtBeginDocument{\hypersetup{colorlinks=true, linkcolor=linkblue,
+  citecolor=linkblue, urlcolor=linkblue, linktoc=all,
+  bookmarksnumbered=true, bookmarksopen=true, bookmarksopenlevel=1,
+  pdfpagemode=UseOutlines, pdfstartview=FitH,
+  pdftitle={pyCoastal: a Python Tool for Coastal Engineering},
+  pdfauthor={Stefano Biondi}}}
 \let\oldtableofcontents\tableofcontents
-\renewcommand{\tableofcontents}{\oldtableofcontents\clearpage}
+\renewcommand{\tableofcontents}{\hypertarget{contents}{}%
+  \pdfbookmark[1]{Contents}{contents-bookmark}\oldtableofcontents\clearpage}
+\usepackage{fancyhdr}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\hyperlink{contents}{\thepage}}
+\fancypagestyle{plain}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[C]{\hyperlink{contents}{\thepage}}}
+\pagestyle{fancy}
 \usepackage{etoolbox}
 \pretocmd{\part}{\clearpage}{}{}
 \setlength{\emergencystretch}{3em}
@@ -616,6 +633,11 @@ def pandoc_latex(markdown: str, pandoc: str, crossref: str | None) -> Path:
            "--highlight-style=monochrome", "--number-sections", "--toc", "--toc-depth=2",
            "-V", "documentclass=article", "-V", "classoption=11pt",
            "-V", "papersize=a4", "-V", "geometry:margin=2.5cm",
+           # Without these the template sets hidelinks, and the contents and
+           # cross-references work but look like plain text.
+           "-V", "colorlinks=true", "-V", "linkcolor=linkblue",
+           "-V", "toccolor=linkblue", "-V", "urlcolor=linkblue",
+           "-V", "citecolor=linkblue",
            "--include-in-header", str(BUILD / "header.tex"),
            "--include-before-body", str(BUILD / "titlepage.tex"),
            "--lua-filter", str(HERE / "breakable_code.lua"),
