@@ -27,9 +27,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Stage the site
         run: |
-          mkdir -p site
+          mkdir -p site/lang
           cp webapp/index.html webapp/pedia.html webapp/app.js webapp/draw.js \
-             webapp/engine.js webapp/knowledge.json webapp/vectors.json site/
+             webapp/engine.js webapp/i18n.js webapp/knowledge.json \
+             webapp/vectors.json site/
+          cp webapp/lang/*.js site/lang/
           touch site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
