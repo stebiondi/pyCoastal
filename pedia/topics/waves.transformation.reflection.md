@@ -44,9 +44,9 @@ Used by pyCoastal design modules: Harbour agitation.
 
 ## Papers
 
-- Rafaël Almar (2018). A new remote predictor of wave reflection based on runup asymmetry. *Estuarine Coastal and Shelf Science*. [doi:10.1016/j.ecss.2018.10.018](https://doi.org/10.1016/j.ecss.2018.10.018)
-- Junliang Gao (2021). Investigation on the effects of Bragg reflection on harbor oscillations. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2021.103977](https://doi.org/10.1016/j.coastaleng.2021.103977)
-- Junliang Gao (2023). Mechanism analysis on the mitigation of harbor resonance by periodic undulating topography. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2023.114923](https://doi.org/10.1016/j.oceaneng.2023.114923)
-- Constantine Emmanuel Synolakis (1986). The Runup of Long Waves. *CaltechAUTHORS (California Institute of Technology)*. [doi:10.7907/rebc-d787.](https://doi.org/10.7907/rebc-d787.)
-- Romano-Moreno (2023). Multimodal harbor wave climate characterization based on wave agitation spectral types. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271)
+- Rafaël Almar (2018). A new remote predictor of wave reflection based on runup asymmetry. *Estuarine Coastal and Shelf Science*. [doi:10.1016/j.ecss.2018.10.018](https://doi.org/10.1016/j.ecss.2018.10.018) [accepted manuscript, read only](https://purehost.bath.ac.uk/ws/portalfiles/portal/189538102/Manuscript_20181011.pdf)
+- Junliang Gao (2021). Investigation on the effects of Bragg reflection on harbor oscillations. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2021.103977](https://doi.org/10.1016/j.coastaleng.2021.103977) [accepted manuscript, read only](https://purehost.bath.ac.uk/ws/files/226310967/CENG_103977_Manuscript.pdf)
+- Junliang Gao (2023). Mechanism analysis on the mitigation of harbor resonance by periodic undulating topography. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2023.114923](https://doi.org/10.1016/j.oceaneng.2023.114923) [submitted manuscript, read only](https://catalog.lib.kyushu-u.ac.jp/opac_download_md/6790280/6790280.pdf)
+- Constantine Emmanuel Synolakis (1986). The Runup of Long Waves. *CaltechAUTHORS (California Institute of Technology)*. [doi:10.7907/rebc-d787.](https://doi.org/10.7907/rebc-d787.) [submitted manuscript, read only](https://authors.library.caltech.edu/25994/)
+- Romano-Moreno (2023). Multimodal harbor wave climate characterization based on wave agitation spectral types. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2022.104271](https://doi.org/10.1016/j.coastaleng.2022.104271) [published version, CC BY-NC-ND](https://api.elsevier.com/content/article/PII:S0378383922001843?httpAccept=text/xml)
 - Quellet (1989). Wave Grouping Effect in Irregular Wave Agitation in Harbors. *Journal of Waterway, Port, Coastal, and Ocean Engineering*. [doi:10.1061/(asce)0733-950x(1989)115:3(363)](https://doi.org/10.1061/(asce)0733-950x(1989)115:3(363))

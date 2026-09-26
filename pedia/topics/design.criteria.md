@@ -44,8 +44,8 @@ Used by pyCoastal design modules: Seawall design.
 
 ## Papers
 
-- Shuchen Li (2018). Seepage Flow Model and Deformation Properties of Coastal Deep Foundation Pit under Tidal Influence. *Mathematical Problems in Engineering*. [doi:10.1155/2018/9714901](https://doi.org/10.1155/2018/9714901)
-- O'Connell (1982). DESIGN OF COASTAL STRUCTURES FOR RECREATIONAL PURPOSES. *Coastal Engineering Proceedings*. [doi:10.9753/icce.v18.152](https://doi.org/10.9753/icce.v18.152)
+- Shuchen Li (2018). Seepage Flow Model and Deformation Properties of Coastal Deep Foundation Pit under Tidal Influence. *Mathematical Problems in Engineering*. [doi:10.1155/2018/9714901](https://doi.org/10.1155/2018/9714901) [published version, CC BY](http://downloads.hindawi.com/journals/mpe/2018/9714901.pdf)
+- O'Connell (1982). DESIGN OF COASTAL STRUCTURES FOR RECREATIONAL PURPOSES. *Coastal Engineering Proceedings*. [doi:10.9753/icce.v18.152](https://doi.org/10.9753/icce.v18.152) [published version, CC BY](https://icce-ojs-tamu.tdl.org/icce/index.php/icce/article/download/3767/3450)
 - Palaseanu-Lovejoy (2014). Levee crest elevation profiles derived from airborne lidar-based high resolution digital elevation models in south Louisiana. *ISPRS Journal of Photogrammetry and Remote Sensing*. [doi:10.1016/j.isprsjprs.2014.02.010](https://doi.org/10.1016/j.isprsjprs.2014.02.010)
 - Wang (2026). Vegetation layouts influence the spatial uniformity of wave attenuation: Laboratory insights. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2025.104937](https://doi.org/10.1016/j.coastaleng.2025.104937)
 - Bardsley (1990). Estimating future sea level extremes under conditions of sea level rise. *Coastal Engineering*. [doi:10.1016/0378-3839(90)90028-u](https://doi.org/10.1016/0378-3839(90)90028-u)

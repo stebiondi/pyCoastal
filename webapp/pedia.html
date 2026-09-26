@@ -80,6 +80,7 @@
   ol.claims li.flash { background: var(--mark); }
   .tag { font-size: 0.78em; color: var(--faint); margin-left: 0.3em; }
   .cite { font-size: 0.9em; white-space: nowrap; }
+  .oa { font-size: 0.78em; margin-left: 0.25em; white-space: nowrap; }
   .regime { font-style: italic; color: var(--soft); }
   .results li { margin: 0.7em 0; list-style: none; }
   .results { padding: 0; }
@@ -143,10 +144,21 @@ function cite(pid) {
   var p = K.papers[String(pid)];
   if (!p) return "";
   var who = esc(p.a || "Anon.") + " " + esc(p.y || "n.d.");
-  var title = esc(p.t) + (p.j ? ". " + esc(p.j) : "");
-  return p.doi
+  var title = esc(p.t) + (p.j ? ". " + esc(p.j) : "") +
+    (p.ft ? ". Extracted from the full text" : ". Extracted from the abstract");
+  var ref = p.doi
     ? '<a class="cite" href="https://doi.org/' + esc(p.doi) + '" target="_blank" rel="noopener" title="' + title + '">(' + who + ')</a>'
     : '<span class="cite" title="' + title + '">(' + who + ")</span>";
+  return ref + openCopy(p);
+}
+
+var VERSION = { vor: "published version", am: "accepted manuscript",
+                sm: "submitted manuscript", pp: "preprint" };
+
+function openCopy(p) {
+  if (!p.oa) return "";
+  return '<a class="oa" href="' + esc(p.oa) + '" target="_blank" rel="noopener" title="' +
+    esc((VERSION[p.v] || "open copy") + ", " + p.l) + '">open copy</a>';
 }
 
 function tex(latex) {
@@ -366,6 +378,8 @@ function init(k) {
   Object.keys(K.topics).forEach(function (t) { nClaims += K.topics[t].claims.length; });
   el("stats").textContent = Object.keys(K.topics).length + " topics · " + nClaims + " claims · " +
     Object.keys(K.papers).length + " papers · " + K.generated;
+  var nOpen = Object.keys(K.papers).filter(function (p) { return K.papers[p].oa; }).length;
+  el("stats").title = nOpen + " of the cited papers link to a lawful open copy";
   el("modules").innerHTML += Object.keys(K.modules).map(function (m) {
     return '<option value="' + esc(m) + '">' + esc(K.modules[m].label) + "</option>";
   }).join("");

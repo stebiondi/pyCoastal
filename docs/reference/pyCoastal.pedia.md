@@ -187,6 +187,10 @@ def paper(paper_id: int | None=None, doi: str | None=None) -> dict
 
 ```text
 One paper with its abstract, extraction, topics and claims.
+
+``open_url`` is a lawful open copy when one has been verified, with its
+``open_version`` and ``open_license``; ``extraction["extraction_source"]``
+says whether the extraction was made from the full text or the abstract.
 ```
 
 ## `modules`

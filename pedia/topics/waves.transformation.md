@@ -83,7 +83,7 @@ Source: (Shirkavand 2025, [doi:10.1038/s41598-025-23341-z](https://doi.org/10.10
 
 ## Papers
 
-- Shirkavand (2025). A 3D non-hydrostatic model for simulating coastal wave transformations: shoaling, diffraction, and refraction. *Scientific Reports*. [doi:10.1038/s41598-025-23341-z](https://doi.org/10.1038/s41598-025-23341-z)
-- Luigi Cavaleri (2007). Wave modelling – The state of the art. *Progress In Oceanography*. [doi:10.1016/j.pocean.2007.05.005](https://doi.org/10.1016/j.pocean.2007.05.005)
-- Rong Zhang (2023). Experimental investigation of wave attenuation by mangrove forests with submerged canopies. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2023.104403](https://doi.org/10.1016/j.coastaleng.2023.104403)
+- Shirkavand (2025). A 3D non-hydrostatic model for simulating coastal wave transformations: shoaling, diffraction, and refraction. *Scientific Reports*. [doi:10.1038/s41598-025-23341-z](https://doi.org/10.1038/s41598-025-23341-z) [published version, CC BY](https://d-nb.info/1386515426/34)
+- Luigi Cavaleri (2007). Wave modelling – The state of the art. *Progress In Oceanography*. [doi:10.1016/j.pocean.2007.05.005](https://doi.org/10.1016/j.pocean.2007.05.005) [accepted manuscript, read only](http://nora.nerc.ac.uk/id/eprint/2732/1/WISE_the_state_of_the_art.pdf)
+- Rong Zhang (2023). Experimental investigation of wave attenuation by mangrove forests with submerged canopies. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2023.104403](https://doi.org/10.1016/j.coastaleng.2023.104403) [accepted manuscript, read only](https://repository.tudelft.nl/file/File_074d9118-701b-4b51-a286-87dfdffe8a57)
 - Lu (2016). Depth-averaged non-hydrostatic numerical modeling of nearshore wave propagations based on the FORCE scheme. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.04.004](https://doi.org/10.1016/j.coastaleng.2016.04.004)

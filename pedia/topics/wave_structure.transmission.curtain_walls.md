@@ -57,5 +57,5 @@ Source: (Горбань 2022, [doi:10.31471/2304-7399-2022-17(64)-118-132](https
 
 ## Papers
 
-- Горбань (2022). ВЗАЄМОДІЯ ПОВЕРХНЕВОЇ ПООДИНОКОЇ ХВИЛІ ІЗ ЗАНУРЕНИМ ТА НАПІВЗАНУРЕНИМ ХВИЛЕГАСНИКАМИ. *PRECARPATHIAN BULLETIN OF THE SHEVCHENKO SCIENTIFIC SOCIETY Number*. [doi:10.31471/2304-7399-2022-17(64)-118-132](https://doi.org/10.31471/2304-7399-2022-17(64)-118-132)
-- Khaldirian (2025). Numerical Study of Wave Reflection by The Curtain Wall-Pile Breakwater Using the SPH Model. *Journal of the Civil Engineering Forum*. [doi:10.22146/jcef.15085](https://doi.org/10.22146/jcef.15085)
+- Горбань (2022). ВЗАЄМОДІЯ ПОВЕРХНЕВОЇ ПООДИНОКОЇ ХВИЛІ ІЗ ЗАНУРЕНИМ ТА НАПІВЗАНУРЕНИМ ХВИЛЕГАСНИКАМИ. *PRECARPATHIAN BULLETIN OF THE SHEVCHENKO SCIENTIFIC SOCIETY Number*. [doi:10.31471/2304-7399-2022-17(64)-118-132](https://doi.org/10.31471/2304-7399-2022-17(64)-118-132) [published version, read only](https://pvntsh.nung.edu.ua/index.php/number/article/download/1793/1754/6923)
+- Khaldirian (2025). Numerical Study of Wave Reflection by The Curtain Wall-Pile Breakwater Using the SPH Model. *Journal of the Civil Engineering Forum*. [doi:10.22146/jcef.15085](https://doi.org/10.22146/jcef.15085) [published version, CC BY](https://journal.ugm.ac.id/v3/JCEF/article/download/15085/5491)

@@ -70,6 +70,6 @@ Source: (Safak 2020, [doi:10.1016/j.csr.2020.104268](https://doi.org/10.1016/j.c
 
 ## Papers
 
-- Safak (2020). Wave transmission through living shoreline breakwalls. *Continental Shelf Research*. [doi:10.1016/j.csr.2020.104268](https://doi.org/10.1016/j.csr.2020.104268)
-- Rahman (2014). The Effect of Porosity of Submerged and Emerged Breakwater on Wave Transmission. *International Journal of Environmental Science and Development*. [doi:10.7763/ijesd.2014.v5.530](https://doi.org/10.7763/ijesd.2014.v5.530)
-- van der Meer (2005). Wave transmission and reflection at low-crested structures: Design formulae, oblique wave attack and spectral change. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2005.09.005](https://doi.org/10.1016/j.coastaleng.2005.09.005)
+- Safak (2020). Wave transmission through living shoreline breakwalls. *Continental Shelf Research*. [doi:10.1016/j.csr.2020.104268](https://doi.org/10.1016/j.csr.2020.104268) [accepted manuscript, CC BY](https://repository.library.noaa.gov/view/noaa/34021/noaa_34021_DS1.pdf?download=1)
+- Rahman (2014). The Effect of Porosity of Submerged and Emerged Breakwater on Wave Transmission. *International Journal of Environmental Science and Development*. [doi:10.7763/ijesd.2014.v5.530](https://doi.org/10.7763/ijesd.2014.v5.530) [published version, read only](http://www.ijesd.org/papers/530-G2001.pdf)
+- van der Meer (2005). Wave transmission and reflection at low-crested structures: Design formulae, oblique wave attack and spectral change. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2005.09.005](https://doi.org/10.1016/j.coastaleng.2005.09.005) [published version, read only](https://www.vandermeerconsulting.nl/downloads/functional_b/2005_vandermeer_briganti.pdf)

@@ -130,6 +130,9 @@ def main(argv: list[str] | None = None) -> int:
         def show(pp):
             print(f"{pp['first_author']} ({pp['year']}). {pp['title']}. {pp['journal']}. "
                   f"doi:{pp['doi']}")
+            if pp.get("open_url"):
+                print(f"Open copy ({pp['open_version'] or 'version not stated'}, "
+                      f"{pp['open_license']}): {pp['open_url']}")
             if pp.get("abstract"):
                 print(_wrap(pp["abstract"]))
             for k, v in pp["extraction"].items():

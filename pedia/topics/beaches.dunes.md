@@ -62,8 +62,8 @@ Source: (Lemke 2021, [doi:10.3390/jmse9121428](https://doi.org/10.3390/jmse91214
 
 ## Papers
 
-- Irene Delgado‐Fernández (2010). Meso-scale aeolian sediment input to coastal dunes: The nature of aeolian transport events. *Geomorphology*. [doi:10.1016/j.geomorph.2010.11.005](https://doi.org/10.1016/j.geomorph.2010.11.005)
-- Vellinga (1982). Beach and dune erosion during storm surges. *Coastal Engineering*. [doi:10.1016/0378-3839(82)90007-2](https://doi.org/10.1016/0378-3839(82)90007-2)
-- Irene Delgado‐Fernández (2011). Meso-scale modelling of aeolian sediment input to coastal dunes. *Geomorphology*. [doi:10.1016/j.geomorph.2011.04.001](https://doi.org/10.1016/j.geomorph.2011.04.001)
-- Lemke (2021). Role of Storm Erosion Potential and Beach Morphology in Controlling Dune Erosion. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse9121428](https://doi.org/10.3390/jmse9121428)
-- Overbeck (2017). Testing model parameters for wave‐induced dune erosion using observations from Hurricane Sandy. *Geophysical Research Letters*. [doi:10.1002/2016gl071991](https://doi.org/10.1002/2016gl071991)
+- Irene Delgado‐Fernández (2010). Meso-scale aeolian sediment input to coastal dunes: The nature of aeolian transport events. *Geomorphology*. [doi:10.1016/j.geomorph.2010.11.005](https://doi.org/10.1016/j.geomorph.2010.11.005) [accepted manuscript, read only](https://research.edgehill.ac.uk/ws/files/20179544/DF_DA_2011_GEOMORPHOLOGY_Events.pdf)
+- Vellinga (1982). Beach and dune erosion during storm surges. *Coastal Engineering*. [doi:10.1016/0378-3839(82)90007-2](https://doi.org/10.1016/0378-3839(82)90007-2) [published version, read only](https://publications.deltares.nl/Pub276.pdf)
+- Irene Delgado‐Fernández (2011). Meso-scale modelling of aeolian sediment input to coastal dunes. *Geomorphology*. [doi:10.1016/j.geomorph.2011.04.001](https://doi.org/10.1016/j.geomorph.2011.04.001) [accepted manuscript, read only](https://research.edgehill.ac.uk/ws/files/20180557/DF_2011_GEOMORPHOLOGY_MODELLING_MESO-SCALE.pdf)
+- Lemke (2021). Role of Storm Erosion Potential and Beach Morphology in Controlling Dune Erosion. *Journal of Marine Science and Engineering*. [doi:10.3390/jmse9121428](https://doi.org/10.3390/jmse9121428) [published version, CC BY](https://mdpi-res.com/bookfiles/book/6169/BeachDune_System_Morphodynamics.pdf)
+- Overbeck (2017). Testing model parameters for wave‐induced dune erosion using observations from Hurricane Sandy. *Geophysical Research Letters*. [doi:10.1002/2016gl071991](https://doi.org/10.1002/2016gl071991) [published version, public domain](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016GL071991)

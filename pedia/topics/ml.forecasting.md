@@ -40,6 +40,6 @@ Papers: 3. Claims: 1. Equations: 0.
 
 ## Papers
 
-- Evan B. Goldstein (2019). A review of machine learning applications to coastal sediment transport and morphodynamics. *Earth-Science Reviews*. [doi:10.1016/j.earscirev.2019.04.022](https://doi.org/10.1016/j.earscirev.2019.04.022)
-- M. A. Habib (2024). Efficient data-driven machine learning models for scour depth predictions at sloping sea defences. *Frontiers in Built Environment*. [doi:10.3389/fbuil.2024.1343398](https://doi.org/10.3389/fbuil.2024.1343398)
-- Ibaceta (2024). Data-driven modelling of coastal storm erosion for real-time forecasting at a wave-dominated embayed beach. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2024.104596](https://doi.org/10.1016/j.coastaleng.2024.104596)
+- Evan B. Goldstein (2019). A review of machine learning applications to coastal sediment transport and morphodynamics. *Earth-Science Reviews*. [doi:10.1016/j.earscirev.2019.04.022](https://doi.org/10.1016/j.earscirev.2019.04.022) [preprint, read only](https://eartharxiv.org/repository/object/1247/download/2864/)
+- M. A. Habib (2024). Efficient data-driven machine learning models for scour depth predictions at sloping sea defences. *Frontiers in Built Environment*. [doi:10.3389/fbuil.2024.1343398](https://doi.org/10.3389/fbuil.2024.1343398) [published version, CC BY](https://www.frontiersin.org/articles/10.3389/fbuil.2024.1343398/pdf)
+- Ibaceta (2024). Data-driven modelling of coastal storm erosion for real-time forecasting at a wave-dominated embayed beach. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2024.104596](https://doi.org/10.1016/j.coastaleng.2024.104596) [published version, CC BY](https://api.elsevier.com/content/article/PII:S0378383924001443?httpAccept=text/xml)

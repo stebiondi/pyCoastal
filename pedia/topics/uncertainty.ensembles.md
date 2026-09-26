@@ -56,7 +56,7 @@ Source: (Han 2021, [doi:10.1016/j.crm.2021.100305](https://doi.org/10.1016/j.crm
 
 ## Papers
 
-- W. C. O’Reilly (1998). Assimilating Coastal Wave Observations in Regional Swell Predictions. Part I: Inverse Methods. *Journal of Physical Oceanography*. [doi:10.1175/1520-0485(1998)028<0679:acwoir>2.0.co;2](https://doi.org/10.1175/1520-0485(1998)028<0679:acwoir>2.0.co;2)
-- Mariana Clare (2022). Assessing erosion and flood risk in the coastal zone through the application of multilevel Monte Carlo methods. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2022.104118](https://doi.org/10.1016/j.coastaleng.2022.104118)
-- Han (2021). Building-level adaptation analysis under uncertain sea-level rise. *Climate Risk Management*. [doi:10.1016/j.crm.2021.100305](https://doi.org/10.1016/j.crm.2021.100305)
-- Leon (2014). Incorporating DEM Uncertainty in Coastal Inundation Mapping. *PLoS ONE*. [doi:10.1371/journal.pone.0108727](https://doi.org/10.1371/journal.pone.0108727)
+- W. C. O’Reilly (1998). Assimilating Coastal Wave Observations in Regional Swell Predictions. Part I: Inverse Methods. *Journal of Physical Oceanography*. [doi:10.1175/1520-0485(1998)028<0679:acwoir>2.0.co;2](https://doi.org/10.1175/1520-0485(1998)028<0679:acwoir>2.0.co;2) [published version, read only](https://journals.ametsoc.org/downloadpdf/journals/phoc/28/4/1520-0485_1998_028_0679_acwoir_2.0.co_2.pdf)
+- Mariana Clare (2022). Assessing erosion and flood risk in the coastal zone through the application of multilevel Monte Carlo methods. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2022.104118](https://doi.org/10.1016/j.coastaleng.2022.104118) [published version, CC BY](https://www.sciencedirect.com/science/article/pii/S0378383922000357/pdf)
+- Han (2021). Building-level adaptation analysis under uncertain sea-level rise. *Climate Risk Management*. [doi:10.1016/j.crm.2021.100305](https://doi.org/10.1016/j.crm.2021.100305) [published version, CC BY-NC-ND](https://api.elsevier.com/content/article/PII:S2212096321000346?httpAccept=text/xml)
+- Leon (2014). Incorporating DEM Uncertainty in Coastal Inundation Mapping. *PLoS ONE*. [doi:10.1371/journal.pone.0108727](https://doi.org/10.1371/journal.pone.0108727) [published version, CC BY](https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0108727&type=printable)

@@ -208,7 +208,8 @@ def claims(topic_id: str | None = None, evidence: str | None = None,
     literature_review_statement, inferred_relationship or
     proposed_hypothesis. ``subtopics=True`` includes the topics below.
     """
-    sql = ("SELECT c.*, p.first_author, p.year, p.doi, p.title AS paper_title "
+    sql = ("SELECT c.*, p.first_author, p.year, p.doi, p.title AS paper_title, "
+           "p.open_url "
            "FROM claims c LEFT JOIN papers p ON p.id = c.paper_id WHERE 1=1")
     args: list = []
     if topic_id:
@@ -262,7 +263,8 @@ def equations(topic_id: str | None = None) -> list[dict]:
 def papers(topic_id: str, limit: int | None = 50) -> list[dict]:
     """Papers classified under a topic, topic-specific ones first, then by citations."""
     sql = ("SELECT p.id, p.doi, p.title, p.first_author, p.authors, p.year, p.journal, "
-           "p.citation_count, pt.role FROM paper_topics pt JOIN papers p "
+           "p.citation_count, p.access, p.open_url, p.open_version, p.open_license, "
+           "pt.role FROM paper_topics pt JOIN papers p "
            "ON p.id = pt.paper_id WHERE pt.topic_id = ? "
            "ORDER BY (pt.role = 'specific') DESC, coalesce(p.citation_count, 0) DESC")
     if limit:
@@ -271,7 +273,12 @@ def papers(topic_id: str, limit: int | None = 50) -> list[dict]:
 
 
 def paper(paper_id: int | None = None, doi: str | None = None) -> dict:
-    """One paper with its abstract, extraction, topics and claims."""
+    """One paper with its abstract, extraction, topics and claims.
+
+    ``open_url`` is a lawful open copy when one has been verified, with its
+    ``open_version`` and ``open_license``; ``extraction["extraction_source"]``
+    says whether the extraction was made from the full text or the abstract.
+    """
     if paper_id is None and doi is None:
         raise ValueError("Give paper_id or doi.")
     rows = (_rows("SELECT * FROM papers WHERE id = ?", paper_id) if paper_id is not None

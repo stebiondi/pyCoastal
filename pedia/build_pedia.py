@@ -46,7 +46,8 @@ MD_DIR = HERE / "topics"
 JSON_OUT = ROOT / "webapp" / "knowledge.json"
 
 sys.path.insert(0, str(ROOT / "webapp"))
-from build_knowledge import MODULE_TOPICS, build as build_extract  # noqa: E402
+from build_knowledge import (  # noqa: E402
+    MODULE_TOPICS, access_routes, build as build_extract)
 
 SECTIONS = [
     ("well_established", "Well established"),
@@ -93,7 +94,11 @@ CREATE TABLE papers (
     year INTEGER,
     journal TEXT,
     abstract TEXT,
-    citation_count INTEGER
+    citation_count INTEGER,
+    access TEXT,                  -- open, restricted, unavailable or unknown
+    open_url TEXT,                -- best lawful open copy, when access = open
+    open_version TEXT,            -- version_of_record, accepted_manuscript, ...
+    open_license TEXT             -- CC BY, CC BY-NC-ND, public domain, read only
 );
 
 CREATE TABLE claims (
@@ -142,7 +147,8 @@ CREATE TABLE paper_extractions (
     empirical_relationships TEXT, analytical_formulations TEXT,
     engineering_implications TEXT, limitations TEXT,
     applicability_conditions TEXT, contradictions TEXT,
-    unresolved_questions TEXT, future_research TEXT
+    unresolved_questions TEXT, future_research TEXT,
+    extraction_source TEXT        -- full_text or abstract
 );
 
 CREATE TABLE parameters (
@@ -249,6 +255,7 @@ def build_sqlite(src: sqlite3.Connection, out: Path) -> dict:
                             "FROM paper_authors pa JOIN authors a ON a.id = pa.author_id "
                             "ORDER BY pa.paper_id, pa.author_order"):
         authors.setdefault(pid, []).append(fam or disp or "")
+    access = access_routes(src)
     rows = []
     for r in q("SELECT id, doi, title, publication_year, journal, abstract, citation_count "
                "FROM papers"):
@@ -256,8 +263,8 @@ def build_sqlite(src: sqlite3.Connection, out: Path) -> dict:
             continue
         names = [n for n in authors.get(r[0], []) if n]
         rows.append((r[0], r[1], r[2], ", ".join(names), names[0] if names else None,
-                     r[3], r[4], r[5], r[6]))
-    dst.executemany("INSERT INTO papers VALUES (?,?,?,?,?,?,?,?,?)", rows)
+                     r[3], r[4], r[5], r[6], *access.get(r[0], ("unknown", None, None, None))))
+    dst.executemany("INSERT INTO papers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
 
     cols = [c[1] for c in dst.execute("PRAGMA table_info(paper_extractions)")]
     dst.executemany(
@@ -313,6 +320,10 @@ def build_sqlite(src: sqlite3.Connection, out: Path) -> dict:
         "equations": str(len(equations)),
         "papers": str(len(rows)),
         "papers_screened_in_source": str(q("SELECT COUNT(*) FROM papers")[0][0]),
+        "papers_open_access": str(sum(1 for r in rows if r[10])),
+        "full_text_extractions": str(dst.execute(
+            "SELECT COUNT(*) FROM paper_extractions "
+            "WHERE extraction_source = 'full_text'").fetchone()[0]),
     }
     dst.executemany("INSERT INTO metadata VALUES (?,?)", meta.items())
     dst.commit()
@@ -332,6 +343,19 @@ def cite(p: sqlite3.Row | None) -> str:
     yr = p["year"] or "n.d."
     doi = p["doi"]
     return f"({who} {yr}, [doi:{doi}](https://doi.org/{doi}))" if doi else f"({who} {yr})"
+
+
+VERSION_LABEL = {"version_of_record": "published version",
+                 "accepted_manuscript": "accepted manuscript",
+                 "submitted_manuscript": "submitted manuscript",
+                 "preprint": "preprint"}
+
+
+def open_copy(p: sqlite3.Row | None) -> str:
+    if p is None or not p["open_url"]:
+        return ""
+    ver = VERSION_LABEL.get(p["open_version"], "open copy")
+    return f" [{ver}, {p['open_license']}]({p['open_url']})"
 
 
 def one_line(text) -> str:
@@ -422,7 +446,8 @@ def build_markdown(db: Path, meta: dict) -> None:
             for p in key_papers:
                 doi = f" [doi:{p['doi']}](https://doi.org/{p['doi']})" if p["doi"] else ""
                 lines.append(f"- {p['first_author'] or 'Anon.'} ({p['year'] or 'n.d.'}). "
-                             f"{one_line(p['title'])}. *{one_line(p['journal'])}*.{doi}")
+                             f"{one_line(p['title'])}. *{one_line(p['journal'])}*."
+                             f"{doi}{open_copy(p)}")
             if t["n_papers"] > len(key_papers):
                 lines.append(f"- ... and {t['n_papers'] - len(key_papers)} more in "
                              "`pycoapedia.sqlite` (table `paper_topics`).")
@@ -435,7 +460,10 @@ def build_markdown(db: Path, meta: dict) -> None:
            "distilled into topics, synthesis, claims with their regimes, and equations, "
            "every piece traceable to a DOI.", "",
            f"Generated {meta['generated']}: {meta['topics']} topics, {meta['claims']} claims, "
-           f"{meta['equations']} equations, {meta['papers']} papers.", "",
+           f"{meta['equations']} equations, {meta['papers']} papers. "
+           f"{meta['papers_open_access']} papers link to a lawful open copy, and "
+           f"{meta['full_text_extractions']} extractions were made from the full text "
+           "(the rest from the abstract).", "",
            "- Browse the topic tree below, or [by pyCoastal design module](modules.md).",
            "- Query it: [`SCHEMA.md`](SCHEMA.md) describes the SQLite database "
            "(`pyCoastal/pedia/pycoapedia.sqlite`) and its full-text index.",

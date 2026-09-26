@@ -2,7 +2,7 @@
 
 The pyCoastal knowledge base: peer-reviewed coastal and ocean engineering distilled into topics, synthesis, claims with their regimes, and equations, every piece traceable to a DOI.
 
-Generated 2026-09-22: 156 topics, 1779 claims, 163 equations, 1655 papers.
+Generated 2026-09-26: 156 topics, 1783 claims, 163 equations, 1655 papers. 1540 papers link to a lawful open copy, and 623 extractions were made from the full text (the rest from the abstract).
 
 - Browse the topic tree below, or [by pyCoastal design module](modules.md).
 - Query it: [`SCHEMA.md`](SCHEMA.md) describes the SQLite database (`pyCoastal/pedia/pycoapedia.sqlite`) and its full-text index.
@@ -38,7 +38,7 @@ Generated 2026-09-22: 156 topics, 1779 claims, 163 equations, 1655 papers.
 - [Estuaries and tidal inlets](topics/estuaries.md) `estuaries` (2 claims, 15 papers)
   - [Estuarine exchange flow](topics/estuaries.exchange.md) `estuaries.exchange` (33 claims, 37 papers)
   - [Tidal inlet dynamics](topics/estuaries.inlets.md) `estuaries.inlets` (20 claims, 22 papers)
-  - [River plumes](topics/estuaries.plumes.md) `estuaries.plumes` (34 claims, 33 papers)
+  - [River plumes](topics/estuaries.plumes.md) `estuaries.plumes` (35 claims, 33 papers)
   - [Salinity intrusion and mixing](topics/estuaries.salt.md) `estuaries.salt` (31 claims, 32 papers)
 - [Field measurements](topics/field.md) `field` (10 claims, 24 papers)
   - [Extreme-event observations](topics/field.extreme.md) `field.extreme` (7 claims, 10 papers)
@@ -48,7 +48,7 @@ Generated 2026-09-22: 156 topics, 1779 claims, 163 equations, 1655 papers.
 - [Flood mapping and inundation](topics/inundation.md) `inundation` (1 claims, 14 papers)
   - [Inundation modeling](topics/inundation.models.md) `inundation.models` (13 claims, 24 papers)
   - [Topographic and bathymetric controls](topics/inundation.topography.md) `inundation.topography` (5 claims, 10 papers)
-  - [Flood-map uncertainty](topics/inundation.uncertainty.md) `inundation.uncertainty` (21 claims, 27 papers)
+  - [Flood-map uncertainty](topics/inundation.uncertainty.md) `inundation.uncertainty` (22 claims, 27 papers)
 - [Laboratory experiments](topics/laboratory.md) `laboratory` (10 claims, 16 papers)
   - [Wave-basin experiments](topics/laboratory.basins.md) `laboratory.basins` (7 claims, 10 papers)
   - [Wave-flume experiments](topics/laboratory.flumes.md) `laboratory.flumes` (9 claims, 19 papers)
@@ -71,7 +71,7 @@ Generated 2026-09-22: 156 topics, 1779 claims, 163 equations, 1655 papers.
     - [Living shoreline breakwalls](topics/nature_based.reefs.breakwalls.md) `nature_based.reefs.breakwalls` (9 claims, 7 papers)
   - [Vegetation and wave attenuation](topics/nature_based.vegetation.md) `nature_based.vegetation` (22 claims, 32 papers)
 - [Nearshore hydrodynamics](topics/nearshore.md) `nearshore` (1 claims, 15 papers)
-  - [Infragravity motions](topics/nearshore.infragravity.md) `nearshore.infragravity` (7 claims, 8 papers)
+  - [Infragravity motions](topics/nearshore.infragravity.md) `nearshore.infragravity` (9 claims, 8 papers)
   - [Longshore currents](topics/nearshore.longshore.md) `nearshore.longshore` (9 claims, 11 papers)
   - [Rip currents](topics/nearshore.rips.md) `nearshore.rips` (22 claims, 23 papers)
   - [Surf-zone circulation](topics/nearshore.surfzone.md) `nearshore.surfzone` (15 claims, 19 papers)

@@ -57,6 +57,6 @@ Source: (Dornbusch 2017, [doi:10.1016/j.coastaleng.2017.03.006](https://doi.org/
 
 ## Papers
 
-- Kathryn A. O’Shaughnessy (2019). Design catalogue for eco-engineering of coastal artificial structures: a multifunctional approach for stakeholders and end-users. *Urban Ecosystems*. [doi:10.1007/s11252-019-00924-z](https://doi.org/10.1007/s11252-019-00924-z)
+- Kathryn A. O’Shaughnessy (2019). Design catalogue for eco-engineering of coastal artificial structures: a multifunctional approach for stakeholders and end-users. *Urban Ecosystems*. [doi:10.1007/s11252-019-00924-z](https://doi.org/10.1007/s11252-019-00924-z) [published version, CC BY](https://link.springer.com/content/pdf/10.1007/s11252-019-00924-z.pdf)
 - Dornbusch (2017). Design requirement for mixed sand and gravel beach defences under scenarios of sea level rise. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2017.03.006](https://doi.org/10.1016/j.coastaleng.2017.03.006)
-- Bieri (2026). Designing restored oyster reefs to enhance coastal protection benefits. *Estuarine, Coastal and Shelf Science*. [doi:10.1016/j.ecss.2026.110156](https://doi.org/10.1016/j.ecss.2026.110156)
+- Bieri (2026). Designing restored oyster reefs to enhance coastal protection benefits. *Estuarine, Coastal and Shelf Science*. [doi:10.1016/j.ecss.2026.110156](https://doi.org/10.1016/j.ecss.2026.110156) [submitted manuscript, read only](https://papers.ssrn.com/sol3/Delivery.cfm/efdb6ddd-282e-43ff-bebf-31f0a0de97e2-MECA.pdf?abstractid=6110269&mirid=1)

@@ -38,8 +38,13 @@ Disagreement in the literature is therefore queryable.
 are classified under, and a structured extraction: the research question,
 the principal results, the quantitative findings, the parameter ranges, the
 engineering implications, the limitations and the applicability conditions.
-Parameters, numerical models, datasets and field sites used by each paper
-are recorded as well.
+`extraction_source` records whether the extraction was made from the full
+text or only from the abstract. Where the source database has verified a
+lawful open copy (an open-access publication, a repository copy, or an
+author manuscript), `open_url` links to it, with its `open_version` and
+`open_license`; papers without one keep their DOI only. Parameters,
+numerical models, datasets and field sites used by each paper are recorded
+as well.
 
 ## How it is built
 
@@ -100,10 +105,11 @@ quantitative findings recorded there.
 `webapp/pedia.html` is a standalone page that loads the same extract as
 PyCoaTools. The topic tree is on the left with the number of claims on each
 branch; a search box searches topics, synthesis, claims and equations at
-once; and chips filter everything to the topics behind one pyCoastal design
-module. A topic page shows its breadcrumb and subtopics, the synthesis under
+once; and a drop-down filters everything to the topics behind one pyCoastal
+design module. A topic page shows its breadcrumb and subtopics, the synthesis under
 its headings, the equations (typeset when KaTeX is reachable), and the
-claims, filterable by kind of evidence, each linking to its paper by DOI.
+claims, filterable by kind of evidence, each linking to its paper by DOI
+and, where one exists, to an open copy.
 Topic and claim views have their own URLs, so a finding can be shared as a
 link. From PyCoaTools, the PyCoaPedia button in the masthead and the Theory
 and sources panel beside each design lead to the same pages.

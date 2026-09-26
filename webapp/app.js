@@ -1149,6 +1149,18 @@ function citation(paperId) {
     link.textContent = paper.doi;
     wrap.appendChild(link);
   }
+  if (paper.oa) {
+    var open = document.createElement("a");
+    open.className = "cite-doi";
+    open.href = paper.oa;
+    open.target = "_blank";
+    open.rel = "noopener noreferrer";
+    open.textContent = "open copy";
+    open.title = ({ vor: "published version", am: "accepted manuscript",
+                    sm: "submitted manuscript", pp: "preprint" }[paper.v] || "open copy") +
+                 ", " + paper.l;
+    wrap.appendChild(open);
+  }
   return wrap;
 }
 
