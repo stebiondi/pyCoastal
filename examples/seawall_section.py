@@ -20,23 +20,24 @@ use_crisp_style()
 # Wave height at the toe, after any nearshore transformation. The storm
 # still water level already includes surge and tide.
 conditions = DesignConditions.from_peak_period(
-    Hm0=2.8,              # significant wave height at the toe
-    Tp=9.5,               # peak period
-    depth=8.5,            # depth at the toe under the design level
+    Hm0=2.0,              # significant wave height at the toe
+    Tp=8.0,               # peak period
+    depth=3.5,            # depth at the toe under the design level
     storm_duration=6 * 3600.0,
 )
 
 design = design_seawall(
     conditions,
-    still_water_level=2.90,   # m CD, surge plus tide
-    seabed_level=-5.60,       # m CD
+    still_water_level=2.50,   # m CD, surge plus tide
+    seabed_level=-1.00,       # m CD
     tolerable_use="trained_staff",
     friction=0.60,            # concrete on a rubble bedding layer
     target_sliding=1.2,
     target_overturning=1.5,
     scour_coefficient=0.4,    # Xie, fine sand
-    stem_thickness=1.0,
-    base_thickness=1.2,
+    allowable_bearing=300.0,  # kPa, presumptive; from the site investigation
+    stem_thickness=0.5,       # minimums: both grow to carry the stem moment
+    base_thickness=0.6,
 )
 
 print(design.summary())

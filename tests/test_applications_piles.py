@@ -212,7 +212,8 @@ def test_small_pile_is_drag_dominated():
 
 def test_inertia_load_scales_with_the_square_of_the_diameter():
     """At the acceleration peak the load is pure inertia, so it goes as D^2."""
-    kwargs = dict(H=8.0, T=14.0, depth=40.0, phase=math.pi / 2, Cd=1.0, Cm=2.0)
+    kwargs = dict(H=8.0, T=14.0, depth=40.0, phase=math.pi / 2, Cd=1.0, Cm=2.0,
+                  theory="linear")
     a = morison_pile_load(diameter=2.0, **kwargs)
     b = morison_pile_load(diameter=4.0, **kwargs)
     assert b.force == pytest.approx(4.0 * a.force, rel=1e-6)
@@ -220,7 +221,8 @@ def test_inertia_load_scales_with_the_square_of_the_diameter():
 
 def test_drag_load_scales_with_the_diameter():
     """Under the crest the load is pure drag, so it goes as D."""
-    kwargs = dict(H=8.0, T=14.0, depth=40.0, phase=0.0, Cd=1.0, Cm=2.0)
+    kwargs = dict(H=8.0, T=14.0, depth=40.0, phase=0.0, Cd=1.0, Cm=2.0,
+                  theory="linear")
     a = morison_pile_load(diameter=2.0, **kwargs)
     b = morison_pile_load(diameter=4.0, **kwargs)
     assert b.force == pytest.approx(2.0 * a.force, rel=1e-6)
@@ -251,7 +253,8 @@ def test_pile_warns_about_a_broken_wave():
 
 
 def test_pile_warns_when_kinematics_are_extrapolated():
-    load = morison_pile_load(3.0, 6.0, 11.0, 30.0, stretching="extrapolate")
+    load = morison_pile_load(3.0, 6.0, 11.0, 30.0, stretching="extrapolate",
+                             theory="linear")
     assert any("extrapolated" in w for w in load.warnings)
 
 
@@ -357,3 +360,69 @@ def test_design_monopile_does_not_warn_for_a_drag_dominated_pile():
     result = design_monopile(0.6, 10.0, 12.0, 28.0)
     assert result["crest_underestimate"] < 0.02
     assert not any("crest" in w for w in result["load"].warnings)
+
+
+
+# --------------------------------------------------------------------------
+# Stream function wave and scour with current
+# --------------------------------------------------------------------------
+
+def test_stream_function_recovers_linear_theory_for_a_small_wave():
+    from pyCoastal.applications.piles import StreamFunctionWave, wave_kinematics
+    from pyCoastal.tools.wave import dispersion
+
+    w = StreamFunctionWave(0.05, 10.0, 20.0)
+    assert w.converged
+    assert w.wavelength == pytest.approx(dispersion(10.0, 20.0), rel=1e-4)
+    z = [-5.0, -15.0]
+    for phase in (0.0, math.pi / 3):
+        got = w.kinematics(z, phase)
+        lin = wave_kinematics(0.05, 10.0, 20.0, z, phase=phase, stretching="none")
+        assert got["u"] == pytest.approx(lin["u"], rel=5e-3, abs=1e-6)
+        assert got["dudt"] == pytest.approx(lin["dudt"], rel=5e-3, abs=1e-6)
+
+
+def test_stream_function_crest_is_higher_than_the_trough_is_deep():
+    from pyCoastal.applications.piles import StreamFunctionWave
+
+    w = StreamFunctionWave(12.0, 13.0, 30.0)
+    assert w.converged
+    assert w.crest - w.trough == pytest.approx(12.0, rel=1e-6)
+    assert 0.55 * 12.0 < w.crest < 0.75 * 12.0
+
+
+def test_stream_function_loads_exceed_linear_for_a_steep_wave():
+    lin = morison_pile_load(8.0, 12.0, 13.0, 30.0, phase=0.0, theory="linear")
+    sf = morison_pile_load(8.0, 12.0, 13.0, 30.0, phase=0.0)
+    assert sf.theory == "stream function"
+    assert sf.moment > 1.2 * lin.moment
+
+
+def test_a_wave_past_breaking_falls_back_to_linear():
+    load = morison_pile_load(3.0, 0.8 * 10.0, 8.0, 10.0)
+    assert load.theory == "linear"
+
+
+def test_bed_kc_is_smaller_than_the_surface_kc():
+    from pyCoastal.applications.piles import bed_keulegan_carpenter
+
+    bed = bed_keulegan_carpenter(12.0 / 1.86, 13.0, 30.0, 8.0)["KC"]
+    surface = keulegan_carpenter(12.0, 13.0, 30.0, 8.0)
+    assert bed < surface
+
+
+def test_combined_scour_matches_sumer_and_fredsoe():
+    Ucw, KC = 0.4, 5.0
+    got = scour_depth_pile(5.0, KC, current_ratio=Ucw)
+    A = 0.03 + 0.75 * Ucw**2.6
+    B = 6.0 * math.exp(-4.7 * Ucw)
+    assert got["ratio"] == pytest.approx(1.3 * (1 - math.exp(-A * (KC - B))))
+
+
+def test_a_current_deepens_monopile_scour():
+    from pyCoastal.applications.piles import design_monopile
+
+    still = design_monopile(8.0, 12.0, 13.0, 30.0, phases=37)
+    tidal = design_monopile(8.0, 12.0, 13.0, 30.0, phases=37, current=1.0)
+    assert tidal["scour"]["depth"] > still["scour"]["depth"] + 1.0
+    assert any("No current" in w for w in still["load"].warnings)

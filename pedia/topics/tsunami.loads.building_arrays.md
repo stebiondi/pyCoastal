@@ -42,4 +42,4 @@ Papers: 1. Claims: 3. Equations: 0.
 
 ## Papers
 
-- Tomiczek (2016). Physical modelling of tsunami onshore propagation, peak pressures, and shielding effects in an urban building array. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.07.003](https://doi.org/10.1016/j.coastaleng.2016.07.003)
+- Tomiczek (2016). Physical modelling of tsunami onshore propagation, peak pressures, and shielding effects in an urban building array. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.07.003](https://doi.org/10.1016/j.coastaleng.2016.07.003) [published version, read only](https://doi.org/10.1016/j.coastaleng.2016.07.003)

@@ -1,6 +1,6 @@
 {
  "generated_from": "pyCoastal",
- "count": 183,
+ "count": 214,
  "cases": [
   {
    "name": "dispersion T=8.0 h=5.0",
@@ -69,10 +69,10 @@
     ]
    },
    "expect": {
-    "Dn50": 1.5916585331072473,
-    "M50": 10685.517986228515,
+    "Dn50": 1.6698292702137796,
+    "M50": 12338.491957987713,
     "xi": 3.1238097650660213,
-    "xi_cr": 3.768149273731115,
+    "xi_cr": 3.9451738702943744,
     "regime": "plunging"
    }
   },
@@ -91,10 +91,10 @@
     ]
    },
    "expect": {
-    "Dn50": 0.6345216244575862,
-    "M50": 676.994524541563,
+    "Dn50": 0.6937657237298102,
+    "M50": 884.8800250939119,
     "xi": 3.2128975534762763,
-    "xi_cr": 2.563829925428821,
+    "xi_cr": 2.6842765758229143,
     "regime": "surging"
    }
   },
@@ -218,12 +218,12 @@
     ]
    },
    "expect": {
-    "Dn50": 1.8378889650948682,
-    "M50": 16451.43116207899,
+    "Dn50": 1.9281527573172839,
+    "M50": 18993.662912680582,
     "crest_freeboard": 5.692427154541015,
     "q_mean": 0.33331818361848004,
     "regime": "plunging",
-    "layer_thickness": 3.6757779301897364
+    "layer_thickness": 3.8563055146345677
    }
   },
   {
@@ -243,12 +243,12 @@
     ]
    },
    "expect": {
-    "Dn50": 1.5916585331072473,
-    "M50": 10685.517986228515,
+    "Dn50": 1.6698292702137796,
+    "M50": 12336.74594497479,
     "crest_freeboard": 5.692427154541015,
     "q_mean": 0.33331818361848004,
     "regime": "plunging",
-    "layer_thickness": 3.1833170662144945
+    "layer_thickness": 3.339658540427559
    }
   },
   {
@@ -268,12 +268,299 @@
     ]
    },
    "expect": {
-    "Dn50": 1.2995837502865073,
-    "M50": 5816.459267464869,
+    "Dn50": 1.363409889862591,
+    "M50": 6715.273922563938,
     "crest_freeboard": 5.692427154541015,
     "q_mean": 0.33331818361848004,
     "regime": "plunging",
-    "layer_thickness": 2.5991675005730146
+    "layer_thickness": 2.726819779725182
+   }
+  },
+  {
+   "name": "concrete armour cubes_two_layer_random",
+   "call": {
+    "fn": "concreteArmour",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     "cubes_two_layer_random",
+     1.5
+    ]
+   },
+   "expect": {
+    "Dn50": 1.4349196284100965,
+    "M50": 7090.779343791286,
+    "stability_number": 2.0780384648595702
+   }
+  },
+  {
+   "name": "concrete armour tetrapod",
+   "call": {
+    "fn": "concreteArmour",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     "tetrapod",
+     1.5
+    ]
+   },
+   "expect": {
+    "Dn50": 1.243267170788471,
+    "M50": 4612.162917779084,
+    "stability_number": 2.3983728130833977
+   }
+  },
+  {
+   "name": "concrete armour accropode",
+   "call": {
+    "fn": "concreteArmour",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     "accropode",
+     1.33
+    ]
+   },
+   "expect": {
+    "Dn50": 1.1043771043771045,
+    "M50": 3232.685274218452,
+    "stability_number": 2.7
+   }
+  },
+  {
+   "name": "concrete armour xbloc",
+   "call": {
+    "fn": "concreteArmour",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     "xbloc",
+     1.5
+    ]
+   },
+   "expect": {
+    "Dn50": 1.064935064935065,
+    "M50": 2898.548845318959,
+    "stability_number": 2.8
+   }
+  },
+  {
+   "name": "concrete armour dolos",
+   "call": {
+    "fn": "concreteArmour",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     "dolos",
+     2.0
+    ]
+   },
+   "expect": {
+    "Dn50": 0.9392138735579966,
+    "M50": 1988.4045078888068,
+    "stability_number": 3.1748021039363987
+   }
+  },
+  {
+   "name": "design_rubble_mound accropode",
+   "call": {
+    "fn": "designRubbleMound",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "accropode"
+     }
+    ]
+   },
+   "expect": {
+    "Dn50": 1.1043771043771045,
+    "M50": 3232.685274218452,
+    "crest_freeboard": 6.546324310302735,
+    "layer_thickness": 1.6676094276094278,
+    "underlayer_Dn50": 0.4959514720605513
+   }
+  },
+  {
+   "name": "crown wall accropode",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "design_first": true,
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "accropode"
+     },
+     0.0
+    ]
+   },
+   "expect": {
+    "deck_width": 10.0,
+    "sliding_FoS": 1.2164079490382311,
+    "overturning_FoS": 6.9771770521366925,
+    "crown_Fh": 133.43524874600547,
+    "berm_width": 3.313131313131313
+   }
+  },
+  {
+   "name": "design_rubble_mound tetrapod",
+   "call": {
+    "fn": "designRubbleMound",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     }
+    ]
+   },
+   "expect": {
+    "Dn50": 1.243267170788471,
+    "M50": 4612.162917779084,
+    "crest_freeboard": 5.40779476928711,
+    "layer_thickness": 2.5859957152400197,
+    "underlayer_Dn50": 0.5583239466602999
+   }
+  },
+  {
+   "name": "crown wall tetrapod",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "design_first": true,
+    "args": [
+     {
+      "cot_alpha": 1.5,
+      "armour": "tetrapod"
+     },
+     0.0
+    ]
+   },
+   "expect": {
+    "deck_width": 8.5,
+    "sliding_FoS": 1.2095782606667551,
+    "overturning_FoS": 4.472768040896712,
+    "crown_Fh": 203.7243081314039,
+    "berm_width": 3.7298015123654134
+   }
+  },
+  {
+   "name": "design_rubble_mound rock_two_layer_permeable",
+   "call": {
+    "fn": "designRubbleMound",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     }
+    ]
+   },
+   "expect": {
+    "Dn50": 1.6698292702137796,
+    "M50": 12336.74594497479,
+    "crest_freeboard": 5.692427154541015,
+    "layer_thickness": 3.339658540427559,
+    "underlayer_Dn50": 0.7750295280205535
+   }
+  },
+  {
+   "name": "crown wall rock_two_layer_permeable",
+   "call": {
+    "fn": "crownWall",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "design_first": true,
+    "args": [
+     {
+      "cot_alpha": 2.0,
+      "armour": "rock_two_layer_permeable"
+     },
+     0.0
+    ]
+   },
+   "expect": {
+    "deck_width": 7.5,
+    "sliding_FoS": 3.1843826794395813,
+    "overturning_FoS": 10.264315156312891,
+    "crown_Fh": 119.58604054946416,
+    "berm_width": 5.009487810641339
+   }
+  },
+  {
+   "name": "pedersen crown loads",
+   "call": {
+    "fn": "pedersenCrownLoads",
+    "conditions": [
+     4.0,
+     11.0,
+     12.0,
+     21600.0
+    ],
+    "args": [
+     2.0,
+     4.0,
+     5.0,
+     2.0,
+     1.5
+    ]
+   },
+   "expect": {
+    "Fh": 180.1991849944734,
+    "M": 346.8834311143613,
+    "pb": 52.55479275051876,
+    "Ru": 9.226602297358967,
+    "y_eff": 1.5
    }
   },
   {
@@ -287,7 +574,7 @@
       "depth": 12.0,
       "wall_toe_depth": 12.0,
       "crest_freeboard": 6.0,
-      "breaker_index": 0.0
+      "depth_limit": false
      }
     ]
    },
@@ -313,17 +600,17 @@
       "depth": 4.0,
       "wall_toe_depth": 4.0,
       "crest_freeboard": 4.0,
-      "breaker_index": 0.78
+      "depth_limit": true
      }
     ]
    },
    "expect": {
-    "p1": 32.29904101892641,
-    "p3": 29.735628894916207,
-    "pu": 28.89886125310186,
-    "F": 198.05346797360212,
-    "arm": 3.66281690027635,
-    "Hmax": 3.12,
+    "p1": 42.202918353771786,
+    "p3": 38.853485393416136,
+    "pu": 37.08515652528364,
+    "F": 274.70753718934685,
+    "arm": 3.75965674474002,
+    "Hmax": 4.003814798981592,
     "alpha1": 1.0005660505400191,
     "alpha3": 0.9206350392103559
    }
@@ -340,7 +627,7 @@
       "wall_toe_depth": 10.0,
       "crest_freeboard": 5.0,
       "beta_degrees": 40.0,
-      "breaker_index": 0.0
+      "depth_limit": false
      }
     ]
    },
@@ -381,6 +668,116 @@
    },
    "expect": {
     "value": 1.7569444887988914
+   }
+  },
+  {
+   "name": "tanimoto T=10.0 h=6.0 B=8.0",
+   "call": {
+    "fn": "toeStoneTanimoto",
+    "args": [
+     3.0,
+     10.0,
+     6.0,
+     8.0
+    ]
+   },
+   "expect": {
+    "Dn50": 0.6879658764073475,
+    "stability_number": 2.7512185479015914,
+    "kappa": 0.33614551294472406
+   }
+  },
+  {
+   "name": "tanimoto T=8.0 h=3.0 B=2.0",
+   "call": {
+    "fn": "toeStoneTanimoto",
+    "args": [
+     3.0,
+     8.0,
+     3.0,
+     2.0
+    ]
+   },
+   "expect": {
+    "Dn50": 0.6478486181528095,
+    "stability_number": 2.9215844974586678,
+    "kappa": 0.07612871033828392
+   }
+  },
+  {
+   "name": "tanimoto T=12.0 h=9.0 B=20.0",
+   "call": {
+    "fn": "toeStoneTanimoto",
+    "args": [
+     3.0,
+     12.0,
+     9.0,
+     20.0
+    ]
+   },
+   "expect": {
+    "Dn50": 0.7726040815963647,
+    "stability_number": 2.449824592674238,
+    "kappa": 0.7066323846269627
+   }
+  },
+  {
+   "name": "goda breaking height",
+   "call": {
+    "fn": "godaBreakingHeight",
+    "args": [
+     10.0,
+     4.67,
+     0.03333333333333333
+    ]
+   },
+   "expect": {
+    "value": 4.0064470657664275
+   }
+  },
+  {
+   "name": "stem section M=1200.0 V=350.0",
+   "call": {
+    "fn": "stemSection",
+    "args": [
+     1200.0,
+     350.0
+    ]
+   },
+   "expect": {
+    "thickness": 0.7000000000000001,
+    "d_bending": 0.5537749241945383,
+    "d_shear": 0.5576836992736988
+   }
+  },
+  {
+   "name": "stem section M=6000.0 V=1500.0",
+   "call": {
+    "fn": "stemSection",
+    "args": [
+     6000.0,
+     1500.0
+    ]
+   },
+   "expect": {
+    "thickness": 3.1500000000000004,
+    "d_bending": 1.2382783747337807,
+    "d_shear": 3.041453697165891
+   }
+  },
+  {
+   "name": "stem section M=50.0 V=900.0",
+   "call": {
+    "fn": "stemSection",
+    "args": [
+     50.0,
+     900.0
+    ]
+   },
+   "expect": {
+    "thickness": 1.85,
+    "d_bending": 0.1130388330520878,
+    "d_shear": 1.708311054494685
    }
   },
   {
@@ -455,29 +852,74 @@
    "call": {
     "fn": "designSeawall",
     "conditions": [
-     2.8,
-     9.5,
-     8.5,
+     2.0,
+     8.0,
+     3.5,
      21600.0
     ],
     "args": [
-     2.9,
-     -5.6,
+     2.5,
+     -1.0,
      {
       "tolerable_use": "trained_staff"
      }
     ]
    },
    "expect": {
-    "crest_level": 8.59077941131592,
-    "base_width": 15.050848798678029,
-    "founding_level": -7.1109181860401875,
+    "crest_level": 6.356542221069336,
+    "base_width": 10.48021676584865,
+    "founding_level": -3.0038913106280067,
+    "stem_thickness": 1.0,
+    "base_thickness": 1.0,
     "sliding_FoS": "inf",
-    "overturning_FoS": "inf",
-    "wave_force": 516.778042002266,
-    "toe_Dn50": 0.2729285787030593,
-    "impulsive": false,
-    "concrete": 32.56271615576974
+    "overturning_FoS": 1.8976822241836124,
+    "drawdown_sliding": 1.5635344558747402,
+    "drawdown_overturning": 1.7422260926298385,
+    "drawdown_p_max": 221.04321581060344,
+    "bearing_p_max": 106.7787649147125,
+    "stem_moment": 1402.9515631035194,
+    "wave_force": 195.14597055252642,
+    "toe_Dn50": 0.31396846554280994,
+    "impulsive": true,
+    "concrete": 18.84065029754599
+   }
+  },
+  {
+   "name": "design_seawall drained",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     2.0,
+     8.0,
+     3.5,
+     21600.0
+    ],
+    "args": [
+     2.5,
+     -1.0,
+     {
+      "tolerable_use": "trained_staff",
+      "water_table": 2.0
+     }
+    ]
+   },
+   "expect": {
+    "crest_level": 6.356542221069336,
+    "base_width": 8.380216765848658,
+    "founding_level": -3.0038913106280067,
+    "stem_thickness": 0.75,
+    "base_thickness": 0.75,
+    "sliding_FoS": "inf",
+    "overturning_FoS": 1.7229354830115102,
+    "drawdown_sliding": 1.6720353043802552,
+    "drawdown_overturning": 1.8244776890302423,
+    "drawdown_p_max": 224.01135251347708,
+    "bearing_p_max": 124.8355232382891,
+    "stem_moment": 1070.751507192958,
+    "wave_force": 195.14597055252642,
+    "toe_Dn50": 0.31396846554280994,
+    "impulsive": true,
+    "concrete": 12.742987723159501
    }
   },
   {
@@ -500,18 +942,25 @@
    },
    "expect": {
     "crest_level": 8.222356231689453,
-    "base_width": 10.777876343006454,
-    "founding_level": -2.9333964543234927,
+    "base_width": 13.154677878778083,
+    "founding_level": -3.286999525866764,
+    "stem_thickness": 1.55,
+    "base_thickness": 1.55,
     "sliding_FoS": "inf",
-    "overturning_FoS": "inf",
-    "wave_force": 132.05627805050943,
-    "toe_Dn50": 0.25126112955341284,
+    "overturning_FoS": 2.175823829711044,
+    "drawdown_sliding": 1.5697146825616206,
+    "drawdown_overturning": 1.7808460722676227,
+    "drawdown_p_max": 287.26017018761263,
+    "bearing_p_max": 173.9197034988345,
+    "stem_moment": 2507.1619573320486,
+    "wave_force": 226.22559857542203,
+    "toe_Dn50": 0.3401971943116593,
     "impulsive": true,
-    "concrete": 22.889204297620694
+    "concrete": 35.82675213631816
    }
   },
   {
-   "name": "design_seawall strict",
+   "name": "design_seawall tall",
    "call": {
     "fn": "designSeawall",
     "conditions": [
@@ -524,20 +973,66 @@
      2.9,
      -5.6,
      {
-      "tolerable_use": "pedestrians_unaware"
+      "tolerable_use": "trained_staff"
      }
     ]
    },
    "expect": {
-    "crest_level": 10.510827461242677,
-    "base_width": 16.710872823641417,
-    "founding_level": -7.1109181860401875,
+    "crest_level": 8.59077941131592,
+    "base_width": 28.29186088459246,
+    "founding_level": -7.392942357868709,
+    "stem_thickness": 2.7,
+    "base_thickness": 2.7,
     "sliding_FoS": "inf",
-    "overturning_FoS": "inf",
-    "wave_force": 527.3730036061462,
-    "toe_Dn50": 0.2729285787030593,
+    "overturning_FoS": 2.1401806569965642,
+    "drawdown_sliding": 2.539474294700523,
+    "drawdown_overturning": 2.0591676759582396,
+    "drawdown_p_max": 299.9818444844738,
+    "bearing_p_max": 203.78618818088833,
+    "stem_moment": 6010.190272228978,
+    "wave_force": 516.2870159136348,
+    "toe_Dn50": 0.13023189178767317,
     "impulsive": false,
-    "concrete": 36.47479303565257
+    "concrete": 112.25407316519814
+   }
+  },
+  {
+   "name": "design_seawall strict gravel",
+   "call": {
+    "fn": "designSeawall",
+    "conditions": [
+     1.5,
+     7.0,
+     2.5,
+     21600.0
+    ],
+    "args": [
+     2.0,
+     -0.5,
+     {
+      "tolerable_use": "pedestrians_unaware",
+      "backfill": "fine_gravel",
+      "allowable_bearing": 200.0
+     }
+    ]
+   },
+   "expect": {
+    "crest_level": 5.811021377563477,
+    "base_width": 8.34873433627136,
+    "founding_level": -2.086447294979272,
+    "stem_thickness": 0.7000000000000001,
+    "base_thickness": 0.7000000000000001,
+    "sliding_FoS": "inf",
+    "overturning_FoS": 2.122377063614887,
+    "drawdown_sliding": 1.5850113288168222,
+    "drawdown_overturning": 1.7940828877275687,
+    "drawdown_p_max": 194.11572656179706,
+    "bearing_p_max": 108.22256595727096,
+    "stem_moment": 818.7064474255021,
+    "wave_force": 115.08315722758597,
+    "toe_Dn50": 0.3842224098589259,
+    "impulsive": true,
+    "concrete": 10.882342106169876
    }
   },
   {
@@ -879,9 +1374,9 @@
     ]
    },
    "expect": {
-    "force": 1437105.3266600978,
-    "moment": 29557040.481861226,
-    "arm": 20.567066264066543,
+    "force": 2179940.471829011,
+    "moment": 52308738.91235979,
+    "arm": 23.99548959631534,
     "inertia_fraction": 0.0
    }
   },
@@ -901,10 +1396,10 @@
     ]
    },
    "expect": {
-    "force": 4083545.6607287573,
-    "moment": 75672229.76041755,
-    "arm": 18.53101104957718,
-    "inertia_fraction": 0.8326434316635293
+    "force": 5322375.411356463,
+    "moment": 101423734.21800622,
+    "arm": 19.056103032791768,
+    "inertia_fraction": 0.8986960233021704
    }
   },
   {
@@ -923,10 +1418,10 @@
     ]
    },
    "expect": {
-    "force": 4213071.24151266,
-    "moment": 67639262.17714559,
-    "arm": 16.05462103528551,
-    "inertia_fraction": 1.0
+    "force": 3334776.5229951367,
+    "moment": 49535951.281046644,
+    "arm": 14.854354089237686,
+    "inertia_fraction": 0.9923971128137308
    }
   },
   {
@@ -944,11 +1439,11 @@
     ]
    },
    "expect": {
-    "max_moment": 2992345.96269159,
-    "max_force": 145919.3250048674,
+    "max_moment": 5299216.807641478,
+    "max_force": 221727.5245368399,
     "phase_of_max_moment": 0.08726646259971647,
-    "crest_underestimate": 0.012245213274907464,
-    "scour": 0.853692703666426
+    "crest_underestimate": 0.012896795674966408,
+    "scour": 0.4105565753470939
    }
   },
   {
@@ -966,11 +1461,11 @@
     ]
    },
    "expect": {
-    "max_moment": 77165704.82301125,
-    "max_force": 4383580.462350862,
-    "phase_of_max_moment": 0.9599310885968813,
-    "crest_underestimate": 0.6169666233250403,
-    "scour": 0.10304777399064617
+    "max_moment": 111246850.11564675,
+    "max_force": 5404799.238441559,
+    "phase_of_max_moment": 0.5235987755982988,
+    "crest_underestimate": 0.5297957752693024,
+    "scour": 0.0
    }
   },
   {
@@ -1013,6 +1508,204 @@
    "expect": {
     "depth": 5.213658455956505,
     "ratio": 1.042731691191301
+   }
+  },
+  {
+   "name": "pile scour KC=3.0 Ucw=0.4",
+   "call": {
+    "fn": "scourDepthPile",
+    "args": [
+     5.0,
+     3.0,
+     false,
+     true,
+     null,
+     null,
+     null,
+     null,
+     0.4
+    ]
+   },
+   "expect": {
+    "depth": 1.214747324685994,
+    "ratio": 0.24294946493719877
+   }
+  },
+  {
+   "name": "pile scour KC=8.0 Ucw=0.2",
+   "call": {
+    "fn": "scourDepthPile",
+    "args": [
+     5.0,
+     8.0,
+     false,
+     true,
+     null,
+     null,
+     null,
+     null,
+     0.2
+    ]
+   },
+   "expect": {
+    "depth": 1.3576502437208717,
+    "ratio": 0.27153004874417436
+   }
+  },
+  {
+   "name": "pile scour KC=2.0 Ucw=0.7",
+   "call": {
+    "fn": "scourDepthPile",
+    "args": [
+     5.0,
+     2.0,
+     false,
+     true,
+     null,
+     null,
+     null,
+     null,
+     0.7
+    ]
+   },
+   "expect": {
+    "depth": 2.8620190416989706,
+    "ratio": 0.5724038083397941
+   }
+  },
+  {
+   "name": "bed KC",
+   "call": {
+    "fn": "bedKeuleganCarpenter",
+    "args": [
+     6.45,
+     13.0,
+     30.0,
+     8.0
+    ]
+   },
+   "expect": {
+    "Um": 1.398911756209706,
+    "KC": 2.273231603840772
+   }
+  },
+  {
+   "name": "stream function H=12.0 T=13.0 h=30.0",
+   "call": {
+    "fn": "streamFunctionWave",
+    "args": [
+     12.0,
+     13.0,
+     30.0
+    ]
+   },
+   "expect": {
+    "converged": true,
+    "crest": 7.747164053829479,
+    "trough": -4.252835946170521,
+    "wavelength": 207.76025902364353,
+    "celerity": 15.981558386434118
+   }
+  },
+  {
+   "name": "stream function H=3.0 T=8.0 h=6.0",
+   "call": {
+    "fn": "streamFunctionWave",
+    "args": [
+     3.0,
+     8.0,
+     6.0
+    ]
+   },
+   "expect": {
+    "converged": true,
+    "crest": 2.2158925550537987,
+    "trough": -0.7841074449462004,
+    "wavelength": 62.92597864113077,
+    "celerity": 7.865747330141347
+   }
+  },
+  {
+   "name": "stream function H=1.0 T=10.0 h=40.0",
+   "call": {
+    "fn": "streamFunctionWave",
+    "args": [
+     1.0,
+     10.0,
+     40.0
+    ]
+   },
+   "expect": {
+    "converged": true,
+    "crest": 0.506909776370108,
+    "trough": -0.49309022362989197,
+    "wavelength": 146.4374120239441,
+    "celerity": 14.64374120239441
+   }
+  },
+  {
+   "name": "morison linear phase=0.0",
+   "call": {
+    "fn": "morisonPileLoad",
+    "args": [
+     8.0,
+     12.0,
+     13.0,
+     30.0,
+     {
+      "phase": 0.0,
+      "points": 200,
+      "theory": "linear"
+     }
+    ]
+   },
+   "expect": {
+    "force": 1437110.6415387588,
+    "moment": 29557305.991058536
+   }
+  },
+  {
+   "name": "morison linear phase=1.0",
+   "call": {
+    "fn": "morisonPileLoad",
+    "args": [
+     8.0,
+     12.0,
+     13.0,
+     30.0,
+     {
+      "phase": 1.0,
+      "points": 200,
+      "theory": "linear"
+     }
+    ]
+   },
+   "expect": {
+    "force": 4307796.3545859475,
+    "moment": 76977386.10256794
+   }
+  },
+  {
+   "name": "design_monopile with current",
+   "call": {
+    "fn": "designMonopile",
+    "args": [
+     6.0,
+     10.0,
+     12.0,
+     25.0,
+     {
+      "phases": 37,
+      "current": 1.2,
+      "bed": "medium_sand"
+     }
+    ]
+   },
+   "expect": {
+    "max_moment": 44018789.74005313,
+    "max_force": 2533675.4795729565,
+    "scour": 1.8978309794661452,
+    "theory": "stream function"
    }
   },
   {
@@ -2457,12 +3150,12 @@
     "design_first": true
    },
    "expect": {
-    "toe_Dn50": 0.9974668361958925,
-    "toe_M50": 2629.9123191862377,
-    "toe_width": 2.9924005085876777,
-    "toe_thickness": 1.994933672391785,
-    "bedding_thickness": 1.4962002542938388,
-    "bedding_extension": 3.223465731085172
+    "toe_Dn50": 0.8751802451192091,
+    "toe_M50": 1776.3902961089618,
+    "toe_width": 2.71,
+    "toe_thickness": 1.7503604902384182,
+    "bedding_thickness": 1.3127703676788136,
+    "bedding_extension": 3.0
    }
   },
   {
@@ -2485,11 +3178,11 @@
     "design_first": true
    },
    "expect": {
-    "base_level": 3.319158988395227,
+    "base_level": 3.563530466184681,
     "deck_level": 7.61711329650879,
     "parapet_top": 9.24311329650879,
     "total_width": 9.5,
-    "concrete_m3_per_m": 44.082565927078846
+    "concrete_m3_per_m": 41.76103688807903
    }
   },
   {
@@ -2515,11 +3208,11 @@
     "design_first": true
    },
    "expect": {
-    "toe_Dn50": 0.8638316195781344,
-    "toe_M50": 1708.1781586056984,
-    "toe_width": 2.71,
-    "toe_thickness": 1.7276632391562687,
-    "bedding_thickness": 1.2957474293672016,
+    "toe_Dn50": 0.9062140211226575,
+    "toe_M50": 1972.1421084717365,
+    "toe_width": 2.718642063367972,
+    "toe_thickness": 1.812428042245315,
+    "bedding_thickness": 1.359321031683986,
     "bedding_extension": 3.0
    }
   },
@@ -2543,11 +3236,11 @@
     "design_first": true
    },
    "expect": {
-    "base_level": 4.2958783798945195,
+    "base_level": 4.1130739435568255,
     "deck_level": 8.018015995025635,
     "parapet_top": 9.644015995025635,
     "total_width": 9.5,
-    "concrete_m3_per_m": 38.6123073437456
+    "concrete_m3_per_m": 40.34894948895369
    }
   },
   {
@@ -2573,11 +3266,11 @@
     "design_first": true
    },
    "expect": {
-    "toe_Dn50": 0.7053155638828069,
-    "toe_M50": 929.8144174113148,
+    "toe_Dn50": 0.7399206498354159,
+    "toe_M50": 1073.4981924471797,
     "toe_width": 2.71,
-    "toe_thickness": 1.4106311277656138,
-    "bedding_thickness": 1.0579733458242104,
+    "toe_thickness": 1.4798412996708319,
+    "bedding_thickness": 1.109880974753124,
     "bedding_extension": 3.0
    }
   },
@@ -2601,11 +3294,11 @@
     "design_first": true
    },
    "expect": {
-    "base_level": 3.3971790428852864,
+    "base_level": 3.24791984563714,
     "deck_level": 6.4362916793823235,
     "parapet_top": 8.062291679382323,
     "total_width": 9.5,
-    "concrete_m3_per_m": 32.12357004672185
+    "concrete_m3_per_m": 33.541532420579244
    }
   },
   {
@@ -2888,11 +3581,11 @@
     "design_first": true
    },
    "expect": {
-    "Dn50": 2.3976601931656933,
-    "M50": 36526.559988697736,
+    "Dn50": 2.174360506815944,
+    "M50": 24672.087445957804,
     "kd_ratio": 0.72,
     "crest_freeboard": 7.61711329650879,
-    "layer_thickness": 4.795320386331387,
+    "layer_thickness": 4.522669854177163,
     "section": "head"
    }
   },
@@ -2916,11 +3609,11 @@
     "design_first": true
    },
    "expect": {
-    "Dn50": 2.0047755997777554,
-    "M50": 21352.22698257124,
+    "Dn50": 2.1032356545621678,
+    "M50": 24651.77635589669,
     "kd_ratio": 0.8,
     "crest_freeboard": 8.018015995025635,
-    "layer_thickness": 4.009551199555511,
+    "layer_thickness": 4.2064713091243355,
     "section": "head"
    }
   },
@@ -2944,11 +3637,11 @@
     "design_first": true
    },
    "expect": {
-    "Dn50": 2.3149154643929606,
-    "M50": 32873.903989827966,
+    "Dn50": 2.099321987636511,
+    "M50": 22204.878701362028,
     "kd_ratio": 0.8,
     "crest_freeboard": 7.61711329650879,
-    "layer_thickness": 4.629830928785921,
+    "layer_thickness": 4.366589734283943,
     "section": "head"
    }
   },
@@ -2972,11 +3665,11 @@
     "design_first": true
    },
    "expect": {
-    "Dn50": 1.9145209918620614,
-    "M50": 18596.288348226295,
+    "Dn50": 1.4007158398745279,
+    "M50": 6595.707098451092,
     "kd_ratio": 0.5,
     "crest_freeboard": 6.918958389282227,
-    "layer_thickness": 3.8290419837241227,
+    "layer_thickness": 2.633345778964112,
     "section": "head"
    }
   },
@@ -3001,13 +3694,13 @@
     ]
    },
    "expect": {
-    "base_width": 15.050848798678029,
+    "base_width": 28.29186088459246,
     "crest_level": 8.59077941131592,
     "governing_case": "drawdown",
-    "earth_total": 1643.495239344283,
-    "earth_arm": 5.000345798429584,
-    "drawdown_sliding": 1.2032411401267964,
-    "drawdown_net": 1390.052663094283
+    "earth_total": 1705.8458432713398,
+    "earth_arm": 5.0944298509238335,
+    "drawdown_sliding": 2.539474294700523,
+    "drawdown_net": 1308.2390171625298
    }
   },
   {
@@ -3031,13 +3724,13 @@
     ]
    },
    "expect": {
-    "base_width": 7.8508487986780535,
+    "base_width": 20.091860884592343,
     "crest_level": 8.59077941131592,
-    "governing_case": "drawdown",
-    "earth_total": 853.7211894113502,
-    "earth_arm": 5.092680148458136,
-    "drawdown_sliding": 1.4963290973887213,
-    "drawdown_net": 600.2786131613502
+    "governing_case": "wave crest",
+    "earth_total": 1272.602632898048,
+    "earth_arm": 4.652795178829761,
+    "drawdown_sliding": 2.7498906755266495,
+    "drawdown_net": 874.9958067892378
    }
   },
   {
@@ -3061,13 +3754,13 @@
     ]
    },
    "expect": {
-    "base_width": 14.450848798678031,
+    "base_width": 29.291860884592474,
     "crest_level": 8.59077941131592,
     "governing_case": "drawdown",
-    "earth_total": 1591.1035972566062,
-    "earth_arm": 4.987552338172202,
-    "drawdown_sliding": 1.2021274520312233,
-    "drawdown_net": 1337.6610210066062
+    "earth_total": 1651.6289958621023,
+    "earth_arm": 5.08161801079175,
+    "drawdown_sliding": 2.86641817341534,
+    "drawdown_net": 1254.0221697532922
    }
   },
   {

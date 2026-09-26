@@ -1,0 +1,2184 @@
+# PyCoaTools interface strings: English key, Spanish, Chinese (Simplified).
+#
+# One block per string, blocks separated by a blank line. {0}, {1}, ... are
+# numbers the page fills in; keep every slot, in any order. Symbols (Hm0,
+# Dn50, M50, FoS, Kr, KC) and units stay as they are.
+#
+# Machine-assisted first draft, 2026-09-26. Needs review by a coastal
+# engineer who is a native speaker of each language before release.
+#
+# After editing: python webapp/lang/build.py, then python webapp/i18n_check.py
+
+# ---------------------------------------------------------------- page
+
+Inputs
+Datos de entrada
+输入参数
+
+Checks
+Comprobaciones
+校核
+
+Design report
+Informe de diseño
+设计报告
+
+Drawing
+Plano
+图纸
+
+Theory and sources
+Teoría y fuentes
+理论与文献
+
+Enlarge
+Ampliar
+放大
+
+Exit
+Salir
+退出
+
+Close the theory panel
+Cerrar el panel de teoría
+关闭理论面板
+
+Design modules
+Módulos de diseño
+设计模块
+
+Design inputs
+Datos de diseño
+设计输入
+
+Relations are ported from the pyCoastal Python package and tested against it on page load (result in the top bar).
+Las formulaciones proceden del paquete Python pyCoastal y se contrastan con él al cargar la página (resultado en la barra superior).
+计算公式移植自 pyCoastal Python 软件包，页面加载时与其逐一比对（结果见顶栏）。
+
+Engine checked: {0} values match pyCoastal
+Motor verificado: {0} valores coinciden con pyCoastal
+计算引擎已校验：{0} 个数值与 pyCoastal 一致
+
+{0} of {1} values differ from pyCoastal
+{0} de {1} valores difieren de pyCoastal
+{1} 个数值中有 {0} 个与 pyCoastal 不一致
+
+Every reference value produced by pyCoastal is reproduced by this page to within {0} relative.
+Esta página reproduce cada valor de referencia de pyCoastal con un error relativo inferior a {0}.
+本页面复现 pyCoastal 的全部参考值，相对误差小于 {0}。
+
+Could not draw this section
+No se pudo dibujar esta sección
+无法绘制该断面
+
+Yes
+Sí
+是
+
+No
+No
+否
+
+Check
+Comprobación
+校核项
+
+Result
+Resultado
+结果
+
+Criterion
+Criterio
+判据
+
+OK
+Cumple
+满足
+
+Review
+Revisar
+需复核
+
+Fails
+No cumple
+不满足
+
+Utilization, demand over capacity
+Grado de utilización, solicitación entre capacidad
+利用率，作用效应与抗力之比
+
+# ---------------------------------------------------------------- modules
+
+Seawall
+Muro de costa
+海堤
+
+Breakwater
+Dique en talud
+斜坡式防波堤
+
+Channel
+Canal
+航道
+
+Monopile
+Monopilote
+单桩
+
+Nourishment
+Regeneración
+人工补沙
+
+Return values
+Valores de retorno
+重现值
+
+Gravity L-wall: crest from EurOtop, base from Goda and the backfill, stem as an RC cantilever.
+Muro de gravedad en L: coronación según EurOtop, base según Goda y el relleno, alzado como ménsula de hormigón armado.
+L 形重力式挡墙：堤顶按 EurOtop，底板按 Goda 波压力与墙后填土，墙身按钢筋混凝土悬臂构件设计。
+
+Rock by Van der Meer (Van Gent {0} form), concrete units by their own formulae, crest by EurOtop, crown wall by Pedersen.
+Escollera según Van der Meer (forma de Van Gent {0}), piezas de hormigón según sus propias fórmulas, coronación según EurOtop, espaldón según Pedersen.
+块石按 Van der Meer（Van Gent {0} 形式），混凝土护面块体按各自公式，堤顶按 EurOtop，胸墙按 Pedersen。
+
+PIANC depth chain and width build-up.
+Cadena de calados y ancho de canal según PIANC.
+按 PIANC 逐项计算水深与航道宽度。
+
+Morison loads on a stream function wave, swept through the cycle; scour under waves and current.
+Cargas de Morison sobre una onda de función de corriente, recorriendo todo el ciclo; socavación por oleaje y corriente.
+按流函数波理论计算 Morison 荷载并遍历整个波周期；计算波流共同作用下的冲刷。
+
+What a borrow source is worth, on Dean's equilibrium profile.
+Rendimiento de un yacimiento de préstamo, sobre el perfil de equilibrio de Dean.
+基于 Dean 平衡剖面评估取沙源的补沙效果。
+
+Generalised Pareto tail above a storm threshold.
+Cola de Pareto generalizada por encima de un umbral de temporal.
+风暴阈值以上的广义帕累托分布尾部。
+
+# ---------------------------------------------------------------- inputs
+
+Wave height Hm0
+Altura de ola Hm0
+波高 Hm0
+
+Peak period Tp
+Periodo de pico Tp
+谱峰周期 Tp
+
+Still water level
+Nivel del mar en reposo
+静水位
+
+Seabed level
+Cota del fondo
+海床高程
+
+Tolerable overtopping
+Rebase admisible
+允许越浪量
+
+Wave angle
+Ángulo de incidencia
+波浪入射角
+
+Scour coefficient
+Coeficiente de socavación
+冲刷系数
+
+Backfill material
+Material de relleno
+回填材料
+
+Water table below surface
+Nivel freático bajo la superficie
+地下水位埋深
+
+Surcharge on the promenade
+Sobrecarga en el paseo
+步道附加荷载
+
+Allowable bearing
+Presión admisible del terreno
+地基容许承载力
+
+Depth at toe
+Profundidad al pie
+堤脚水深
+
+Seaward slope {0} :
+Talud exterior {0} :
+外坡坡比 {0} :
+
+Storm duration
+Duración del temporal
+风暴持续时间
+
+Damage level S
+Nivel de daño S
+损坏等级 S
+
+Armour type
+Tipo de manto
+护面类型
+
+Seabed material
+Material del fondo
+海床土质
+
+Section
+Sección
+断面
+
+Vessel length
+Eslora
+船长
+
+Beam
+Manga
+船宽
+
+Draught
+Calado
+吃水
+
+Block coefficient
+Coeficiente de bloque
+方形系数
+
+Speed
+Velocidad
+航速
+
+Design water level
+Nivel de agua de diseño
+设计水位
+
+Wave height in channel
+Altura de ola en el canal
+航道内波高
+
+Wave response factor
+Factor de respuesta al oleaje
+波浪响应系数
+
+Net clearance
+Resguardo neto
+富余水深
+
+Existing bed
+Fondo existente
+现状河床
+
+Two-way traffic
+Tráfico en doble sentido
+双向通航
+
+Bed material
+Material del fondo
+底床土质
+
+Pile diameter
+Diámetro del pilote
+桩径
+
+Wave height H
+Altura de ola H
+波高 H
+
+Period T
+Periodo T
+周期 T
+
+Water depth
+Profundidad
+水深
+
+Tidal current
+Corriente de marea
+潮流流速
+
+Marine growth
+Crecimiento marino
+海生物附着
+
+Native beach sand
+Arena nativa de la playa
+原滩砂
+
+Borrow source
+Yacimiento de préstamo
+取沙源
+
+Placed volume
+Volumen vertido
+填沙量
+
+Berm height
+Altura de la berma
+滩肩高度
+
+Depth of closure
+Profundidad de cierre
+闭合深度
+
+View
+Vista
+视图
+
+Fill length (planform)
+Longitud del relleno (planta)
+补沙长度（平面）
+
+Breaking wave height (planform)
+Altura de ola en rotura (planta)
+破碎波高（平面）
+
+Threshold
+Umbral
+阈值
+
+Scale
+Escala
+尺度参数
+
+Shape
+Forma
+形状参数
+
+Peaks per year
+Picos por año
+年均峰值数
+
+Record length
+Longitud del registro
+记录长度
+
+Design return period
+Periodo de retorno de diseño
+设计重现期
+
+# ---------------------------------------------------------------- options
+
+pedestrians unaware
+peatones desprevenidos
+无防备行人
+
+pedestrians aware
+peatones advertidos
+有防备行人
+
+harbour quay equipment
+equipos en muelle portuario
+港口码头设备
+
+trained staff
+personal formado
+受训人员
+
+vehicles low speed
+vehículos a baja velocidad
+低速车辆
+
+silt
+limo
+粉土
+
+very fine sand
+arena muy fina
+极细砂
+
+fine sand
+arena fina
+细砂
+
+medium sand
+arena media
+中砂
+
+coarse sand
+arena gruesa
+粗砂
+
+fine gravel
+grava fina
+细砾
+
+coarse gravel
+grava gruesa
+粗砾
+
+rock fill
+escollera
+堆石
+
+soft clay
+arcilla blanda
+软黏土
+
+stiff clay
+arcilla firme
+硬黏土
+
+Silt
+Limo
+粉土
+
+Very fine sand
+Arena muy fina
+极细砂
+
+Fine sand
+Arena fina
+细砂
+
+Medium sand
+Arena media
+中砂
+
+Coarse sand
+Arena gruesa
+粗砂
+
+Fine gravel
+Grava fina
+细砾
+
+Coarse gravel
+Grava gruesa
+粗砾
+
+Quarry rock fill
+Todo uno de cantera
+开山石料
+
+Soft clay
+Arcilla blanda
+软黏土
+
+Stiff clay
+Arcilla firme
+硬黏土
+
+rock two layer permeable
+escollera en dos capas, permeable
+双层块石，透水堤心
+
+rock two layer impermeable
+escollera en dos capas, impermeable
+双层块石，不透水堤心
+
+cubes two layer random
+cubos en dos capas, colocación aleatoria
+双层随机抛放方块
+
+tetrapod
+tetrápodos
+四脚锥体
+
+accropode
+Accropode
+Accropode 块体
+
+xbloc
+Xbloc
+Xbloc 块体
+
+trunk
+tronco
+堤身
+
+head
+morro
+堤头
+
+profile
+perfil
+剖面
+
+planform
+planta
+平面
+
+# ---------------------------------------------------------------- seawall checks and report
+
+Sliding
+Deslizamiento
+抗滑
+
+Overturning
+Vuelco
+抗倾覆
+
+Resultant
+Resultante
+合力偏心
+
+Bearing
+Presión sobre el terreno
+基底压力
+
+Overtopping
+Rebase
+越浪
+
+Drawdown sliding
+Deslizamiento, seno
+抗滑（波谷工况）
+
+Drawdown overturning
+Vuelco, seno
+抗倾覆（波谷工况）
+
+Drawdown resultant
+Resultante, seno
+合力偏心（波谷工况）
+
+Drawdown bearing
+Presión sobre el terreno, seno
+基底压力（波谷工况）
+
+Stem
+Alzado
+墙身
+
+≥ {0} m for M_Ed, V_Ed
+≥ {0} m por M_Ed, V_Ed
+按 M_Ed、V_Ed 需 ≥ {0} m
+
+Retained height
+Altura de tierras
+挡土高度
+
+≤ {0} m for an L-wall
+≤ {0} m para un muro en L
+L 形墙宜 ≤ {0} m
+
+Governs
+Condiciona
+控制工况
+
+drawdown
+seno
+波谷
+
+wave crest
+cresta
+波峰
+
+backfill, not wave
+el relleno, no el oleaje
+由填土控制，而非波浪
+
+wave, not backfill
+el oleaje, no el relleno
+由波浪控制，而非填土
+
+Pore water share
+Proporción de agua intersticial
+孔隙水压力占比
+
+of the back pressure
+del empuje en el trasdós
+占墙后压力
+
+no demand
+sin solicitación
+无作用
+
+Crest level
+Cota de coronación
+堤顶高程
+
+Crest freeboard Rc
+Francobordo Rc
+堤顶超高 Rc
+
+Founding level
+Cota de cimentación
+基底高程
+
+Embedment
+Empotramiento
+埋深
+
+Predicted scour
+Socavación prevista
+预测冲刷深度
+
+Wall height
+Altura del muro
+墙高
+
+Base width B
+Ancho de la base B
+底板宽度 B
+
+Stem, base thickness
+Espesor de alzado y base
+墙身、底板厚度
+
+stem M_Ed
+M_Ed del alzado
+墙身 M_Ed
+
+stem V_Ed
+V_Ed del alzado
+墙身 V_Ed
+
+Goda Hmax
+Hmax de Goda
+Goda Hmax
+
+Goda p1
+p1 de Goda
+Goda p1
+
+{0} m (breaking)
+{0} m (en rotura)
+{0} m（破碎）
+
+Uplift pu
+Subpresión pu
+浮托力 pu
+
+Wave force
+Fuerza del oleaje
+波浪力
+
+Lever arm
+Brazo de palanca
+力臂
+
+Total weight
+Peso total
+总重
+
+Hydrostatic uplift
+Subpresión hidrostática
+静水浮托力
+
+Bearing p max
+p máx. sobre el terreno
+最大基底压力
+
+Backfill
+Relleno
+回填土
+
+friction angle
+ángulo de rozamiento
+内摩擦角
+
+retained height
+altura de tierras
+挡土高度
+
+water table
+nivel freático
+地下水位
+
+K used
+K adoptado
+采用的 K
+
+{0} (at rest)
+{0} (en reposo)
+{0}（静止）
+
+soil force
+empuje del terreno
+土压力
+
+pore water force
+empuje del agua intersticial
+孔隙水压力
+
+total, at
+total, a
+合力及作用点
+
+Trough level
+Cota del seno
+波谷水位
+
+Water left in front
+Agua remanente delante
+墙前剩余水体
+
+Net seaward push
+Empuje neto hacia el mar
+向海净推力
+
+Toe rock Dn50
+Dn50 de la escollera de pie
+护脚块石 Dn50
+
+{0} m (Tanimoto)
+{0} m (Tanimoto)
+{0} m（Tanimoto）
+
+Toe rock M50
+M50 de la escollera de pie
+护脚块石 M50
+
+Concrete
+Hormigón
+混凝土
+
+Excavation
+Excavación
+开挖
+
+# ---------------------------------------------------------------- breakwater checks and report
+
+Regime
+Régimen
+流态
+
+concrete unit
+pieza de hormigón
+混凝土块体
+
+Van der Meer, Van Gent form
+Van der Meer, forma de Van Gent
+Van der Meer 公式，Van Gent 形式
+
+Unit mass
+Masa de la pieza
+块体质量
+
+Stone mass
+Masa del bloque
+块石质量
+
+≤ {0} t, quarry limit
+≤ {0} t, límite de cantera
+≤ {0} t，采石场上限
+
+≤ {0}, the wave must reach the toe
+≤ {0}, la ola debe llegar al pie
+≤ {0}，波浪须能到达堤脚
+
+Crown sliding
+Deslizamiento del espaldón
+胸墙抗滑
+
+Crown overturning
+Vuelco del espaldón
+胸墙抗倾覆
+
+Surf similarity
+Número de Iribarren
+破波相似参数
+
+Reflection
+Reflexión
+反射
+
+Kr, Seelig and Ahrens
+Kr, Seelig y Ahrens
+Kr，Seelig 与 Ahrens
+
+Toe scour
+Socavación al pie
+堤脚冲刷
+
+Blanket reach
+Alcance del manto de apoyo
+垫层延伸长度
+
+≥ {0} x scour depth
+≥ {0} x profundidad de socavación
+≥ {0} 倍冲刷深度
+
+Toe berm stone
+Escollera de la berma de pie
+护脚棱体块石
+
+filter grade
+granulometría de filtro
+满足反滤级配
+
+KD {0} of trunk
+KD {0} del tronco
+KD 为堤身的 {0}
+
+reference section
+sección de referencia
+基准断面
+
+plunging
+voluta
+卷破
+
+surging
+oscilación
+激破
+
+design Ns = {0}
+Ns de diseño = {0}
+设计 Ns = {0}
+
+Van der Meer ({0}), cubes
+Van der Meer ({0}), cubos
+Van der Meer（{0}），方块
+
+Van der Meer ({0}), tetrapods
+Van der Meer ({0}), tetrápodos
+Van der Meer（{0}），四脚锥体
+
+Armour Dn50
+Dn50 del manto
+护面 Dn50
+
+Armour M50
+M50 del manto
+护面 M50
+
+trunk M50
+M50 del tronco
+堤身 M50
+
+head / trunk
+morro / tronco
+堤头 / 堤身
+
+KD ratio
+relación de KD
+KD 比值
+
+Stability relation
+Fórmula de estabilidad
+稳定性公式
+
+Unit density
+Densidad de la pieza
+块体密度
+
+Layer thickness
+Espesor de capa
+护面层厚度
+
+Stones per m2
+Piezas por m2
+每 m2 块数
+
+Mean discharge
+Caudal medio
+平均越浪量
+
+Upper bound
+Límite superior
+上限值
+
+Waves in storm
+Olas en el temporal
+风暴波数
+
+Seabed
+Fondo
+海床
+
+bed regime
+régimen del fondo
+底床状态
+
+reflection Kr
+reflexión Kr
+反射系数 Kr
+
+toe scour
+socavación al pie
+堤脚冲刷
+
+at a vertical wall
+frente a un muro vertical
+直立墙前
+
+apron width
+ancho de la protección
+护坦宽度
+
+Bedding blanket
+Manto de apoyo
+垫层
+
+thickness
+espesor
+厚度
+
+reach past toe
+alcance más allá del pie
+伸出堤脚长度
+
+Toe berm Dn50
+Dn50 de la berma de pie
+护脚棱体 Dn50
+
+width x thickness
+ancho x espesor
+宽度 x 厚度
+
+Crown parapet
+Coronación del espaldón
+胸墙顶
+
+Crown deck
+Plataforma de coronación
+堤顶面
+
+Crown founded at
+Cimentación del espaldón
+胸墙底高程
+
+Crown concrete
+Hormigón del espaldón
+胸墙混凝土
+
+armour berm in front
+berma de manto delante
+墙前护面平台
+
+deck width
+ancho de la plataforma
+堤顶宽度
+
+Pedersen Fh
+Fh de Pedersen
+Pedersen Fh
+
+uplift pb
+subpresión pb
+浮托力 pb
+
+run-up Ru,{0}%
+remonte Ru,{0}%
+爬高 Ru,{0}%
+
+live bed
+lecho vivo
+动床
+
+clear water
+agua clara
+清水冲刷
+
+near threshold
+cerca del umbral
+接近起动
+
+cohesive
+cohesivo
+黏性土
+
+# ---------------------------------------------------------------- channel
+
+Depth / draught
+Profundidad / calado
+水深 / 吃水
+
+Froude number
+Número de Froude
+弗劳德数
+
+Width
+Ancho
+宽度
+
+{0}-way
+{0} sentidos
+{0} 向
+
+Assumed classes
+Clases supuestas
+假定等级
+
+stated below
+indicadas abajo
+见下文
+
+Side slope
+Talud lateral
+边坡
+
+from Silt
+según Limo
+按粉土
+
+from Very fine sand
+según Arena muy fina
+按极细砂
+
+from Fine sand
+según Arena fina
+按细砂
+
+from Medium sand
+según Arena media
+按中砂
+
+from Coarse sand
+según Arena gruesa
+按粗砂
+
+from Fine gravel
+según Grava fina
+按细砾
+
+from Coarse gravel
+según Grava gruesa
+按粗砾
+
+from Quarry rock fill
+según Todo uno de cantera
+按开山石料
+
+from Soft clay
+según Arcilla blanda
+按软黏土
+
+from Stiff clay
+según Arcilla firme
+按硬黏土
+
+Static draught
+Calado estático
+静吃水
+
+squat
+asiento dinámico
+船体下沉量
+
+wave response
+respuesta al oleaje
+波浪响应
+
+net clearance
+resguardo neto
+富余水深
+
+water level uncertainty
+incertidumbre del nivel
+水位不确定性
+
+siltation
+aterramiento
+淤积
+
+survey tolerance
+tolerancia batimétrica
+测量误差
+
+dredging tolerance
+tolerancia de dragado
+疏浚超深
+
+Required depth
+Profundidad necesaria
+所需水深
+
+side slope
+talud lateral
+边坡
+
+Dredge level
+Cota de dragado
+疏浚高程
+
+Bed width
+Ancho de solera
+底宽
+
+Top width
+Ancho superior
+顶宽
+
+Dredge depth
+Espesor de dragado
+疏浚深度
+
+Volume
+Volumen
+方量
+
+{0} k m3/km
+{0} mil m3/km
+{0} 千 m3/km
+
+# ---------------------------------------------------------------- monopile
+
+Morison valid
+Morison aplicable
+Morison 公式适用
+
+Not breaking
+Sin rotura
+未破碎
+
+Wave theory
+Teoría de oleaje
+波浪理论
+
+fallback at breaking
+alternativa en rotura
+破碎时的替代方法
+
+stream function
+función de corriente
+流函数
+
+linear
+lineal
+线性
+
+Crest phase
+Fase de cresta
+波峰相位
+
+{0}% low
+{0}% por defecto
+偏低 {0}%
+
+≤ {0}%, else sweep the phase
+≤ {0}%, si no, recorrer la fase
+≤ {0}%，否则须遍历相位
+
+Bed regime
+Régimen del fondo
+底床状态
+
+gates the scour
+condiciona la socavación
+决定是否冲刷
+
+Scour
+Socavación
+冲刷
+
+Surface at worst phase
+Superficie en la fase pésima
+最不利相位的水面
+
+Keulegan-Carpenter
+Keulegan-Carpenter
+KC 数
+
+{0} at the surface
+{0} en superficie
+水面处 {0}
+
+drag dominated
+dominado por arrastre
+拖曳力主导
+
+inertia dominated
+dominado por inercia
+惯性力主导
+
+mixed
+mixto
+混合
+
+drag dominated, {0}% inertia
+dominado por arrastre, {0}% de inercia
+拖曳力主导，惯性力占 {0}%
+
+inertia dominated, {0}% inertia
+dominado por inercia, {0}% de inercia
+惯性力主导，惯性力占 {0}%
+
+mixed, {0}% inertia
+mixto, {0}% de inercia
+混合，惯性力占 {0}%
+
+Worst phase
+Fase pésima
+最不利相位
+
+Base shear
+Cortante en la base
+基底剪力
+
+Mudline moment
+Momento en el lecho
+泥面弯矩
+
+Inertia share
+Proporción de inercia
+惯性力占比
+
+At the crest
+En la cresta
+波峰处
+
+Crest understates by
+Subestimación en la cresta
+波峰相位低估
+
+Scour / D
+Socavación / D
+冲刷深度 / D
+
+Hs for scour
+Hs para socavación
+冲刷计算用 Hs
+
+bed velocity Um
+velocidad en el fondo Um
+底部流速 Um
+
+KC at the bed
+KC en el fondo
+底部 KC 数
+
+Mobility
+Movilidad
+可动性
+
+{0} x threshold
+{0} x umbral
+{0} 倍起动值
+
+# ---------------------------------------------------------------- nourishment
+
+Dry beach
+Playa seca
+干滩
+
+{0} m3/m placed
+{0} m3/m vertidos
+填沙 {0} m3/m
+
+Profile
+Perfil
+剖面
+
+submerged
+sumergido
+水下
+
+no dry beach
+sin playa seca
+无干滩
+
+intersecting
+intersecante
+相交
+
+non-intersecting
+no intersecante
+不相交
+
+Dean ({0})
+Dean ({0})
+Dean（{0}）
+
+Fenton ({0})
+Fenton ({0})
+Fenton（{0}）
+
+Overfill factor
+Factor de sobrellenado
+超填系数
+
+≤ {0} x native volume
+≤ {0} x volumen nativo
+≤ {0} 倍原砂方量
+
+Grain match
+Compatibilidad granulométrica
+粒径匹配
+
+native sigma-phi
+sigma-phi nativo
+原砂 sigma-phi
+
+Critical volume
+Volumen crítico
+临界方量
+
+none
+ninguno
+无
+
+for any dry beach
+para obtener playa seca
+形成干滩所需
+
+Spreading half-life
+Semivida de dispersión
+扩散半衰期
+
+half the width lost
+pérdida de la mitad del ancho
+滩宽损失一半
+
+Native
+Nativa
+原滩砂
+
+A native
+A nativa
+原砂 A
+
+Borrow
+Préstamo
+取沙
+
+A borrow
+A de préstamo
+取沙 A
+
+Planform
+Planta
+平面
+
+no dry beach to spread
+sin playa seca que se disperse
+无可扩散的干滩
+
+diffusivity
+difusividad
+扩散系数
+
+{0} thousand m2/yr
+{0} mil m2/año
+{0} 千 m2/年
+
+half-life
+semivida
+半衰期
+
+width left
+ancho remanente
+剩余宽度
+
+{0}% at {1} yr
+{0}% a {1} años
+{1} 年后剩余 {0}%
+
+spread to
+extensión hasta
+扩散至
+
+Compatibility
+Compatibilidad
+相容性
+
+coarser
+más gruesa
+更粗
+
+finer
+más fina
+更细
+
+delta
+delta
+delta
+
+sorting ratio
+relación de clasificación
+分选比
+
+verdict
+valoración
+结论
+
+matched
+compatible
+匹配
+
+close to native
+similar a la nativa
+与原砂相近
+
+coarser than native
+más gruesa que la nativa
+粗于原砂
+
+much finer than native
+mucho más fina que la nativa
+远细于原砂
+
+Dry beach gained
+Playa seca ganada
+新增干滩宽度
+
+Profile type
+Tipo de perfil
+剖面类型
+
+For the same width
+Para el mismo ancho
+达到相同宽度
+
+with this borrow
+con este préstamo
+使用该取沙源
+
+with native sand
+con arena nativa
+使用原砂
+
+overfill factor
+factor de sobrellenado
+超填系数
+
+# ---------------------------------------------------------------- return values
+
+Extrapolation
+Extrapolación
+外推
+
+{0}x record
+{0}x el registro
+记录长度的 {0} 倍
+
+Tail
+Cola
+尾部
+
+unbounded
+no acotada
+无上界
+
+bounded
+acotada
+有上界
+
+shape ≥ {0}
+forma ≥ {0}
+形状参数 ≥ {0}
+
+shape < {0}
+forma < {0}
+形状参数 < {0}
+
+Peaks in record
+Picos en el registro
+记录内峰值数
+
+Rate
+Tasa
+发生率
+
+Threshold u
+Umbral u
+阈值 u
+
+Peak rate
+Tasa de picos
+峰值发生率
+
+{0}-year value
+Valor a {0} años
+{0} 年一遇值
+
+Design {0}-year
+Diseño a {0} años
+设计 {0} 年一遇
+
+Upper limit of tail
+Límite superior de la cola
+尾部上限
+
+# ---------------------------------------------------------------- drawings
+
+Seawall typical section
+Sección tipo del muro de costa
+海堤典型断面
+
+Breakwater typical section
+Sección tipo del dique
+防波堤典型断面
+
+Navigation channel section
+Sección del canal de navegación
+航道断面
+
+Nourishment design profile
+Perfil de diseño de la regeneración
+补沙设计剖面
+
+Planform evolution
+Evolución en planta
+平面演变
+
+Monopile wave loads
+Cargas del oleaje sobre el monopilote
+单桩波浪荷载
+
+Design return value
+Valor de retorno de diseño
+设计重现值
+
+{0}:{1} on screen
+{0}:{1} en pantalla
+屏幕比例 {0}:{1}
+
+{0}:{1} on screen   governed by the drawdown
+{0}:{1} en pantalla   condiciona el seno
+屏幕比例 {0}:{1}   波谷工况控制
+
+{0}:{1} on screen   governed by the wave crest
+{0}:{1} en pantalla   condiciona la cresta
+屏幕比例 {0}:{1}   波峰工况控制
+
+vertical exaggeration {0} : {1}
+exageración vertical {0} : {1}
+竖向放大 {0} : {1}
+
+cross-shore exaggeration {0} : {1}
+exageración transversal {0} : {1}
+横向放大 {0} : {1}
+
+shaded region is beyond the record
+la zona sombreada excede el registro
+阴影区超出记录范围
+
+Primary armour
+Manto principal
+主护面层
+
+Underlayer
+Capa secundaria
+垫层
+
+Quarry run core
+Núcleo de todo uno
+堤心开山石
+
+Toe protection
+Protección de pie
+护脚
+
+Mass concrete
+Hormigón en masa
+素混凝土
+
+Reinforced concrete
+Hormigón armado
+钢筋混凝土
+
+Blinding layer
+Hormigón de limpieza
+混凝土垫层
+
+Granular backfill
+Relleno granular
+粒料回填
+
+Sand
+Arena
+砂
+
+In-situ seabed
+Fondo natural
+原状海床
+
+Surfacing
+Pavimento
+面层
+
+Water
+Agua
+水
+
+Toe rock, Dn50 = {0} m
+Escollera de pie, Dn50 = {0} m
+护脚块石，Dn50 = {0} m
+
+Crest {0}
+Coronación {0}
+堤顶 {0}
+
+crest {0}
+cresta {0}
+波峰 {0}
+
+Seabed {0}
+Fondo {0}
+海床 {0}
+
+Founding {0}
+Cimentación {0}
+基底 {0}
+
+SWL {0} m CD
+Nivel en reposo {0} m CD
+静水位 {0} m CD
+
+DWL {0} m CD
+Nivel de diseño {0} m CD
+设计水位 {0} m CD
+
+MSL {0} m
+NMM {0} m
+平均海平面 {0} m
+
+wave {0} kN/m
+oleaje {0} kN/m
+波浪 {0} kN/m
+
+soil + water {0} kN/m
+terreno + agua {0} kN/m
+土 + 水 {0} kN/m
+
+pore {0} kN/m
+intersticial {0} kN/m
+孔隙水 {0} kN/m
+
+scour {0} m
+socavación {0} m
+冲刷 {0} m
+
+toe scour {0} m
+socavación {0} m
+堤脚冲刷 {0} m
+
+Bedding blanket, coarse sand, {0} m
+Manto de apoyo, arena gruesa, {0} m
+垫层，粗砂，{0} m
+
+Filter layer, Dn50 = {0} m
+Capa de filtro, Dn50 = {0} m
+反滤层，Dn50 = {0} m
+
+Armour, Dn50 = {0} m ({1} t)
+Manto, Dn50 = {0} m ({1} t)
+护面，Dn50 = {0} m（{1} t）
+
+Toe berm, Dn50 = {0} m ({1} t), both toes
+Berma de pie, Dn50 = {0} m ({1} t), ambos pies
+护脚棱体，Dn50 = {0} m（{1} t），两侧堤脚
+
+Crown block, mass concrete
+Espaldón, hormigón en masa
+胸墙，素混凝土
+
+Sand and gravel infill
+Relleno de arena y grava
+砂砾填料
+
+Parapet {0}
+Parapeto {0}
+胸墙顶 {0}
+
+Deck {0}
+Plataforma {0}
+堤顶面 {0}
+
+Seabed {0} m CD
+Fondo {0} m CD
+海床 {0} m CD
+
+Geotextile, {0} m wide
+Geotextil, {0} m de ancho
+土工布，宽 {0} m
+
+In-situ material
+Terreno natural
+原状土
+
+Design vessel
+Buque de diseño
+设计船型
+
+Dredge {0} m CD
+Dragado {0} m CD
+疏浚 {0} m CD
+
+Bed {0} m CD
+Fondo {0} m CD
+河床 {0} m CD
+
+bed width {0} m
+ancho de solera {0} m
+底宽 {0} m
+
+Native beach and seabed
+Playa y fondo nativos
+原滩与海床
+
+Nourishment, silt (d50 = {0} mm)
+Regeneración, limo (d50 = {0} mm)
+补沙，粉土（d50 = {0} mm）
+
+Nourishment, very fine sand (d50 = {0} mm)
+Regeneración, arena muy fina (d50 = {0} mm)
+补沙，极细砂（d50 = {0} mm）
+
+Nourishment, fine sand (d50 = {0} mm)
+Regeneración, arena fina (d50 = {0} mm)
+补沙，细砂（d50 = {0} mm）
+
+Nourishment, medium sand (d50 = {0} mm)
+Regeneración, arena media (d50 = {0} mm)
+补沙，中砂（d50 = {0} mm）
+
+Nourishment, coarse sand (d50 = {0} mm)
+Regeneración, arena gruesa (d50 = {0} mm)
+补沙，粗砂（d50 = {0} mm）
+
+Nourishment, fine gravel (d50 = {0} mm)
+Regeneración, grava fina (d50 = {0} mm)
+补沙，细砾（d50 = {0} mm）
+
+Nourishment, coarse gravel (d50 = {0} mm)
+Regeneración, grava gruesa (d50 = {0} mm)
+补沙，粗砾（d50 = {0} mm）
+
+Berm {0} m
+Berma {0} m
+滩肩 {0} m
+
+Closure {0} m
+Cierre {0} m
+闭合 {0} m
+
+profiles meet, {0} m out
+los perfiles se cortan a {0} m
+剖面在离岸 {0} m 处相交
+
+dry beach {0} m
+playa seca {0} m
+干滩 {0} m
+
+{0} m3 per metre
+{0} m3 por metro
+每延米 {0} m3
+
+Existing beach
+Playa existente
+现状海滩
+
+Fill as placed, {0} m wide
+Relleno vertido, {0} m de ancho
+填沙初始状态，宽 {0} m
+
+fill length {0} m
+longitud del relleno {0} m
+补沙长度 {0} m
+
+spreading reaches
+alcance de la dispersión
+扩散范围
+
+{0} yr, {1} m at the centre
+{0} años, {1} m en el centro
+{0} 年，中心处 {1} m
+
+{0} m in {1} yr
+{0} m en {1} años
+{1} 年后 {0} m
+
+load (kN/m)
+carga (kN/m)
+荷载 (kN/m)
+
+elevation (m)
+cota (m)
+高程 (m)
+
+surface {0} m
+superficie {0} m
+水面 {0} m
+
+Load at the worst phase, {0} deg
+Carga en la fase pésima, {0}°
+最不利相位荷载，{0}°
+
+wave phase (deg, crest at {0})
+fase de la ola (°, cresta en {0})
+波浪相位（°，波峰为 {0}）
+
+mudline moment (MNm)
+momento en el lecho (MNm)
+泥面弯矩 (MNm)
+
+worst {0} MNm
+pésimo {0} MNm
+最不利 {0} MNm
+
+Moment through the wave cycle
+Momento a lo largo del ciclo
+一个波周期内的弯矩
+
+return period (years)
+periodo de retorno (años)
+重现期（年）
+
+value (m)
+valor (m)
+数值 (m)
+
+tail cannot exceed {0} m
+la cola no puede superar {0} m
+尾部不超过 {0} m
+
+{0}-year record
+registro de {0} años
+{0} 年记录
+
+{0}-year: {1} m
+{0} años: {1} m
+{0} 年一遇：{1} m
+
+Return level, generalised Pareto tail
+Nivel de retorno, cola de Pareto generalizada
+重现水平，广义帕累托尾部
+
+# ---------------------------------------------------------------- theory panel
+
+Loading…
+Cargando…
+加载中…
+
+Literature extract did not load
+No se pudo cargar el extracto bibliográfico
+文献摘录加载失败
+
+{0} papers · {1} claims · {2} topics
+{0} artículos · {1} afirmaciones · {2} temas
+{0} 篇论文 · {1} 条结论 · {2} 个主题
+
+{0} papers · {1} claims · {2} equations
+{0} artículos · {1} afirmaciones · {2} ecuaciones
+{0} 篇论文 · {1} 条结论 · {2} 个公式
+
+Source:
+Fuente:
+来源：
+
+Each claim and equation lists the range of conditions it was derived for. Topics not yet screened have no entries.
+Cada afirmación y ecuación indica el rango de condiciones para el que se obtuvo. Los temas aún no revisados no tienen entradas.
+每条结论和公式均注明其推导所依据的条件范围。尚未筛选的主题暂无条目。
+
+The literature is quoted in English.
+La bibliografía se cita en inglés.
+文献内容以英文原文引用。
+
+Validated ranges
+Rangos validados
+已验证范围
+
+Well established
+Bien establecido
+公认结论
+
+Governing physics
+Física dominante
+控制物理过程
+
+Major equations
+Ecuaciones principales
+主要公式
+
+Dimensionless parameters
+Parámetros adimensionales
+无量纲参数
+
+Typical methods
+Métodos habituales
+常用方法
+
+Limitations
+Limitaciones
+局限性
+
+Disagreements
+Discrepancias
+分歧
+
+Open questions
+Cuestiones abiertas
+待解决问题
+
+Recent advances
+Avances recientes
+最新进展
+
+Numerical models
+Modelos numéricos
+数值模型
+
+Experimental datasets
+Datos experimentales
+试验数据集
+
+Seminal papers
+Artículos fundamentales
+奠基性论文
+
+Equations ({0})
+Ecuaciones ({0})
+公式（{0}）
+
+Claims ({0})
+Afirmaciones ({0})
+结论（{0}）
+
+Applies
+Aplica
+适用条件
+
+source not in the extract
+fuente no incluida en el extracto
+摘录中无此来源
+
+open copy
+copia abierta
+开放获取版本
+
+published version
+versión publicada
+正式出版版本
+
+accepted manuscript
+manuscrito aceptado
+录用稿
+
+submitted manuscript
+manuscrito enviado
+投稿稿
+
+preprint
+preprint
+预印本
+
+read only
+solo lectura
+仅供阅读
+
+public domain
+dominio público
+公有领域
+
+CC BY
+CC BY
+CC BY
+
+CC BY-NC
+CC BY-NC
+CC BY-NC
+
+CC BY-ND
+CC BY-ND
+CC BY-ND
+
+CC BY-SA
+CC BY-SA
+CC BY-SA
+
+CC BY-NC-ND
+CC BY-NC-ND
+CC BY-NC-ND
+
+CC BY-NC-SA
+CC BY-NC-SA
+CC BY-NC-SA
+
+# ---------------------------------------------------------------- warnings
+
+h* = {0} is below {1}, so the conditions are impulsive. The non-impulsive EurOtop formula used for the crest level understates the discharge, and Goda understates the load; check against the impulsive formulae before fixing the section.
+h* = {0} es inferior a {1}, por lo que las condiciones son impulsivas. La fórmula no impulsiva de EurOtop usada para la coronación subestima el caudal, y Goda subestima la carga; compruébese con las fórmulas impulsivas antes de fijar la sección.
+h* = {0}，小于 {1}，属冲击性波浪条件。堤顶高程所用的 EurOtop 非冲击公式会低估越浪量，Goda 公式会低估波浪力；确定断面前须按冲击性公式复核。
+
+Predicted scour {0} m exceeds the {1} m embedment limit. The section relies on the toe protection to keep the scour hole away from the wall.
+La socavación prevista, {0} m, supera el límite de empotramiento de {1} m. La sección depende de la protección de pie para alejar la fosa de socavación del muro.
+预测冲刷深度 {0} m 超过 {1} m 的埋深限值。该断面须依靠护脚使冲刷坑远离墙体。
+
+The {0} m toe berm sits close to the wall, where the standing wave moves the bed least, which is why Tanimoto allows {1} t stone. The scour hole forms about a quarter wavelength out, {2} m from the face; widen the berm to reach it if the toe is also the scour protection, and the stone will grow.
+La berma de pie de {0} m queda junto al muro, donde la onda estacionaria mueve menos el fondo; por eso Tanimoto admite bloques de {1} t. La fosa de socavación se forma a un cuarto de longitud de onda, a {2} m del paramento; si el pie también es la protección frente a la socavación, debe ensancharse la berma hasta alcanzarla, y el bloque aumentará.
+{0} m 宽的护脚棱体紧靠墙体，该处立波对床面的扰动最小，因此 Tanimoto 公式允许采用 {1} t 块石。冲刷坑出现在约四分之一波长处，距墙面 {2} m；若护脚同时兼作防冲措施，应加宽棱体以覆盖该处，块石重量随之增大。
+
+A water table {0} m below the promenade would sit below the still water level, which the sea keeps the fill up to; {1} m is used.
+Un nivel freático {0} m bajo el paseo quedaría por debajo del nivel en reposo, hasta el que el mar mantiene saturado el relleno; se adopta {1} m.
+步道下 {0} m 的地下水位将低于静水位，而海水会使填土维持在静水位；故采用 {1} m。
+
+The wall retains {0} m. A cantilever L-wall is ordinary practice up to about {1} m; beyond that a counterforted wall, a caisson or an anchored sheet-pile wall is the usual form, and the stem here ({2} m) shows why.
+El muro contiene {0} m de tierras. Un muro en L en ménsula es práctica habitual hasta unos {1} m; por encima se emplean muros con contrafuertes, cajones o tablestacas ancladas, y el alzado resultante ({2} m) muestra por qué.
+挡墙挡土高度 {0} m。悬臂式 L 形墙通常适用于约 {1} m 以内；超过此高度一般采用扶壁式挡墙、沉箱或锚定板桩墙，本例墙身厚度（{2} m）即说明了原因。
+
+Base width reached the {0} m limit with sliding FoS {1} landward and {2} seaward, overturning {3} and {4}, and peak bearing {5} and {6} kPa. A gravity wall is the wrong form for these conditions; consider a piled or anchored wall, or a rubble-mound revetment.
+El ancho de base alcanzó el límite de {0} m con FoS al deslizamiento de {1} hacia tierra y {2} hacia el mar, vuelco {3} y {4}, y presión máxima de {5} y {6} kPa. Un muro de gravedad no es la tipología adecuada para estas condiciones; considérese un muro pilotado o anclado, o un revestimiento en talud de escollera.
+底板宽度已达 {0} m 上限：向陆侧抗滑 FoS {1}、向海侧 {2}，抗倾覆 {3} 和 {4}，最大基底压力 {5} 和 {6} kPa。重力式挡墙不适用于该条件；可考虑桩基或锚拉式挡墙，或抛石斜坡护岸。
+
+Base width reached the {0} m limit with sliding FoS Infinity landward and {1} seaward, overturning {2} and {3}, and peak bearing {4} and {5} kPa. A gravity wall is the wrong form for these conditions; consider a piled or anchored wall, or a rubble-mound revetment.
+El ancho de base alcanzó el límite de {0} m con FoS al deslizamiento infinito hacia tierra y {1} hacia el mar, vuelco {2} y {3}, y presión máxima de {4} y {5} kPa. Un muro de gravedad no es la tipología adecuada para estas condiciones; considérese un muro pilotado o anclado, o un revestimiento en talud de escollera.
+底板宽度已达 {0} m 上限：向陆侧抗滑 FoS 为无穷大、向海侧 {1}，抗倾覆 {2} 和 {3}，最大基底压力 {4} 和 {5} kPa。重力式挡墙不适用于该条件；可考虑桩基或锚拉式挡墙，或抛石斜坡护岸。
+
+Pore water is {0}% of the pressure on the back of the wall. A drain holding the water table at still water level would cut the total from {1} to about {2} kN/m.
+El agua intersticial supone el {0}% del empuje en el trasdós. Un drenaje que mantenga el nivel freático en el nivel de reposo reduciría el total de {1} a unos {2} kN/m.
+孔隙水压力占墙后压力的 {0}%。设置排水使地下水位保持在静水位，可将合力从 {1} 降至约 {2} kN/m。
+
+The drawdown case governs: the wall is sized by the saturated backfill pushing it seaward at the trough, so the backfill grading and the drainage detail set the base width more than the design wave does.
+Condiciona el caso de seno: el muro queda dimensionado por el relleno saturado que lo empuja hacia el mar en el seno de la ola, de modo que la granulometría del relleno y el drenaje determinan el ancho de base más que la ola de diseño.
+波谷工况控制设计：波谷时饱和填土将墙体推向海侧，因此底板宽度主要取决于填土级配和排水构造，而非设计波浪。
+
+Soft clay is cohesive. The active pressure here uses the drained parameters and cuts off the tension zone; an undrained short-term check and a long-term swelling check are separate and can both govern.
+La arcilla blanda es cohesiva. El empuje activo se calcula con parámetros drenados y sin la zona de tracción; la comprobación a corto plazo sin drenaje y la de hinchamiento a largo plazo son independientes y ambas pueden ser determinantes.
+软黏土为黏性土。此处主动土压力采用排水参数并扣除受拉区；不排水短期验算与长期膨胀验算须另行进行，二者均可能控制设计。
+
+Stiff clay is cohesive. The active pressure here uses the drained parameters and cuts off the tension zone; an undrained short-term check and a long-term swelling check are separate and can both govern.
+La arcilla firme es cohesiva. El empuje activo se calcula con parámetros drenados y sin la zona de tracción; la comprobación a corto plazo sin drenaje y la de hinchamiento a largo plazo son independientes y ambas pueden ser determinantes.
+硬黏土为黏性土。此处主动土压力采用排水参数并扣除受拉区；不排水短期验算与长期膨胀验算须另行进行，二者均可能控制设计。
+
+Hm0 = {0} m is {1} of the {2} m toe depth. A significant height above about {3} h cannot reach the toe without breaking; the design wave and the depth are inconsistent and the sizing is not meaningful until one of them is corrected.
+Hm0 = {0} m equivale a {1} de la profundidad al pie de {2} m. Una altura significante superior a unos {3} h no puede llegar al pie sin romper; la ola de diseño y la profundidad son incoherentes y el dimensionamiento carece de sentido hasta corregir una de ellas.
+Hm0 = {0} m，为堤脚水深 {2} m 的 {1}。有效波高超过约 {3} h 时，波浪到达堤脚前即已破碎；设计波浪与水深相互矛盾，须修正其一后计算结果方有意义。
+
+Hm0/h = {0}: the toe is in shallow water. H2% is taken as {1} Hs from the Rayleigh distribution, which overstates it here and errs on the heavy side; Battjes and Groenendijk ({2}) with the foreshore slope gives the real ratio.
+Hm0/h = {0}: el pie está en aguas someras. H2% se toma como {1} Hs según la distribución de Rayleigh, lo que aquí la sobrestima y queda del lado de la seguridad; Battjes y Groenendijk ({2}) con la pendiente de la playa dan la relación real.
+Hm0/h = {0}：堤脚处于浅水区。H2% 按 Rayleigh 分布取 {1} Hs，此处偏大，结果偏保守；结合前滩坡度采用 Battjes 与 Groenendijk（{2}）方法可得实际比值。
+
+cubes two layer random stability was established on a {0}:{1} slope; this section is {2}:{3}.
+La estabilidad de cubos en dos capas con colocación aleatoria se estableció en un talud {0}:{1}; esta sección tiene {2}:{3}.
+双层随机抛放方块的稳定性基于 {0}:{1} 坡度得出；本断面为 {2}:{3}。
+
+tetrapod stability was established on a {0}:{1} slope; this section is {2}:{3}.
+La estabilidad de los tetrápodos se estableció en un talud {0}:{1}; esta sección tiene {2}:{3}.
+四脚锥体的稳定性基于 {0}:{1} 坡度得出；本断面为 {2}:{3}。
+
+accropode stability was established on a {0}:{1} slope; this section is {2}:{3}.
+La estabilidad del Accropode se estableció en un talud {0}:{1}; esta sección tiene {2}:{3}.
+Accropode 块体的稳定性基于 {0}:{1} 坡度得出；本断面为 {2}:{3}。
+
+xbloc stability was established on a {0}:{1} slope; this section is {2}:{3}.
+La estabilidad del Xbloc se estableció en un talud {0}:{1}; esta sección tiene {2}:{3}.
+Xbloc 块体的稳定性基于 {0}:{1} 坡度得出；本断面为 {2}:{3}。
+
+The crown block reached a {0} m width with sliding {1} and overturning {2}. Lower the parapet, widen the armour berm in front of it or key the base into the core.
+El espaldón alcanzó {0} m de ancho con deslizamiento {1} y vuelco {2}. Rebájese el parapeto, ensánchese la berma de manto delante de él o empotrese la base en el núcleo.
+胸墙宽度已达 {0} m，抗滑 {1}，抗倾覆 {2}。应降低胸墙顶、加宽墙前护面平台，或将底板嵌入堤心。
+
+Pedersen crown wall loads applied outside the tested range: xi_m = {0} (tested {1} to {2})
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: xi_m = {0} (ensayado de {1} a {2})
+Pedersen 胸墙荷载公式超出试验范围使用：xi_m = {0}（试验范围 {1} 至 {2}）
+
+Pedersen crown wall loads applied outside the tested range: Hm0/Ac = {0} (tested {1} to {2})
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: Hm0/Ac = {0} (ensayado de {1} a {2})
+Pedersen 胸墙荷载公式超出试验范围使用：Hm0/Ac = {0}（试验范围 {1} 至 {2}）
+
+Pedersen crown wall loads applied outside the tested range: Ac/B = {0} (tested {1} to {2})
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: Ac/B = {0} (ensayado de {1} a {2})
+Pedersen 胸墙荷载公式超出试验范围使用：Ac/B = {0}（试验范围 {1} 至 {2}）
+
+Pedersen crown wall loads applied outside the tested range: cot a = {0} (tested {1} to {2})
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: cot a = {0} (ensayado de {1} a {2})
+Pedersen 胸墙荷载公式超出试验范围使用：cot a = {0}（试验范围 {1} 至 {2}）
+
+Pedersen crown wall loads applied outside the tested range: Hm0/h = {0} (tested {1} to {2})
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: Hm0/h = {0} (ensayado de {1} a {2})
+Pedersen 胸墙荷载公式超出试验范围使用：Hm0/h = {0}（试验范围 {1} 至 {2}）
+
+Pedersen crown wall loads applied outside the tested range: Hm0/Ac = {0} (tested {1} to {2}).
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: Hm0/Ac = {0} (ensayado de {1} a {2}).
+Pedersen 胸墙荷载公式超出试验范围使用：Hm0/Ac = {0}（试验范围 {1} 至 {2}）。
+
+Pedersen crown wall loads applied outside the tested range: Ac/B = {0} (tested {1} to {2}).
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: Ac/B = {0} (ensayado de {1} a {2}).
+Pedersen 胸墙荷载公式超出试验范围使用：Ac/B = {0}（试验范围 {1} 至 {2}）。
+
+Pedersen crown wall loads applied outside the tested range: cot a = {0} (tested {1} to {2}).
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: cot a = {0} (ensayado de {1} a {2}).
+Pedersen 胸墙荷载公式超出试验范围使用：cot a = {0}（试验范围 {1} 至 {2}）。
+
+Pedersen crown wall loads applied outside the tested range: Hm0/h = {0} (tested {1} to {2}).
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: Hm0/h = {0} (ensayado de {1} a {2}).
+Pedersen 胸墙荷载公式超出试验范围使用：Hm0/h = {0}（试验范围 {1} 至 {2}）。
+
+Pedersen crown wall loads applied outside the tested range: xi_m = {0} (tested {1} to {2}).
+Cargas de Pedersen sobre el espaldón aplicadas fuera del rango ensayado: xi_m = {0} (ensayado de {1} a {2}).
+Pedersen 胸墙荷载公式超出试验范围使用：xi_m = {0}（试验范围 {1} 至 {2}）。
+
+Hm0/Ac = {0} (tested {1} to {2})
+Hm0/Ac = {0} (ensayado de {1} a {2})
+Hm0/Ac = {0}（试验范围 {1} 至 {2}）
+
+Ac/B = {0} (tested {1} to {2})
+Ac/B = {0} (ensayado de {1} a {2})
+Ac/B = {0}（试验范围 {1} 至 {2}）
+
+cot a = {0} (tested {1} to {2})
+cot a = {0} (ensayado de {1} a {2})
+cot a = {0}（试验范围 {1} 至 {2}）
+
+Hm0/h = {0} (tested {1} to {2})
+Hm0/h = {0} (ensayado de {1} a {2})
+Hm0/h = {0}（试验范围 {1} 至 {2}）
+
+Hm0/Ac = {0} (tested {1} to {2}).
+Hm0/Ac = {0} (ensayado de {1} a {2}).
+Hm0/Ac = {0}（试验范围 {1} 至 {2}）。
+
+Ac/B = {0} (tested {1} to {2}).
+Ac/B = {0} (ensayado de {1} a {2}).
+Ac/B = {0}（试验范围 {1} 至 {2}）。
+
+cot a = {0} (tested {1} to {2}).
+cot a = {0} (ensayado de {1} a {2}).
+cot a = {0}（试验范围 {1} 至 {2}）。
+
+Hm0/h = {0} (tested {1} to {2}).
+Hm0/h = {0} (ensayado de {1} a {2}).
+Hm0/h = {0}（试验范围 {1} 至 {2}）。
+
+Wave length is {0} times the vessel length, which is the worst case for vertical motion. A wave factor above the {1} used here is likely.
+La longitud de onda es {0} veces la eslora, el caso más desfavorable para el movimiento vertical. Es probable un factor de oleaje superior al {1} empleado.
+波长为船长的 {0} 倍，是垂向运动最不利的情况。实际波浪系数很可能大于此处采用的 {1}。
+
+Depth Froude number {0} is above {1}, where the squat formula is no longer reliable. Reduce the design speed or check with a manoeuvring simulation.
+El número de Froude de profundidad, {0}, supera {1}, donde la fórmula de asiento dinámico deja de ser fiable. Redúzcase la velocidad de diseño o compruébese con una simulación de maniobra.
+水深弗劳德数 {0} 大于 {1}，船体下沉公式已不可靠。应降低设计航速，或采用操船模拟复核。
+
+Depth is only {0} times the draught. Squat and manoeuvrability both degrade sharply below about {1}.
+La profundidad es solo {0} veces el calado. El asiento dinámico y la maniobrabilidad empeoran bruscamente por debajo de {1}.
+水深仅为吃水的 {0} 倍。低于约 {1} 时，船体下沉与操纵性均急剧恶化。
+
+Barrass screening gives {0} m of squat against the ICORELS {1} m. Check which is appropriate for this channel before fixing the dredge level.
+El cribado de Barrass da {0} m de asiento dinámico frente a {1} m según ICORELS. Compruébese cuál es adecuado para este canal antes de fijar la cota de dragado.
+Barrass 初估下沉量为 {0} m，ICORELS 为 {1} m。确定疏浚高程前应核实哪一公式适用于本航道。
+
+The existing bed at {0} m CD is already below the dredge level {1} m CD. No capital dredging is needed for depth.
+El fondo existente, a {0} m CD, ya está por debajo de la cota de dragado de {1} m CD. No se necesita dragado de primer establecimiento por calado.
+现状河床 {0} m CD 已低于疏浚高程 {1} m CD，无需为满足水深进行基建疏浚。
+
+The stream function wave did not converge, which puts this wave at breaking. Linear theory with Wheeler stretching is used instead and understates the crest kinematics.
+La onda de función de corriente no convergió, lo que sitúa esta ola en rotura. Se usa en su lugar la teoría lineal con extensión de Wheeler, que subestima la cinemática de la cresta.
+流函数波不收敛，说明该波浪已达破碎。改用带 Wheeler 拉伸的线性理论，会低估波峰处的水质点运动。
+
+D / L = {0} is above {1}, so the pile diffracts the wave and the Morison equation does not apply. Use a diffraction method such as MacCamy and Fuchs.
+D / L = {0} supera {1}, por lo que el pilote difracta la ola y la ecuación de Morison no es aplicable. Empléese un método de difracción como MacCamy y Fuchs.
+D / L = {0} 大于 {1}，桩对波浪产生绕射，Morison 方程不再适用。应采用 MacCamy 与 Fuchs 等绕射方法。
+
+H = {0} m exceeds {1} of the {2} m depth, so the wave has broken. Breaking wave slam is a separate and much larger load, and is not computed here.
+H = {0} m supera {1} de la profundidad de {2} m, por lo que la ola ha roto. El impacto de la ola en rotura es una carga distinta y mucho mayor, que aquí no se calcula.
+H = {0} m 超过 {2} m 水深的 {1}，波浪已破碎。破碎波冲击是另一种大得多的荷载，此处未计算。
+
+The worst moment is {0}% larger than the moment at the crest phase. Designing on the crest alone would have understated it.
+El momento pésimo es un {0}% mayor que en la fase de cresta. Dimensionar solo con la cresta lo habría subestimado.
+最不利弯矩比波峰相位弯矩大 {0}%。仅按波峰设计会低估该值。
+
+No current was given, so the scour is for waves alone. A tidal current of even {0} m/s usually dominates monopile scour and takes it towards {1} D; give the site current before relying on this number.
+No se indicó corriente, así que la socavación es solo por oleaje. Una corriente de marea de apenas {0} m/s suele dominar la socavación del monopilote y la lleva hacia {1} D; introdúzcase la corriente del emplazamiento antes de confiar en este valor.
+未输入流速，冲刷仅按波浪计算。即使 {0} m/s 的潮流通常也会主导单桩冲刷，使其趋近 {1} D；采用该数值前应输入场址流速。
+
+The fill is coarser than the native sand, so it stands steeper and meets the native profile {0} m offshore, at {1} m depth. Every cubic metre works on the visible beach.
+El relleno es más grueso que la arena nativa, por lo que adopta una pendiente mayor y corta el perfil nativo a {0} m mar adentro, a {1} m de profundidad. Cada metro cúbico trabaja en la playa visible.
+填沙粗于原砂，剖面更陡，在离岸 {0} m、水深 {1} m 处与原剖面相交。每立方米填沙都作用于可见海滩。
+
+The fill is finer than the native sand, so it lies flatter and never meets the native profile: the placement runs all the way to closure, and part of it does nothing for the dry beach.
+El relleno es más fino que la arena nativa, por lo que queda más tendido y no corta el perfil nativo: el vertido se extiende hasta la profundidad de cierre y parte de él no contribuye a la playa seca.
+填沙细于原砂，剖面更缓，与原剖面不相交：填沙一直延伸至闭合深度，其中一部分对干滩毫无贡献。
+
+The borrow matches the native sand, so the profile simply translates seaward and every cubic metre buys the same width.
+El préstamo coincide con la arena nativa, por lo que el perfil simplemente se traslada hacia el mar y cada metro cúbico aporta el mismo ancho.
+取沙与原砂相同，剖面整体向海平移，每立方米填沙增加的滩宽相同。
+
+{0} m3/m of fill this fine does not reach the critical {1} m3/m, so none of it appears as dry beach. It forms a submerged terrace instead.
+{0} m3/m de un relleno tan fino no alcanza el volumen crítico de {1} m3/m, así que nada aparece como playa seca. En su lugar forma una terraza sumergida.
+如此细的填沙 {0} m3/m 未达到临界方量 {1} m3/m，不会形成干滩，而是形成水下平台。

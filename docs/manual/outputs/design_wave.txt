@@ -36,7 +36,7 @@ Repeating the study on 60 fresh 40-year records
    this record sits at the 70th percentile of that spread
    The bootstrap band matches the real sampling spread.
 
-Design wave at the toe 4.68 m (depth limited)
-Seawall crest +13.13 m CD, base 20.83 m, concrete 45.0 m3/m
+Design wave at the toe 1.93 m (depth limited)
+Seawall crest +6.19 m CD, base 10.75 m, concrete 19.4 m3/m
 
 Wrote media/design_wave.png

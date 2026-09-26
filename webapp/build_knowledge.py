@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sqlite3
 from datetime import date
 from pathlib import Path
@@ -126,6 +127,52 @@ MODULE_TOPICS: dict[str, dict] = {
 }
 
 
+#: Order in which open copies are offered: the published version first,
+#: then the peer-reviewed manuscript, then earlier versions.
+VERSION_RANK = {"version_of_record": 0, "accepted_manuscript": 1,
+                "submitted_manuscript": 2, "preprint": 3}
+ROUTE_RANK = {"publisher_oa": 0, "government_repository": 1, "crossref": 2,
+              "openalex": 3, "institutional_repository": 4, "author_manuscript": 5,
+              "preprint": 6}
+ACCESS_RANK = ["open", "restricted", "unavailable", "unknown"]
+
+
+def short_license(text: str | None) -> str:
+    """Creative Commons or public domain as a short tag, anything else read only."""
+    t = (text or "").lower().strip()
+    if "publicdomain" in t or "public-domain" in t or "public domain" in t:
+        return "public domain"
+    if "creativecommons" in t or t.startswith("cc"):
+        parts = [x for x in ("nc", "nd", "sa")
+                 if re.search(rf"[-/ ]{x}\b", t)]
+        return "CC " + "-".join(["BY"] + [x.upper() for x in parts])
+    return "read only"
+
+
+def access_routes(src: sqlite3.Connection) -> dict[int, tuple]:
+    """Per paper: (access, open_url, open_version, open_license).
+
+    The source records every lawful route it has checked for a paper. The
+    distilled database keeps the best open one, and never the local file
+    path of a downloaded copy.
+    """
+    best: dict[int, tuple] = {}
+    status: dict[int, str] = {}
+    for pid, url, route, st, lic, ver, sha in src.execute(
+            "SELECT paper_id, url, access_route, access_status, license, version, "
+            "sha256 FROM full_texts"):
+        st = st if st in ACCESS_RANK else "unknown"
+        if pid not in status or ACCESS_RANK.index(st) < ACCESS_RANK.index(status[pid]):
+            status[pid] = st
+        if st != "open" or not (url or "").startswith("http"):
+            continue
+        rank = (VERSION_RANK.get(ver, 4), ROUTE_RANK.get(route, 7), sha is None)
+        if pid not in best or rank < best[pid][0]:
+            best[pid] = (rank, url, ver, short_license(lic))
+    return {pid: (st, *(best[pid][1:] if pid in best else (None, None, None)))
+            for pid, st in status.items()}
+
+
 def fetch(connection: sqlite3.Connection, query: str, *args) -> list[sqlite3.Row]:
     return connection.execute(query, args).fetchall()
 
@@ -204,6 +251,9 @@ def build(db_path: Path) -> dict:
     # Only the papers something actually points at, with the few fields a
     # citation needs. Abstracts and full texts stay in the database.
     papers: dict[str, dict] = {}
+    full_text = {r[0] for r in fetch(
+        connection,
+        "SELECT paper_id FROM paper_extractions WHERE extraction_source = 'full_text'")}
     for row in fetch(connection,
                      "SELECT id, title, publication_year, journal, doi, "
                      "       citation_count FROM papers"):
@@ -216,6 +266,17 @@ def build(db_path: Path) -> dict:
             "doi": row["doi"] or "",
             "c": row["citation_count"] or 0,
         }
+        if row["id"] in full_text:
+            papers[str(row["id"])]["ft"] = 1
+
+    # A lawful open copy, when the source has verified one: "oa" is the URL,
+    # "v" the version (vor, am, sm, pp) and "l" the license.
+    short = {"version_of_record": "vor", "accepted_manuscript": "am",
+             "submitted_manuscript": "sm", "preprint": "pp"}
+    for pid, (_, url, version, license_) in access_routes(connection).items():
+        entry = papers.get(str(pid))
+        if entry and url:
+            entry.update(oa=url, v=short.get(version, ""), l=license_)
 
     # First author, so a citation reads like a citation.
     for row in fetch(connection,

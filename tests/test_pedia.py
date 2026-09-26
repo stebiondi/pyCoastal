@@ -73,6 +73,34 @@ def test_paper_lookup_by_id_and_doi():
         assert pedia.paper(doi=p["doi"].upper())["id"] == p["id"]
 
 
+def test_open_copies_are_lawful_and_never_local():
+    s = pedia.stats()
+    assert 0 < int(s["papers_open_access"]) <= int(s["papers"])
+    assert 0 < int(s["full_text_extractions"]) <= int(s["papers"])
+    rows = pedia.connect().execute(
+        "SELECT access, open_url, open_version, open_license FROM papers").fetchall()
+    for access, url, version, license_ in rows:
+        assert access in ("open", "restricted", "unavailable", "unknown")
+        if url:
+            assert access == "open" and url.startswith("http")
+            assert license_ == "read only" or license_ == "public domain" \
+                or license_.startswith("CC BY")
+        else:
+            assert version is None
+    sources = {r[0] for r in pedia.connect().execute(
+        "SELECT DISTINCT extraction_source FROM paper_extractions")}
+    assert sources <= {"full_text", "abstract"}
+
+
+def test_knowledge_extract_carries_open_copies():
+    path = pedia.database_path().parents[2] / "webapp" / "knowledge.json"
+    if not path.exists():
+        pytest.skip("webapp not in this checkout")
+    papers = json.loads(path.read_text(encoding="utf-8"))["papers"]
+    with_copy = [p for p in papers.values() if "oa" in p]
+    assert with_copy and all(p["oa"].startswith("http") and p["l"] for p in with_copy)
+
+
 def test_cli_json_output(capsys):
     assert cli(["--json", "search", "overtopping", "--limit", "3"]) == 0
     hits = json.loads(capsys.readouterr().out)

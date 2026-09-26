@@ -46,9 +46,9 @@ Papers: 6. Claims: 5. Equations: 0.
 
 ## Papers
 
-- Ryan P. Mulligan (2010). A wave‐driven jet over a rocky shoal. *Journal of Geophysical Research: Oceans*. [doi:10.1029/2009jc006027](https://doi.org/10.1029/2009jc006027)
-- Abbas Khayyer (2007). Corrected Incompressible SPH method for accurate water-surface tracking in breaking waves. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2007.10.001](https://doi.org/10.1016/j.coastaleng.2007.10.001)
-- Francesco Fedele (2016). Real world ocean rogue waves explained without the modulational instability. *Scientific Reports*. [doi:10.1038/srep27715](https://doi.org/10.1038/srep27715)
-- Alexander V. Babanin (2006). On a wave‐induced turbulence and a wave‐mixed upper ocean layer. *Geophysical Research Letters*. [doi:10.1029/2006gl027308](https://doi.org/10.1029/2006gl027308)
-- Yasunori WATANABE (2005). Three-dimensional vortex structures under breaking waves. *Journal of Fluid Mechanics*. [doi:10.1017/s0022112005006774](https://doi.org/10.1017/s0022112005006774)
-- Umberto Andriolo (2020). Breaking Wave Height Estimation from Timex Images: Two Methods for Coastal Video Monitoring Systems. *Remote Sensing*. [doi:10.3390/rs12020204](https://doi.org/10.3390/rs12020204)
+- Ryan P. Mulligan (2010). A wave‐driven jet over a rocky shoal. *Journal of Geophysical Research: Oceans*. [doi:10.1029/2009jc006027](https://doi.org/10.1029/2009jc006027) [published version, read only](https://onlinelibrary.wiley.com/doi/pdfdirect/10.1029/2009JC006027)
+- Abbas Khayyer (2007). Corrected Incompressible SPH method for accurate water-surface tracking in breaking waves. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2007.10.001](https://doi.org/10.1016/j.coastaleng.2007.10.001) [accepted manuscript, read only](https://repository.kulib.kyoto-u.ac.jp/server/api/core/bitstreams/7c9a16a8-733c-4040-af0c-00a4cee4dddf/content)
+- Francesco Fedele (2016). Real world ocean rogue waves explained without the modulational instability. *Scientific Reports*. [doi:10.1038/srep27715](https://doi.org/10.1038/srep27715) [published version, CC BY](https://www.nature.com/articles/srep27715.pdf)
+- Alexander V. Babanin (2006). On a wave‐induced turbulence and a wave‐mixed upper ocean layer. *Geophysical Research Letters*. [doi:10.1029/2006gl027308](https://doi.org/10.1029/2006gl027308) [published version, read only](https://onlinelibrary.wiley.com/doi/pdfdirect/10.1029/2006GL027308)
+- Yasunori WATANABE (2005). Three-dimensional vortex structures under breaking waves. *Journal of Fluid Mechanics*. [doi:10.1017/s0022112005006774](https://doi.org/10.1017/s0022112005006774) [published version, read only](https://www.cambridge.org/core/services/aop-cambridge-core/content/view/8563F6B2E5B06EA3781FB0BD43939F78/S0022112005006774a.pdf/div-class-title-three-dimensional-vortex-structures-under-breaking-waves-div.pdf)
+- Umberto Andriolo (2020). Breaking Wave Height Estimation from Timex Images: Two Methods for Coastal Video Monitoring Systems. *Remote Sensing*. [doi:10.3390/rs12020204](https://doi.org/10.3390/rs12020204) [published version, CC BY](https://www.mdpi.com/2072-4292/12/2/204/pdf)

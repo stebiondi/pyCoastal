@@ -62,9 +62,11 @@ The design relations implemented in pyCoastal, as cited in the module
 docstrings.
 
 - Barrass, C. B. (1979). A unified approach to squat calculations for ships. *PIANC Bulletin*, 32.
+- Battjes, J. A., and Groenendijk, H. W. (2000). Wave height distributions on shallow foreshores. *Coastal Engineering*, 40(3), 161-182.
 - Breusers, H. N. C., Nicollet, G., and Shen, H. W. (1977). Local scour around cylindrical piers. *Journal of Hydraulic Research*, 15(3), 211-252.
 - Brolsma, J. U., Hirs, J. A., and Langeveld, J. M. (1977). On fender design and berthing velocities. *PIANC 24th Congress*.
 - BS 6349-4 (2014). *Maritime works. Code of practice for design of fendering and mooring systems*. British Standards Institution.
+- CEN (2004). *EN 1992-1-1, Eurocode 2: Design of concrete structures. Part 1-1: General rules and rules for buildings*. European Committee for Standardization.
 - Chorin, A. J. (1968). Numerical solution of the Navier-Stokes equations. *Mathematics of Computation*, 22(104), 745-762.
 - Chow, V. T. (1959). *Open-Channel Hydraulics*. McGraw-Hill.
 - CIRIA, CUR, and CETMEF (2007). *The Rock Manual: The Use of Rock in Hydraulic Engineering*, 2nd ed. CIRIA C683.
@@ -73,6 +75,7 @@ docstrings.
 - DNV (2010). *DNV-RP-C205: Environmental Conditions and Environmental Loads*. Det Norske Veritas.
 - EurOtop (2018). *Manual on Wave Overtopping of Sea Defences and Related Structures*, 2nd ed. Van der Meer, J. W., Allsop, N. W. H., Bruce, T., De Rouck, J., Kortenhaus, A., Pullen, T., Schüttrumpf, H., Troch, P., and Zanuttigh, B.
 - FEMA (2005). *Guidelines and Specifications for Flood Hazard Mapping Partners*. Federal Emergency Management Agency.
+- Fenton, J. D. (1988). The numerical solution of steady water wave problems. *Computers and Geosciences*, 14(3), 357-368.
 - Ferziger, J. H., and Perić, M. (2002). *Computational Methods for Fluid Dynamics*. Springer.
 - Froehlich, D. C. (1989). Local scour at bridge abutments. *Proceedings, ASCE National Hydraulic Conference*, 13-18.
 - Goda, Y. (1974). New wave pressure formulae for composite breakwaters. *Proceedings of the 14th International Conference on Coastal Engineering*, 1702-1720.
@@ -86,10 +89,12 @@ docstrings.
 - James, W. R. (1975). *Techniques in evaluating suitability of borrow material for beach nourishment*. Technical Memorandum 60, US Army Coastal Engineering Research Center.
 - Kriebel, D. L., Kraus, N. C., and Larson, M. (1991). Engineering methods for predicting beach profile response. *Proceedings of Coastal Sediments '91*, 557-571.
 - Lagasse, P. F., et al. (2009). *Bridge Scour and Stream Instability Countermeasures*, HEC-23, 3rd ed. Federal Highway Administration.
-- Laursen, E. M. (1960). Scour at bridge crossings. *Journal of the Hydraulics Division*, 86(2), 39-54.
 - Launder, B. E., and Spalding, D. B. (1974). The numerical computation of turbulent flows. *Computer Methods in Applied Mechanics and Engineering*, 3(2), 269-289.
+- Laursen, E. M. (1960). Scour at bridge crossings. *Journal of the Hydraulics Division*, 86(2), 39-54.
 - LeVeque, R. J. (2002). *Finite Volume Methods for Hyperbolic Problems*. Cambridge University Press.
 - Morison, J. R., O'Brien, M. P., Johnson, J. W., and Schaaf, S. A. (1950). The force exerted by surface waves on piles. *Petroleum Transactions, AIME*, 189, 149-154.
+- Nørgaard, J. Q. H., Andersen, T. L., and Burcharth, H. F. (2013). Wave loads on rubble mound breakwater crown walls in deep and shallow water wave conditions. *Coastal Engineering*, 80, 137-147.
+- Pedersen, J. (1996). *Experimental study of wave forces and wave overtopping on breakwater crown walls*. Series Paper 12, Hydraulics and Coastal Engineering Laboratory, Aalborg University.
 - Pelnard-Considère, R. (1956). Essai de théorie de l'évolution des formes de rivage en plages de sable et de galets. *4èmes Journées de l'Hydraulique*, Question III, 289-298.
 - PIANC (2002). *Guidelines for the Design of Fender Systems*. Report of Working Group 33, Maritime Navigation Commission.
 - PIANC (2014). *Harbour Approach Channels: Design Guidelines*. Report 121.
@@ -101,14 +106,17 @@ docstrings.
 - Soulsby, R. L. (1997). *Dynamics of Marine Sands*. Thomas Telford.
 - Soulsby, R. L., and Whitehouse, R. J. S. (1997). Threshold of sediment motion in coastal environments. *Proceedings of Pacific Coasts and Ports '97*, 149-154.
 - Stockdon, H. F., Holman, R. A., Howd, P. A., and Sallenger, A. H. (2006). Empirical parameterization of setup, swash, and runup. *Coastal Engineering*, 53(7), 573-588.
-- Sumer, B. M., Christiansen, N., and Fredsøe, J. (1992). Time scale of scour around a vertical pile. *Proceedings of the 2nd International Offshore and Polar Engineering Conference*, 308-315.
 - Sumer, B. M., and Fredsøe, J. (2001). Scour around pile in combined waves and current. *Journal of Hydraulic Engineering*, 127(5), 403-411.
 - Sumer, B. M., and Fredsøe, J. (2002). *The Mechanics of Scour in the Marine Environment*. World Scientific.
+- Sumer, B. M., Christiansen, N., and Fredsøe, J. (1992). Time scale of scour around a vertical pile. *Proceedings of the 2nd International Offshore and Polar Engineering Conference*, 308-315.
 - Sumer, B. M., Fredsøe, J., and Christiansen, N. (1992). Scour around vertical pile in waves. *Journal of Waterway, Port, Coastal, and Ocean Engineering*, 118(1), 15-31.
+- Takahashi, S. (2002). *Design of vertical breakwaters*. Reference Document 34, Port and Airport Research Institute, Japan.
 - Takahashi, S., Tanimoto, K., and Shimosako, K. (1994). A proposal of impulsive pressure coefficient for design of composite breakwaters. *Proceedings of the International Conference on Hydro-Technical Engineering for Port and Harbor Construction*, 489-504.
+- Tanimoto, K., Yagyu, T., and Goda, Y. (1982). Irregular wave tests for composite breakwater foundations. *Proceedings of the 18th International Conference on Coastal Engineering*, ASCE.
 - US Army Corps of Engineers (1984). *Shore Protection Manual*. Coastal Engineering Research Center.
 - US Army Corps of Engineers (2002). *Coastal Engineering Manual*, EM 1110-2-1100.
 - Van der Meer, J. W. (1988). *Rock slopes and gravel beaches under wave attack*. PhD thesis, Delft University of Technology; Delft Hydraulics Publication 396.
+- Van Gent, M. R. A., Smale, A. J., and Kuiper, C. (2003). Stability of rock slopes with shallow foreshores. *Proceedings of Coastal Structures 2003*, ASCE.
 - Van Rijn, L. C. (1984). Sediment transport, part I: bed load transport. *Journal of Hydraulic Engineering*, 110(10), 1431-1456.
 - Vasco Costa, F. (1964). The berthing ship: the effect of impact on the design of fenders and other structures. *The Dock and Harbour Authority*, 45.
 - Wheeler, J. D. (1970). Method for calculating forces produced by irregular waves. *Journal of Petroleum Technology*, 22(3), 359-367.

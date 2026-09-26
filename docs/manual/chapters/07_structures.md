@@ -3,10 +3,12 @@
 *Module:* `pyCoastal.applications.structures`. *Example:*
 `examples/breakwater_design.py`. *Browser:* Breakwater.
 
-The module implements armor sizing and wave overtopping. The sources are
-Van der Meer (1988) and Hudson (SPM 1984) for stability, the Rock Manual
-(2007) for layer geometry, and EurOtop (2018) for overtopping and the
-tolerable discharge limits. Each relation records its source and its
+The module implements armor sizing, wave overtopping and the crown wall.
+The sources are Van der Meer (1988) in the form of Van Gent et al. (2003)
+for rock, Van der Meer (1988) and the unit design numbers for concrete
+armor, Hudson (SPM 1984) as a screening check, the Rock Manual (2007) for
+layer geometry, EurOtop (2018) for overtopping and the tolerable discharge
+limits, and Pedersen (1996) for the crown wall. Each relation records its source and its
 validity range, computes outside that range, and reports the condition.
 
 ## The design condition
@@ -14,21 +16,30 @@ validity range, computes outside that range, and reports the condition.
 `DesignConditions(Hm0, Tm10, depth=15.0, storm_duration=6*3600)` carries
 the wave and water level at the toe. `DesignConditions.from_peak_period(Hm0,
 Tp, ...)` converts with $T_{m-1,0} = T_p/1.1$ for a single-peaked spectrum.
-Derived properties are the wave count $N = t_\mathrm{storm}/T_m$, the deep
-and local wavelengths, and the surf similarity (@eq:structures-1)
+The mean period is $T_m = T_{m-1,0}/1.164$, from $T_p = 1.1\,T_{m-1,0} =
+1.28\,T_m$ for a JONSWAP spectrum (Goda 2010). Derived properties are the
+wave count $N = t_\mathrm{storm}/T_m$, capped at 7500, the deep and local
+wavelengths, and the surf similarity (@eq:structures-1)
 
 $$ \xi_{m-1,0} = \frac{\tan\alpha}{\sqrt{H_{m0}/L_{m-1,0}}},\qquad L_{m-1,0} = \frac{gT_{m-1,0}^2}{2\pi}. $$ {#eq:structures-1}
 
 ## Armor stability
 
-**Van der Meer (1988).** Two regimes, selected by the surf similarity against
+**Van der Meer, Van Gent form.** Van der Meer's (1988) coefficients 6.2 and
+1.0 belong to the mean period $T_m$. The Rock Manual (2007) adopts the form
+of Van Gent et al. (2003), written in $T_{m-1,0}$ and the 2 % wave height,
+which is used here. Two regimes are selected by the surf similarity against
 a critical value ([@eq:vdm-plunging; @eq:vdm-surging; @eq:structures-2]):
 
-$$ \frac{H_s}{\Delta D_{n50}} = 6.2\,P^{0.18}\left(\frac{S}{\sqrt N}\right)^{0.2}\xi^{-0.5}\qquad (\xi < \xi_{cr},\ \text{plunging}), $$ {#eq:vdm-plunging}
+$$ \frac{H_s}{\Delta D_{n50}} = 8.4\,P^{0.18}\left(\frac{S}{\sqrt N}\right)^{0.2}\frac{H_s}{H_{2\%}}\,\xi_{m-1,0}^{-0.5}\qquad (\xi < \xi_{cr},\ \text{plunging}), $$ {#eq:vdm-plunging}
 
-$$ \frac{H_s}{\Delta D_{n50}} = 1.0\,P^{-0.13}\left(\frac{S}{\sqrt N}\right)^{0.2}\sqrt{\cot\alpha}\,\xi^{P}\qquad (\xi \ge \xi_{cr},\ \text{surging}), $$ {#eq:vdm-surging}
+$$ \frac{H_s}{\Delta D_{n50}} = 1.3\,P^{-0.13}\left(\frac{S}{\sqrt N}\right)^{0.2}\frac{H_s}{H_{2\%}}\sqrt{\cot\alpha}\,\xi_{m-1,0}^{P}\qquad (\xi \ge \xi_{cr},\ \text{surging}), $$ {#eq:vdm-surging}
 
-$$ \xi_{cr} = \left(6.2\,P^{0.31}\sqrt{\tan\alpha}\right)^{1/(P + 0.5)}. $$ {#eq:structures-2}
+$$ \xi_{cr} = \left(\frac{8.4}{1.3}\,P^{0.31}\sqrt{\tan\alpha}\right)^{1/(P + 0.5)}. $$ {#eq:structures-2}
+
+$H_{2\%}/H_s$ is taken as 1.4, the Rayleigh value (`height_ratio`). On a
+shallow foreshore the ratio is lower (Battjes and Groenendijk 2000), so the
+default is conservative there.
 
 $\Delta = \rho_s/\rho_w - 1$ (1.585 for 2650 kg/m$^3$ rock in seawater), $P$
 is the notional permeability (0.1 impermeable core with a filter, 0.4
@@ -36,9 +47,31 @@ permeable core, 0.5 homogeneous, 0.6 very permeable), and $S$ the damage
 level (`DAMAGE_LEVELS`: 2 start of damage, the design value; 8 and 12 to 17
 failure). `rock_armour_vandermeer(conditions, cot_alpha,
 Delta=1.585, permeability=0.4, damage=2.0, safety_factor=1.0)` returns
-`Dn50`, `M50`, the governing regime, $\xi$, and $\xi_{cr}$. It is valid for
-non-depth-limited waves at the toe; the shallow-water modification is not
-applied.
+`Dn50`, `M50`, the governing regime, $\xi$, and $\xi_{cr}$.
+
+**Depth at the toe.** `depth_limit_warnings(conditions)` reports
+$H_{m0}/h > 0.6$, a wave the toe depth cannot carry, as an inconsistent
+input, and $H_{m0}/h > 0.2$ as a shallow toe where the Rayleigh $H_{2\%}$
+overstates the load.
+
+**Concrete armor units.** `concrete_armour(conditions, unit, cot_alpha,
+damage=0.5, density=2400)` sizes a unit by its own relation, with
+$\Delta = \rho_c/\rho_w - 1$, $N_{od}$ the number of displaced units per
+strip one $D_n$ wide (0.5 is the start of damage) and
+$s_{om} = H_s/L_{om}$ on the mean period:
+
+- cubes, two layers (Van der Meer 1988):
+  $H_s/(\Delta D_n) = (6.7N_{od}^{0.4}/N^{0.3} + 1.0)\,s_{om}^{-0.1}$;
+- tetrapods, two layers (Van der Meer 1988):
+  $H_s/(\Delta D_n) = (3.75N_{od}^{0.5}/N^{0.25} + 0.85)\,s_{om}^{-0.2}$;
+- single-layer units: the design stability number $N_s = 2.7$ for
+  Accropode and 2.8 for Core-Loc and Xbloc (CEM Table VI-5-37);
+- dolos: Hudson with $K_D = 16$ on $H_s$.
+
+`CONCRETE_UNITS` holds the layer count, layer coefficient, porosity and
+reference slope of each unit. `design_rubble_mound` selects the relation
+from the `armour` argument, reports the unit mass at the concrete density,
+and sets the underlayer at a tenth of the unit mass in rock.
 
 **Hudson (SPM 1984).** $H_s/(\Delta D_{n50}) = (K_D\cot\alpha)^{1/3}/1.27$,
 where 1.27 converts the SPM's $H_{1/10}$ basis to $H_s$.
@@ -121,10 +154,20 @@ The rest of the section is built from the design:
   berm of filter stone. The berm is sized as filter stone; the near-bed
   orbital velocities at its level are lower than at the waterline.
 - **Crown wall.** `crown_wall(design, still_water_level, deck_width=7.5,
-  parapet_width=2.0, ...)` proportions a stepped concrete crown block and
-  its concrete volume. The block is proportioned. Sliding and overturning of
-  the crown wall under wave impact and uplift are outside the scope of this
-  function.
+  parapet_width=2.0, berm_width=None, ...)` places a stepped concrete crown
+  block behind an armor berm ($3D_{n50}$ by default) and loads it with
+  Pedersen (1996), as given in CEM Table VI-5-61
+  (`pedersen_crown_loads`):
+  $F_{h,0.1\%} = 0.21\sqrt{L_{om}/B}\,(1.6p_my_\mathrm{eff} + Ap_mh'/2)$,
+  $M_{0.1\%} = 0.55(h' + y_\mathrm{eff})F_{h,0.1\%}$ and
+  $p_{b,0.1\%} = Ap_m$, with $p_m = \rho_wg(R_{u,0.1\%} - A_c)$,
+  $R_{u,0.1\%} = 1.12H_s\xi_m$ ($\xi_m \le 1.5$) or $1.34H_s\xi_m^{0.55}$,
+  $y = (R_{u,0.1\%} - A_c)\sin15^\circ/(\sin\alpha\cos(\alpha - 15^\circ))$
+  and $y_\mathrm{eff} = \min(y/2, f_c)$. $A = \min(A_2/A_1, 1)$ is taken
+  as 1, its upper bound, and the horizontal force and the uplift are
+  combined, which is conservative since they do not peak together. The deck
+  is widened until sliding reaches 1.2 and overturning about the rear heel
+  1.5. Parameters outside Pedersen's tested range are reported.
 - **Roundhead.** A head receives wave attack from a wider range of
   directions, and armor on a convex surface has reduced interlock. Design
   practice applies a lower stability coefficient at the head. With a

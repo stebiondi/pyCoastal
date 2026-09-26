@@ -39,7 +39,9 @@ DEPTH = 30.0            # water depth
 H = 12.0                # design wave height
 T = 13.0                # period
 
-result = design_monopile(DIAMETER, H, T, DEPTH, rough=True)
+CURRENT = 1.0           # depth-averaged tidal current at the site, m/s
+
+result = design_monopile(DIAMETER, H, T, DEPTH, rough=True, current=CURRENT)
 worst, crest, sweep, scour = (result["load"], result["crest_load"],
                               result["sweep"], result["scour"])
 
@@ -55,13 +57,14 @@ print(f"\nMax base shear at         "
 print(f"Max mudline moment at     "
       f"{math.degrees(sweep['phase_of_max_moment']):.0f} degrees")
 
-print(f"\nScour                     {scour['depth']:.2f} m "
-      f"({scour['ratio']:.2f} D) at KC = {scour['KC']:.1f}")
-current = scour_depth_pile(DIAMETER, scour["KC"], current_only=True)
-print(f"   under a steady current: {current['depth']:.2f} m "
-      f"(1.3 D, standard deviation {current['standard_deviation']:.2f} m)")
-print("   waves alone barely scour a pile this large, because KC is small; "
-      "current is what governs.")
+print(f"\nScour, waves + current    {scour['depth']:.2f} m "
+      f"({scour['ratio']:.2f} D) at bed KC = {scour['KC']:.1f}, "
+      f"Ucw = {scour['current_ratio']:.2f}")
+waves_only = scour_depth_pile(DIAMETER, scour["KC"])
+print(f"   waves alone:            {waves_only['depth']:.2f} m")
+steady = scour_depth_pile(DIAMETER, scour["KC"], current_only=True)
+print(f"   steady current alone:   {steady['depth']:.2f} m "
+      f"(1.3 D, standard deviation {steady['standard_deviation']:.2f} m)")
 
 # --- how the load splits with pile size -----------------------------------
 print("\nHow the load splits with pile diameter")

@@ -9,6 +9,7 @@ from pyCoastal.applications.seawall import (
     SeawallDesign,
     bearing_pressures,
     design_seawall,
+    goda_breaking_height,
     goda_pressures,
     overturning_safety,
     scour_depth_vertical_wall,
@@ -21,14 +22,14 @@ from pyCoastal.applications.structures import DesignConditions
 @pytest.fixture
 def conditions():
     return DesignConditions.from_peak_period(
-        Hm0=2.8, Tp=9.5, depth=8.5, storm_duration=6 * 3600.0
+        Hm0=2.0, Tp=8.0, depth=3.5, storm_duration=6 * 3600.0
     )
 
 
 @pytest.fixture
 def wall(conditions):
     return design_seawall(
-        conditions, still_water_level=2.9, seabed_level=-5.6,
+        conditions, still_water_level=2.5, seabed_level=-1.0,
         tolerable_use="trained_staff",
     )
 
@@ -41,7 +42,7 @@ def wall(conditions):
 def test_goda_pressure_head_is_a_sane_fraction_of_the_wave():
     """p1 should be of order rho g Hmax, not orders away from it."""
     res = goda_pressures(Hm0=3.0, T=10.0, depth=12.0, wall_toe_depth=12.0,
-                         crest_freeboard=6.0, breaker_index=0.0)
+                         crest_freeboard=6.0, depth_limit=False)
     ceiling = RHO_W * 9.81 * res["Hmax"] / 1000.0
     assert 0.3 * ceiling < res["p1"] < 1.0 * ceiling
 
@@ -49,19 +50,19 @@ def test_goda_pressure_head_is_a_sane_fraction_of_the_wave():
 def test_goda_alpha1_tends_to_its_deep_water_floor():
     """alpha1 falls to 0.6 in deep water, where 2kh/sinh(2kh) vanishes."""
     deep = goda_pressures(Hm0=2.0, T=6.0, depth=200.0, wall_toe_depth=20.0,
-                          crest_freeboard=5.0, breaker_index=0.0)
+                          crest_freeboard=5.0, depth_limit=False)
     assert deep["alpha1"] == pytest.approx(0.6, abs=1e-3)
 
 
 def test_goda_alpha3_is_one_when_the_wall_starts_at_the_bed():
     shallow = goda_pressures(Hm0=1.5, T=8.0, depth=6.0, wall_toe_depth=1e-6,
-                             crest_freeboard=4.0, breaker_index=0.0)
+                             crest_freeboard=4.0, depth_limit=False)
     assert shallow["alpha3"] == pytest.approx(1.0, abs=1e-5)
 
 
 def test_goda_oblique_attack_reduces_the_load():
     kwargs = dict(Hm0=3.0, T=10.0, depth=10.0, wall_toe_depth=10.0,
-                  crest_freeboard=5.0, breaker_index=0.0)
+                  crest_freeboard=5.0, depth_limit=False)
     head_on = goda_pressures(beta_degrees=0.0, **kwargs)
     oblique = goda_pressures(beta_degrees=45.0, **kwargs)
     assert oblique["F"] < head_on["F"]
@@ -69,12 +70,15 @@ def test_goda_oblique_attack_reduces_the_load():
 
 def test_goda_depth_limit_caps_the_design_wave():
     limited = goda_pressures(Hm0=4.0, T=10.0, depth=4.0, wall_toe_depth=4.0,
-                             crest_freeboard=4.0, breaker_index=0.78)
-    assert limited["Hmax"] == pytest.approx(0.78 * 4.0)
+                             crest_freeboard=4.0)
+    h_b = 4.0 + 5.0 * 4.0 / 30.0
+    assert limited["Hmax"] == pytest.approx(
+        goda_breaking_height(10.0, h_b, 1 / 30))
+    assert limited["Hmax"] < 1.8 * 4.0
     assert limited["depth_limited"] is True
 
     free = goda_pressures(Hm0=4.0, T=10.0, depth=4.0, wall_toe_depth=4.0,
-                          crest_freeboard=4.0, breaker_index=0.0)
+                          crest_freeboard=4.0, depth_limit=False)
     assert free["Hmax"] == pytest.approx(1.8 * 4.0)
     assert free["depth_limited"] is False
 
@@ -82,23 +86,23 @@ def test_goda_depth_limit_caps_the_design_wave():
 def test_goda_force_is_bounded_by_the_pressure_box():
     """F cannot exceed p1 times the full loaded height."""
     res = goda_pressures(Hm0=2.5, T=9.0, depth=9.0, wall_toe_depth=9.0,
-                         crest_freeboard=4.0, breaker_index=0.0)
+                         crest_freeboard=4.0, depth_limit=False)
     box = res["p1"] * (9.0 + res["hc_star"])
     assert 0.0 < res["F"] < box
 
 
 def test_goda_lever_arm_lies_within_the_loaded_height():
     res = goda_pressures(Hm0=2.5, T=9.0, depth=9.0, wall_toe_depth=9.0,
-                         crest_freeboard=4.0, breaker_index=0.0)
+                         crest_freeboard=4.0, depth_limit=False)
     assert 0.0 < res["arm"] < 9.0 + res["hc_star"]
 
 
 def test_goda_low_crest_sheds_load():
     """A crest below the run-up wedge is not loaded above itself."""
     tall = goda_pressures(Hm0=3.0, T=10.0, depth=10.0, wall_toe_depth=10.0,
-                          crest_freeboard=10.0, breaker_index=0.0)
+                          crest_freeboard=10.0, depth_limit=False)
     short = goda_pressures(Hm0=3.0, T=10.0, depth=10.0, wall_toe_depth=10.0,
-                           crest_freeboard=1.0, breaker_index=0.0)
+                           crest_freeboard=1.0, depth_limit=False)
     assert short["F"] < tall["F"]
     assert short["hc_star"] == pytest.approx(1.0)
 
@@ -248,20 +252,20 @@ def test_design_levels_are_ordered(wall):
 
 def test_design_embedment_is_bracketed(conditions):
     tiny_scour = design_seawall(
-        conditions, 2.9, -5.6, scour_coefficient=0.0, minimum_embedment=1.5
+        conditions, 2.5, -1.0, scour_coefficient=0.0, minimum_embedment=1.5
     )
     assert tiny_scour.embedment == pytest.approx(1.5)
 
     huge_scour = design_seawall(
-        conditions, 2.9, -5.6, scour_coefficient=5.0, maximum_embedment=2.5
+        conditions, 2.5, -1.0, scour_coefficient=5.0, maximum_embedment=2.5
     )
     assert huge_scour.embedment == pytest.approx(2.5)
     assert any("embedment limit" in w for w in huge_scour.warnings)
 
 
 def test_design_a_stricter_limit_lifts_the_crest(conditions):
-    lax = design_seawall(conditions, 2.9, -5.6, tolerable_use="trained_staff")
-    strict = design_seawall(conditions, 2.9, -5.6,
+    lax = design_seawall(conditions, 2.5, -1.0, tolerable_use="trained_staff")
+    strict = design_seawall(conditions, 2.5, -1.0,
                             tolerable_use="pedestrians_unaware")
     assert strict.crest_level > lax.crest_level
 
@@ -269,13 +273,13 @@ def test_design_a_stricter_limit_lifts_the_crest(conditions):
 def test_design_a_bigger_wave_needs_a_wider_base():
     small = DesignConditions.from_peak_period(Hm0=2.0, Tp=9.0, depth=8.5)
     big = DesignConditions.from_peak_period(Hm0=3.5, Tp=9.0, depth=8.5)
-    assert (design_seawall(big, 2.9, -5.6).base_width
-            > design_seawall(small, 2.9, -5.6).base_width)
+    assert (design_seawall(big, 2.5, -1.0).base_width
+            > design_seawall(small, 2.5, -1.0).base_width)
 
 
 def test_design_oblique_attack_needs_less_wall(conditions):
-    head_on = design_seawall(conditions, 2.9, -5.6, beta_degrees=0.0)
-    oblique = design_seawall(conditions, 2.9, -5.6, beta_degrees=45.0)
+    head_on = design_seawall(conditions, 2.5, -1.0, beta_degrees=0.0)
+    oblique = design_seawall(conditions, 2.5, -1.0, beta_degrees=45.0)
     assert oblique.base_width <= head_on.base_width
 
 
@@ -302,13 +306,13 @@ def test_design_rejects_a_water_level_below_the_bed(conditions):
 
 def test_design_rejects_an_unknown_use(conditions):
     with pytest.raises(ValueError) as excinfo:
-        design_seawall(conditions, 2.9, -5.6, tolerable_use="hovercraft")
+        design_seawall(conditions, 2.5, -1.0, tolerable_use="hovercraft")
     assert "trained_staff" in str(excinfo.value)
 
 
 def test_design_rejects_a_zero_step(conditions):
     with pytest.raises(ValueError):
-        design_seawall(conditions, 2.9, -5.6, step=0.0)
+        design_seawall(conditions, 2.5, -1.0, step=0.0)
 
 
 # ---------------------------------------------------------------------------
@@ -341,7 +345,7 @@ def test_summary_mentions_every_check(wall):
     text = wall.summary()
     for phrase in ("Crest level", "Backfill", "Earth pressure",
                    "Load case 1", "Load case 2", "Governing case",
-                   "Bearing", "Toe protection", "Overtopping", "Concrete"):
+                   "bearing", "Stem", "Toe protection", "Overtopping", "Concrete"):
         assert phrase in text
 
 
@@ -351,30 +355,36 @@ def test_summary_mentions_every_check(wall):
 
 
 def test_saturated_backfill_needs_a_wider_base(conditions):
-    """A blocked drain is a structural problem, not a maintenance one."""
-    drained = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+    """A blocked drain is a structural problem, not a maintenance one.
+
+    "Drained" can only mean down to still water: the sea feeds the fill, so
+    a deeper water table is clamped there, with a warning.
+    """
+    drained = design_seawall(conditions, 2.5, -1.0, backfill="medium_sand",
                              water_table=30.0)
-    saturated = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+    saturated = design_seawall(conditions, 2.5, -1.0, backfill="medium_sand",
                                water_table=0.0)
-    assert saturated.base_width > 1.5 * drained.base_width
-    assert saturated.earth_driving["total"] > 1.5 * drained.earth_driving["total"]
+    assert drained.back_water_level == pytest.approx(2.5)
+    assert any("below the still water level" in w for w in drained.warnings)
+    assert saturated.base_width > 1.3 * drained.base_width
+    assert saturated.earth_driving["total"] > 1.2 * drained.earth_driving["total"]
 
 
 def test_stronger_backfill_needs_a_narrower_base(conditions):
-    weak = design_seawall(conditions, 2.9, -5.6, backfill="fine_sand")
-    strong = design_seawall(conditions, 2.9, -5.6, backfill="fine_gravel")
+    weak = design_seawall(conditions, 2.5, -1.0, backfill="fine_sand")
+    strong = design_seawall(conditions, 2.5, -1.0, backfill="fine_gravel")
     assert strong.base_width < weak.base_width
 
 
 def test_drawdown_governs_a_saturated_backfill(conditions):
-    wall = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+    wall = design_seawall(conditions, 2.5, -1.0, backfill="medium_sand",
                           water_table=0.0)
     assert wall.governing_case == "drawdown"
     assert any("drawdown case governs" in w for w in wall.warnings)
 
 
 def test_both_load_cases_meet_their_targets(conditions):
-    wall = design_seawall(conditions, 2.9, -5.6, backfill="medium_sand",
+    wall = design_seawall(conditions, 2.5, -1.0, backfill="medium_sand",
                           target_sliding=1.2, target_overturning=1.5)
     assert wall.sliding_FoS >= 1.2
     assert wall.overturning_FoS >= 1.5
@@ -383,35 +393,35 @@ def test_both_load_cases_meet_their_targets(conditions):
 
 
 def test_pore_water_dominates_a_saturated_backfill(conditions):
-    wall = design_seawall(conditions, 2.9, -5.6, water_table=0.0)
+    wall = design_seawall(conditions, 2.5, -1.0, water_table=0.0)
     assert wall.earth_driving["water_fraction"] > 0.6
     assert any("Pore water is" in w for w in wall.warnings)
 
 
 def test_surcharge_pushes_harder(conditions):
-    bare = design_seawall(conditions, 2.9, -5.6, surcharge=0.0)
-    loaded = design_seawall(conditions, 2.9, -5.6, surcharge=50.0)
+    bare = design_seawall(conditions, 2.5, -1.0, surcharge=0.0)
+    loaded = design_seawall(conditions, 2.5, -1.0, surcharge=50.0)
     assert loaded.earth_driving["total"] > bare.earth_driving["total"]
     assert loaded.base_width >= bare.base_width
 
 
 def test_driving_uses_at_rest_and_resisting_uses_active(conditions):
     """The asymmetry is deliberate: it is conservative in both directions."""
-    wall = design_seawall(conditions, 2.9, -5.6)
+    wall = design_seawall(conditions, 2.5, -1.0)
     assert wall.earth_driving["kind"] == "at_rest"
     assert wall.earth_resisting["kind"] == "active"
     assert wall.earth_driving["total"] > wall.earth_resisting["total"]
 
 
 def test_earth_pressure_can_be_left_out_of_the_resisting_side(conditions):
-    credited = design_seawall(conditions, 2.9, -5.6, credit_earth_pressure=True)
-    ignored = design_seawall(conditions, 2.9, -5.6, credit_earth_pressure=False)
+    credited = design_seawall(conditions, 2.5, -1.0, credit_earth_pressure=True)
+    ignored = design_seawall(conditions, 2.5, -1.0, credit_earth_pressure=False)
     assert ignored.earth_resisting["total"] == 0.0
     assert credited.earth_resisting["total"] > 0.0
 
 
 def test_cohesive_backfill_is_flagged(conditions):
-    wall = design_seawall(conditions, 2.9, -5.6, backfill="stiff_clay")
+    wall = design_seawall(conditions, 2.5, -1.0, backfill="stiff_clay")
     assert any("cohesive" in w for w in wall.warnings)
 
 
@@ -424,3 +434,119 @@ def test_summary_surfaces_warnings():
     shallow = DesignConditions.from_peak_period(Hm0=2.2, Tp=9.0, depth=3.6)
     result = design_seawall(shallow, 2.9, -0.7)
     assert "Warnings" in result.summary()
+
+
+# ---------------------------------------------------------------------------
+# Free body, bearing, stem and toe (the 2026-09 corrections)
+# ---------------------------------------------------------------------------
+
+
+def _independent_drawdown(d):
+    """Drawdown sliding and overturning from first principles.
+
+    Total weights; hydrostatic pressure on the face from the trough, on the
+    back plane from the backfill water table, and a linear uplift between
+    the two. Written apart from the design code so the two can disagree.
+    """
+    from pyCoastal.applications.seawall import GAMMA_C, GAMMA_W
+
+    B, tb, s = d.base_width, d.base_thickness, d.stem_thickness
+    zf, zc, zp = d.founding_level, d.crest_level, d.promenade_level
+    zt = zf + tb
+    zw = d.back_water_level
+    fill = d.backfill
+    wet = min(max(zw - zt, 0.0), zp - zt)
+    dry = (zp - zt) - wet
+    parts = [(GAMMA_C * B * tb, B / 2),
+             (GAMMA_C * s * (zc - zt), s / 2),
+             ((fill.dry_unit_weight * dry + fill.saturated_unit_weight * wet)
+              * (B - s), (s + B) / 2)]
+    W = sum(w for w, _ in parts)
+    hf = d.drawdown["trough_level"] - zf
+    hb = zw - zf
+    U = 0.5 * GAMMA_W * (hf + hb) * B
+    xU = B * (hf + 2 * hb) / (3 * (hf + hb))
+    front = 0.5 * GAMMA_W * hf**2
+    H = d.earth_driving["total"] - front
+    slide = 0.6 * (W - U) / H
+    over = ((sum(w * x for w, x in parts) + front * hf / 3)
+            / (d.earth_driving["moment"] + U * xU))
+    return slide, over
+
+
+@pytest.mark.parametrize("table", [0.0, 1.0, 3.0])
+def test_drawdown_matches_an_independent_free_body(conditions, table):
+    d = design_seawall(conditions, 2.5, -1.0, tolerable_use="trained_staff",
+                       water_table=table)
+    slide, over = _independent_drawdown(d)
+    assert d.drawdown["sliding_FoS"] == pytest.approx(slide, rel=1e-6)
+    assert d.drawdown["overturning_FoS"] == pytest.approx(over, rel=1e-6)
+
+
+def test_both_cases_keep_the_resultant_in_the_middle_third(wall):
+    assert wall.bearing["middle_third"]
+    assert wall.drawdown["bearing"]["middle_third"]
+
+
+def test_bearing_limit_is_met_in_both_cases(wall):
+    assert wall.bearing["p_max"] <= wall.allowable_bearing + 1e-6
+    assert wall.drawdown["bearing"]["p_max"] <= wall.allowable_bearing + 1e-6
+
+
+def test_a_lower_allowable_bearing_needs_a_wider_base(conditions):
+    loose = design_seawall(conditions, 2.5, -1.0, allowable_bearing=None)
+    tight = design_seawall(conditions, 2.5, -1.0, allowable_bearing=120.0)
+    assert tight.base_width > loose.base_width
+
+
+def test_the_water_table_is_never_taken_below_still_water(conditions):
+    d = design_seawall(conditions, 2.5, -1.0, water_table=50.0)
+    assert d.back_water_level == pytest.approx(2.5)
+
+
+def test_the_stem_carries_its_design_moment(wall):
+    from pyCoastal.applications.seawall import stem_section
+
+    need = stem_section(wall.stem["moment"], wall.stem["shear"])
+    assert wall.stem_thickness >= need["thickness"] - 1e-9
+    assert wall.base_thickness >= wall.stem_thickness
+
+
+def test_stem_section_bending_follows_the_lever_arm_rule():
+    from pyCoastal.applications.seawall import stem_section
+
+    res = stem_section(1000.0, 0.0)
+    fyd = 500.0 / 1.15
+    d = math.sqrt(1000.0e3 / (0.9 * 0.01 * fyd * 1e6))
+    assert res["d_bending"] == pytest.approx(d)
+    assert res["thickness"] >= d + 0.1
+
+
+def test_a_tall_wall_is_flagged_as_the_wrong_form():
+    c = DesignConditions.from_peak_period(Hm0=2.8, Tp=9.5, depth=8.5)
+    d = design_seawall(c, 2.9, -5.6, tolerable_use="trained_staff")
+    assert any("cantilever L-wall" in w for w in d.warnings)
+
+
+def test_tanimoto_matches_its_published_form():
+    from pyCoastal.applications.seawall import toe_stone_tanimoto
+    from pyCoastal.tools.wave import dispersion
+
+    Hs, T, h, B = 3.0, 10.0, 6.0, 8.0
+    got = toe_stone_tanimoto(Hs, T, h, B)
+    L = dispersion(T, h)
+    k1 = (4 * math.pi * h / L) / math.sinh(4 * math.pi * h / L)
+    k2 = math.sin(2 * math.pi * B / L) ** 2
+    kap = k1 * k2
+    Ns = max(1.8, 1.3 * (1 - kap) / kap ** (1 / 3) * h / Hs
+             + 1.8 * math.exp(-1.5 * (1 - kap) ** 2 / kap ** (1 / 3) * h / Hs))
+    assert got["stability_number"] == pytest.approx(Ns)
+    assert got["Dn50"] == pytest.approx(Hs / (1.585 * Ns))
+
+
+def test_tanimoto_stone_grows_as_the_berm_rises():
+    from pyCoastal.applications.seawall import toe_stone_tanimoto
+
+    deep = toe_stone_tanimoto(3.0, 10.0, 8.0, 8.0)
+    shallow = toe_stone_tanimoto(3.0, 10.0, 3.0, 8.0)
+    assert shallow["Dn50"] > deep["Dn50"]

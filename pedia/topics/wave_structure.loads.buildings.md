@@ -67,7 +67,7 @@ Source: (Davide Wüthrich 2020, [doi:10.1061/(asce)ww.1943-5460.0000541](https:/
 
 ## Papers
 
-- Tomiczek (2016). Physical modelling of tsunami onshore propagation, peak pressures, and shielding effects in an urban building array. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.07.003](https://doi.org/10.1016/j.coastaleng.2016.07.003)
-- Davide Wüthrich (2020). Effect of Debris Damming on Wave-Induced Hydrodynamic Loads against Free-Standing Buildings with Openings. *Journal of Waterway, Port, Coastal, and Ocean Engineering*. [doi:10.1061/(asce)ww.1943-5460.0000541](https://doi.org/10.1061/(asce)ww.1943-5460.0000541)
+- Tomiczek (2016). Physical modelling of tsunami onshore propagation, peak pressures, and shielding effects in an urban building array. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.07.003](https://doi.org/10.1016/j.coastaleng.2016.07.003) [published version, read only](https://doi.org/10.1016/j.coastaleng.2016.07.003)
+- Davide Wüthrich (2020). Effect of Debris Damming on Wave-Induced Hydrodynamic Loads against Free-Standing Buildings with Openings. *Journal of Waterway, Port, Coastal, and Ocean Engineering*. [doi:10.1061/(asce)ww.1943-5460.0000541](https://doi.org/10.1061/(asce)ww.1943-5460.0000541) [submitted manuscript, CC BY-NC-ND](https://infoscience.epfl.ch/handle/20.500.14299/163135)
 - Moeini (2023). Estimating hurricane-induced vertical surge and wave loads on elevated coastal buildings based on CFD simulations and ensemble learning. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2023.104325](https://doi.org/10.1016/j.coastaleng.2023.104325)
-- Deming Zhu (2020). Experimental and 3D numerical investigation of solitary wave forces on coastal bridges. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2020.107499](https://doi.org/10.1016/j.oceaneng.2020.107499)
+- Deming Zhu (2020). Experimental and 3D numerical investigation of solitary wave forces on coastal bridges. *Ocean Engineering*. [doi:10.1016/j.oceaneng.2020.107499](https://doi.org/10.1016/j.oceaneng.2020.107499) [published version, read only](https://www.sciencedirect.com/science/article/pii/S0029801820305126)

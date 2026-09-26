@@ -70,5 +70,5 @@ Source: (Goseberg 2013, [doi:10.5194/nhess-13-2991-2013](https://doi.org/10.5194
 
 ## Papers
 
-- Goseberg (2013). Reduction of maximum tsunami run-up due to the interaction with beachfront development – application of single sinusoidal waves. *Natural Hazards and Earth System Sciences*. [doi:10.5194/nhess-13-2991-2013](https://doi.org/10.5194/nhess-13-2991-2013)
-- Tomiczek (2016). Physical modelling of tsunami onshore propagation, peak pressures, and shielding effects in an urban building array. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.07.003](https://doi.org/10.1016/j.coastaleng.2016.07.003)
+- Goseberg (2013). Reduction of maximum tsunami run-up due to the interaction with beachfront development – application of single sinusoidal waves. *Natural Hazards and Earth System Sciences*. [doi:10.5194/nhess-13-2991-2013](https://doi.org/10.5194/nhess-13-2991-2013) [published version, CC BY](https://nhess.copernicus.org/articles/13/2991/2013/nhess-13-2991-2013.pdf)
+- Tomiczek (2016). Physical modelling of tsunami onshore propagation, peak pressures, and shielding effects in an urban building array. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2016.07.003](https://doi.org/10.1016/j.coastaleng.2016.07.003) [published version, read only](https://doi.org/10.1016/j.coastaleng.2016.07.003)

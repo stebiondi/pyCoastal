@@ -130,6 +130,16 @@ View.prototype.line = function (g, points, opts) {
   }, g);
 };
 
+/* Interface language, when i18n.js is loaded. */
+function tr(text) { return globalThis.I18N ? globalThis.I18N.t(text) : text; }
+
+/* Width of a label in character cells: Chinese characters take about two. */
+function cells(text) {
+  var n = 0;
+  for (var i = 0; i < text.length; i++) n += text.charCodeAt(i) > 0x2e80 ? 1.8 : 1;
+  return n;
+}
+
 View.prototype.text = function (g, x, y, str, opts) {
   opts = opts || {};
   var t = el("text", {
@@ -140,7 +150,7 @@ View.prototype.text = function (g, x, y, str, opts) {
     "text-anchor": opts.anchor || "start",
     transform: opts.rotate ? "rotate(" + opts.rotate + " " + x + " " + y + ")" : null
   }, g);
-  t.textContent = str;
+  t.textContent = tr(str);
   return t;
 };
 
@@ -240,12 +250,12 @@ function sheetFrame(svg, w, h, opts) {
     "font-family": "'Archivo', system-ui, sans-serif",
     "letter-spacing": "0.04em"
   }, g);
-  title.textContent = (opts.title || "").toUpperCase();
+  title.textContent = tr(opts.title || "").toUpperCase();
   var sub = el("text", {
     x: 44, y: by + 12, "font-size": 9, fill: "#54514b",
     "font-family": "'IBM Plex Mono', ui-monospace, monospace"
   }, g);
-  sub.textContent = opts.scale || "";
+  sub.textContent = tr(opts.scale || "");
   return g;
 }
 
@@ -285,7 +295,7 @@ function legend(svg, entries, x, y) {
   });
   var pad = 6, rowH = 15;
   var longest = 0;
-  rows.forEach(function (e) { longest = Math.max(longest, e.label.length); });
+  rows.forEach(function (e) { longest = Math.max(longest, cells(tr(e.label))); });
   var boxW = Math.max(150, 34 + longest * 5.6);
   var box = el("rect", {
     x: x, y: y, width: boxW, height: rows.length * rowH + 2 * pad,
@@ -304,7 +314,7 @@ function legend(svg, entries, x, y) {
       x: x + pad + 22, y: ry + 10, "font-size": 9, fill: INK,
       "font-family": "'IBM Plex Mono', ui-monospace, monospace"
     }, g);
-    t.textContent = e.label;
+    t.textContent = tr(e.label);
   });
   return g;
 }
@@ -501,8 +511,9 @@ function drawBreakwater(host, d, swl, seabedLevel, w, h) {
   var cotSea = d.cot_alpha;
   var cotLand = Math.max(cotSea - 0.5, 1.5);
   var tArmour = d.layer.thickness;
-  var DnUnder = d.Dn50 / Math.pow(10, 1 / 3);
-  var needed = crown ? crown.total_width + 1.0 : 0;
+  var DnUnder = d.underlayer_Dn50 !== undefined ? d.underlayer_Dn50
+                                                 : d.Dn50 / Math.pow(10, 1 / 3);
+  var needed = crown ? crown.total_width + crown.berm_width + 1.0 : 0;
   var crestWidth = Math.max(3 * d.Dn50, 4, needed);
 
   var crest = swl + d.crest_freeboard;
@@ -562,7 +573,9 @@ function drawBreakwater(host, d, swl, seabedLevel, w, h) {
   }
 
   if (crown) {
-    var px0 = outer.xSea, px1 = px0 + crown.parapet_width;
+    /* The armour runs on across the crest as a berm in front of the
+       parapet, which is what the Pedersen loads assume. */
+    var px0 = outer.xSea + crown.berm_width, px1 = px0 + crown.parapet_width;
     var dx1 = px1 + crown.deck_width;
     keys.push(view.poly(body, [
       [px0, crown.base_level], [dx1, crown.base_level],
@@ -579,9 +592,9 @@ function drawBreakwater(host, d, swl, seabedLevel, w, h) {
 
   view.level(body, x0 + 2, swl, "SWL " + fmt(swl) + " m CD", "water");
   if (crown) {
-    view.level(body, outer.xSea, crown.parapet_top,
+    view.level(body, outer.xSea + crown.berm_width, crown.parapet_top,
                "Parapet " + fmt(crown.parapet_top), "left");
-    view.level(body, outer.xSea + crown.total_width, crown.deck_level,
+    view.level(body, outer.xSea + crown.berm_width + crown.total_width, crown.deck_level,
                "Deck " + fmt(crown.deck_level));
   } else {
     view.level(body, 0, crest, "Crest " + fmt(crest) + " m CD");
@@ -926,14 +939,14 @@ function chartFrame(svg, box, xlabel, ylabel) {
     "font-size": 10, fill: "#54514b",
     "font-family": "'IBM Plex Sans', system-ui, sans-serif"
   }, g);
-  xt.textContent = xlabel;
+  xt.textContent = tr(xlabel);
   var yt = el("text", {
     x: box.x - 36, y: box.y + box.h / 2, "text-anchor": "middle",
     "font-size": 10, fill: "#54514b",
     "font-family": "'IBM Plex Sans', system-ui, sans-serif",
     transform: "rotate(-90 " + (box.x - 36) + " " + (box.y + box.h / 2) + ")"
   }, g);
-  yt.textContent = ylabel;
+  yt.textContent = tr(ylabel);
   return g;
 }
 

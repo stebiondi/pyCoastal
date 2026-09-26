@@ -34,8 +34,10 @@ def vandermeer_dn50(
         P: notional permeability (0.1 impermeable to 0.6 very permeable)
         N: number of waves in the design storm, saturating near 7500
         alpha: slope angle (rad)
-        xi_m: surf similarity parameter. Required: it depends on the wave
-            period, which this function has no other way to know.
+        xi_m: surf similarity parameter on the mean period Tm, which is
+            what the 1988 coefficients were fitted to. With Tm-1,0, use
+            ``pyCoastal.applications.structures.rock_armour_vandermeer``,
+            which applies the Van Gent et al. (2003) form.
         damage: damage level S = A_e / Dn50^2. 2 is start of damage.
         safety: divides the stability coefficients, so >1 gives larger stone.
 

@@ -41,7 +41,7 @@ Papers: 4. Claims: 2. Equations: 0.
 
 ## Papers
 
-- M. Ali Akbar (2021). Soliton solutions to the Boussinesq equation through sine-Gordon method and Kudryashov method. *Results in Physics*. [doi:10.1016/j.rinp.2021.104228](https://doi.org/10.1016/j.rinp.2021.104228)
-- Ira Didenkulova (2012). Nonlinear wave effects at the non-reflecting beach. *Nonlinear processes in geophysics*. [doi:10.5194/npg-19-1-2012](https://doi.org/10.5194/npg-19-1-2012)
+- M. Ali Akbar (2021). Soliton solutions to the Boussinesq equation through sine-Gordon method and Kudryashov method. *Results in Physics*. [doi:10.1016/j.rinp.2021.104228](https://doi.org/10.1016/j.rinp.2021.104228) [published version, CC BY](https://www.sciencedirect.com/science/article/pii/S2211379721003727/pdf)
+- Ira Didenkulova (2012). Nonlinear wave effects at the non-reflecting beach. *Nonlinear processes in geophysics*. [doi:10.5194/npg-19-1-2012](https://doi.org/10.5194/npg-19-1-2012) [published version, CC BY](https://npg.copernicus.org/articles/19/1/2012/npg-19-1-2012.pdf)
 - Jara (2015). Shoreline evolution model from a dynamic equilibrium beach profile. *Coastal Engineering*. [doi:10.1016/j.coastaleng.2015.02.006](https://doi.org/10.1016/j.coastaleng.2015.02.006)
-- Uma (2016). A wavelet approach for computing nonlinear wave–wave interactions in discrete spectral wave models. *Journal of Ocean Engineering and Marine Energy*. [doi:10.1007/s40722-015-0041-3](https://doi.org/10.1007/s40722-015-0041-3)
+- Uma (2016). A wavelet approach for computing nonlinear wave–wave interactions in discrete spectral wave models. *Journal of Ocean Engineering and Marine Energy*. [doi:10.1007/s40722-015-0041-3](https://doi.org/10.1007/s40722-015-0041-3) [published version, read only](https://link.springer.com/content/pdf/10.1007%2Fs40722-015-0041-3.pdf)

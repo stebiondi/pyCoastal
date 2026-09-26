@@ -111,6 +111,20 @@ function flatten(result) {
   if (result.drawdown) {
     flat.drawdown_sliding = finite(result.drawdown.sliding_FoS);
     flat.drawdown_net = finite(result.drawdown.net_force);
+    flat.drawdown_overturning = finite(result.drawdown.overturning_FoS);
+    if (result.drawdown.bearing) flat.drawdown_p_max = finite(result.drawdown.bearing.p_max);
+  }
+  if (result.bearing && typeof result.bearing.p_max === "number") {
+    flat.bearing_p_max = finite(result.bearing.p_max);
+  }
+  if (result.stem && typeof result.stem.moment === "number") {
+    flat.stem_moment = result.stem.moment;
+  }
+  if (result.loads && typeof result.loads.Fh === "number") {
+    flat.crown_Fh = result.loads.Fh;
+  }
+  if (result.load && typeof result.load.theory === "string") {
+    flat.theory = result.load.theory;
   }
   if (typeof result.cot_beta === "number") flat.cot_beta = result.cot_beta;
   if (result.length !== undefined && typeof result[0] === "number") {

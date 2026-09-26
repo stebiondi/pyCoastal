@@ -15,9 +15,9 @@ database; never edit it by hand.
 | `claims` | atomic finding | `id`, `topic_id`, `paper_id`, `text`, `regime`, `evidence_type`, `evidence_summary`, `confidence`, `source_locator` |
 | `claim_relationships` | link between two claims | `source_claim_id`, `target_claim_id`, `relationship`, `rationale` |
 | `equations` | named relation | `id`, `topic_id`, `paper_id`, `name`, `latex`, `equation_type`, `variables` (JSON), `regime` |
-| `papers` | paper | `id`, `doi`, `title`, `authors`, `first_author`, `year`, `journal`, `abstract`, `citation_count` |
+| `papers` | paper | `id`, `doi`, `title`, `authors`, `first_author`, `year`, `journal`, `abstract`, `citation_count`, `access`, `open_url`, `open_version`, `open_license` |
 | `paper_topics` | paper classified under a topic | `paper_id`, `topic_id`, `role` (`specific`, `related`, ...), `confidence` |
-| `paper_extractions` | paper, structured summary | `paper_id`, `research_question`, `principal_results`, `quantitative_findings`, `parameter_ranges`, `engineering_implications`, `limitations`, `applicability_conditions`, `contradictions`, ... |
+| `paper_extractions` | paper, structured summary | `paper_id`, `research_question`, `principal_results`, `quantitative_findings`, `parameter_ranges`, `engineering_implications`, `limitations`, `applicability_conditions`, `contradictions`, ..., `extraction_source` |
 | `parameters` | parameter reported by a paper | `paper_id`, `name`, `symbol`, `units`, `minimum_value`, `maximum_value`, `role` |
 | `models`, `paper_models` | numerical model and its use | `name`, `model_family`; `paper_id`, `model_id`, `usage_role` |
 | `datasets`, `paper_datasets` | dataset and its use | `name`, `persistent_id`, `url` |
@@ -40,6 +40,13 @@ database; never edit it by hand.
   `validates`, `compares_against`, `applies_to`, `derived_from`,
   `uses_method_from`, `same_physical_process`, `same_dataset`,
   `same_experiment`, `same_model`.
+- `papers.access`: `open`, `restricted`, `unavailable`, `unknown`.
+  `open_url` is set only for `open` papers: the best verified lawful copy,
+  published version first. `open_version`: `version_of_record`,
+  `accepted_manuscript`, `submitted_manuscript`, `preprint`.
+  `open_license`: `CC BY` (with `-NC`, `-ND`, `-SA`), `public domain`, or
+  `read only` when the copy is free to read but carries no open license.
+- `paper_extractions.extraction_source`: `full_text` or `abstract`.
 - `search.kind`: `topic`, `synthesis`, `claim`, `equation`, `paper`. `ref` is
   the row id in that table, or the topic id for `topic` and `synthesis`.
 
@@ -68,6 +75,16 @@ Experimental claims on a topic, with their citations:
 SELECT c.id, c.text, c.regime, p.first_author, p.year, p.doi
 FROM claims c JOIN papers p ON p.id = c.paper_id
 WHERE c.topic_id = 'structures.overtopping' AND c.evidence_type = 'experimental';
+```
+
+Open copies of the papers behind a topic, published versions under an
+open license first:
+
+```sql
+SELECT p.first_author, p.year, p.open_version, p.open_license, p.open_url
+FROM paper_topics pt JOIN papers p ON p.id = pt.paper_id
+WHERE pt.topic_id = 'structures.seawalls' AND p.open_url IS NOT NULL
+ORDER BY p.open_license = 'read only', p.open_version <> 'version_of_record';
 ```
 
 Where the literature disagrees:

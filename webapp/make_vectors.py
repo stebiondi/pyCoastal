@@ -47,8 +47,10 @@ from pyCoastal.applications.extremes import (
     l_moments,
 )
 from pyCoastal.applications.piles import (
+    bed_keulegan_carpenter,
     design_monopile,
     drag_inertia_coefficients,
+    stream_function_wave,
     keulegan_carpenter,
     morison_pile_load,
     scour_depth_pile,
@@ -56,9 +58,12 @@ from pyCoastal.applications.piles import (
 from pyCoastal.applications.seawall import (
     bearing_pressures,
     design_seawall,
+    goda_breaking_height,
     goda_pressures,
     scour_depth_vertical_wall,
+    stem_section,
     toe_stone_size,
+    toe_stone_tanimoto,
 )
 from pyCoastal.applications.nourishment import (
     critical_volume,
@@ -83,7 +88,9 @@ from pyCoastal.applications.sediment import (
 from pyCoastal.applications.structures import (
     DesignConditions,
     breakwater_toe_scour,
+    concrete_armour,
     crown_wall,
+    pedersen_crown_loads,
     mound_foundation,
     roundhead,
     roundhead_kd_ratio,
@@ -169,15 +176,49 @@ def build() -> dict:
               "q_mean": got.q_mean, "regime": got.regime,
               "layer_thickness": got.layer["thickness"]})
 
+    # -- concrete units and the crown wall ---------------------------------
+    c = DesignConditions.from_peak_period(Hm0=4.0, Tp=11.0, depth=12.0)
+    for unit, cot in (("cubes_two_layer_random", 1.5), ("tetrapod", 1.5),
+                      ("accropode", 1.33), ("xbloc", 1.5), ("dolos", 2.0)):
+        got = concrete_armour(c, unit, cot)
+        case(f"concrete armour {unit}",
+             {"fn": "concreteArmour", "conditions": [4.0, 11.0, 12.0, 6 * 3600.0],
+              "args": [unit, cot]},
+             {"Dn50": got["Dn50"], "M50": got["M50"],
+              "stability_number": got["stability_number"]})
+    for armour, cot in (("accropode", 1.5), ("tetrapod", 1.5),
+                        ("rock_two_layer_permeable", 2.0)):
+        got = design_rubble_mound(c, cot_alpha=cot, armour=armour)
+        case(f"design_rubble_mound {armour}",
+             {"fn": "designRubbleMound", "conditions": [4.0, 11.0, 12.0, 6 * 3600.0],
+              "args": [{"cot_alpha": cot, "armour": armour}]},
+             {"Dn50": got.Dn50, "M50": got.M50, "crest_freeboard": got.crest_freeboard,
+              "layer_thickness": got.layer["thickness"],
+              "underlayer_Dn50": got.underlayer_Dn50})
+        cw = crown_wall(got, 0.0)
+        case(f"crown wall {armour}",
+             {"fn": "crownWall", "conditions": [4.0, 11.0, 12.0, 6 * 3600.0],
+              "design_first": True,
+              "args": [{"cot_alpha": cot, "armour": armour}, 0.0]},
+             {"deck_width": cw["deck_width"], "sliding_FoS": cw["sliding_FoS"],
+              "overturning_FoS": cw["overturning_FoS"], "crown_Fh": cw["loads"]["Fh"],
+              "berm_width": cw["berm_width"]})
+    got = pedersen_crown_loads(c, 2.0, 4.0, 5.0, 2.0, 1.5)
+    case("pedersen crown loads",
+         {"fn": "pedersenCrownLoads", "conditions": [4.0, 11.0, 12.0, 6 * 3600.0],
+          "args": [2.0, 4.0, 5.0, 2.0, 1.5]},
+         {"Fh": got["Fh"], "M": got["M"], "pb": got["pb"], "Ru": got["Ru"],
+          "y_eff": got["y_eff"]})
+
     # -- Goda, including the depth-limited branch --------------------------
     for label, kwargs in {
         "deep": dict(Hm0=3.0, T=10.0, depth=12.0, wall_toe_depth=12.0,
-                     crest_freeboard=6.0, breaker_index=0.0),
+                     crest_freeboard=6.0, depth_limit=False),
         "depth limited": dict(Hm0=4.0, T=10.0, depth=4.0, wall_toe_depth=4.0,
-                              crest_freeboard=4.0, breaker_index=0.78),
+                              crest_freeboard=4.0, depth_limit=True),
         "oblique": dict(Hm0=3.0, T=10.0, depth=10.0, wall_toe_depth=10.0,
                         crest_freeboard=5.0, beta_degrees=40.0,
-                        breaker_index=0.0),
+                        depth_limit=False),
     }.items():
         got = goda_pressures(**kwargs)
         case(f"goda {label}",
@@ -191,6 +232,21 @@ def build() -> dict:
         case(f"scour wall Hm0={Hm0} h={h}",
              {"fn": "scourDepthVerticalWall", "args": [Hm0, T, h]},
              {"value": scour_depth_vertical_wall(Hm0, T, h)})
+    for T, h, B in ((10.0, 6.0, 8.0), (8.0, 3.0, 2.0), (12.0, 9.0, 20.0)):
+        got = toe_stone_tanimoto(3.0, T, h, B)
+        case(f"tanimoto T={T} h={h} B={B}",
+             {"fn": "toeStoneTanimoto", "args": [3.0, T, h, B]},
+             {"Dn50": got["Dn50"], "stability_number": got["stability_number"],
+              "kappa": got["kappa"]})
+    case("goda breaking height",
+         {"fn": "godaBreakingHeight", "args": [10.0, 4.67, 1 / 30]},
+         {"value": goda_breaking_height(10.0, 4.67, 1 / 30)})
+    for M, V in ((1200.0, 350.0), (6000.0, 1500.0), (50.0, 900.0)):
+        got = stem_section(M, V)
+        case(f"stem section M={M} V={V}",
+             {"fn": "stemSection", "args": [M, V]},
+             {"thickness": got["thickness"], "d_bending": got["d_bending"],
+              "d_shear": got["d_shear"]})
     got = toe_stone_size(3.0, 6.0, 10.0)
     case("toe stone",
          {"fn": "toeStoneSize", "args": [3.0, 6.0, 10.0]},
@@ -210,20 +266,31 @@ def build() -> dict:
               "middle_third": got["middle_third"]})
 
     # -- whole seawall, including an impulsive case ------------------------
-    for label, (Hm0, Tp, depth, swl, bed, use) in {
-        "promenade": (2.8, 9.5, 8.5, 2.9, -5.6, "trained_staff"),
-        "impulsive": (2.2, 9.0, 3.6, 2.9, -0.7, "pedestrians_aware"),
-        "strict": (2.8, 9.5, 8.5, 2.9, -5.6, "pedestrians_unaware"),
+    for label, (Hm0, Tp, depth, swl, bed, use, extra) in {
+        "promenade": (2.0, 8.0, 3.5, 2.5, -1.0, "trained_staff", {}),
+        "drained": (2.0, 8.0, 3.5, 2.5, -1.0, "trained_staff",
+                    {"water_table": 2.0}),
+        "impulsive": (2.2, 9.0, 3.6, 2.9, -0.7, "pedestrians_aware", {}),
+        "tall": (2.8, 9.5, 8.5, 2.9, -5.6, "trained_staff", {}),
+        "strict gravel": (1.5, 7.0, 2.5, 2.0, -0.5, "pedestrians_unaware",
+                          {"backfill": "fine_gravel", "allowable_bearing": 200.0}),
     }.items():
         c = DesignConditions.from_peak_period(Hm0=Hm0, Tp=Tp, depth=depth)
-        got = design_seawall(c, swl, bed, tolerable_use=use)
+        got = design_seawall(c, swl, bed, tolerable_use=use, **extra)
         case(f"design_seawall {label}",
              {"fn": "designSeawall", "conditions": [Hm0, Tp, depth, 6 * 3600.0],
-              "args": [swl, bed, {"tolerable_use": use}]},
+              "args": [swl, bed, dict({"tolerable_use": use}, **extra)]},
              {"crest_level": got.crest_level, "base_width": got.base_width,
               "founding_level": got.founding_level,
+              "stem_thickness": got.stem_thickness,
+              "base_thickness": got.base_thickness,
               "sliding_FoS": got.sliding_FoS,
               "overturning_FoS": got.overturning_FoS,
+              "drawdown_sliding": got.drawdown["sliding_FoS"],
+              "drawdown_overturning": got.drawdown["overturning_FoS"],
+              "drawdown_p_max": got.drawdown["bearing"]["p_max"],
+              "bearing_p_max": got.bearing["p_max"],
+              "stem_moment": got.stem["moment"],
               "wave_force": got.wave_force,
               "toe_Dn50": got.toe_Dn50,
               "impulsive": got.impulsive,
@@ -314,6 +381,39 @@ def build() -> dict:
         case(f"pile scour KC={KC}",
              {"fn": "scourDepthPile", "args": [5.0, KC]},
              {"depth": got["depth"], "ratio": got["ratio"]})
+    for KC, Ucw in ((3.0, 0.4), (8.0, 0.2), (2.0, 0.7)):
+        got = scour_depth_pile(5.0, KC, current_ratio=Ucw)
+        case(f"pile scour KC={KC} Ucw={Ucw}",
+             {"fn": "scourDepthPile",
+              "args": [5.0, KC, False, True, None, None, None, None, Ucw]},
+             {"depth": got["depth"], "ratio": got["ratio"]})
+    got = bed_keulegan_carpenter(6.45, 13.0, 30.0, 8.0)
+    case("bed KC",
+         {"fn": "bedKeuleganCarpenter", "args": [6.45, 13.0, 30.0, 8.0]},
+         {"Um": got["Um"], "KC": got["KC"]})
+    for H, T, h in ((12.0, 13.0, 30.0), (3.0, 8.0, 6.0), (1.0, 10.0, 40.0)):
+        w = stream_function_wave(H, T, h)
+        case(f"stream function H={H} T={T} h={h}",
+             {"fn": "streamFunctionWave", "args": [H, T, h]},
+             {"converged": w.converged, "crest": w.crest, "trough": w.trough,
+              "wavelength": w.wavelength, "celerity": w.celerity})
+    for phase in (0.0, 1.0):
+        got = morison_pile_load(8.0, 12.0, 13.0, 30.0, phase=phase, points=200,
+                                theory="linear")
+        case(f"morison linear phase={phase}",
+             {"fn": "morisonPileLoad", "args": [8.0, 12.0, 13.0, 30.0,
+                                                {"phase": phase, "points": 200,
+                                                 "theory": "linear"}]},
+             {"force": got.force, "moment": got.moment})
+    got = design_monopile(6.0, 10.0, 12.0, 25.0, phases=37, current=1.2,
+                          bed="medium_sand")
+    case("design_monopile with current",
+         {"fn": "designMonopile", "args": [6.0, 10.0, 12.0, 25.0,
+                                           {"phases": 37, "current": 1.2,
+                                            "bed": "medium_sand"}]},
+         {"max_moment": got["sweep"]["max_moment"],
+          "max_force": got["sweep"]["max_force"],
+          "scour": got["scour"]["depth"], "theory": got["load"].theory})
 
     # -- beach nourishment -------------------------------------------------
     for key in ("very_fine_sand", "fine_sand", "medium_sand", "coarse_sand",

@@ -10,7 +10,18 @@ to compute, since engineering judgement outside a range is your call.
 Sources
 -------
 Van der Meer (1988), "Rock slopes and gravel beaches under wave attack",
-    Delft Hydraulics Publication 396. Rock armour stability.
+    Delft Hydraulics Publication 396. Rock armour stability, and the cube
+    and tetrapod formulae.
+
+Van Gent, M. R. A., Smale, A. J. and Kuiper, C. (2003), "Stability of rock
+    slopes with shallow foreshores", Proc. Coastal Structures 2003. The
+    form of Van der Meer's rock formula written in Tm-1,0 and H2%, as
+    adopted by the Rock Manual (2007).
+
+Pedersen, J. (1996), "Experimental study of wave forces and wave overtopping
+    on breakwater crown walls", Series Paper 12, Aalborg University, as
+    given in the Coastal Engineering Manual (2011), Table VI-5-61. Crown
+    wall loads.
 
 CIRIA/CUR/CETMEF (2007), The Rock Manual, 2nd ed. Armour layer geometry.
 
@@ -37,6 +48,14 @@ import numpy as np
 from ..tools.wave import dispersion
 
 G = 9.81
+RHO_W = 1025.0
+RHO_ROCK = 2650.0
+RHO_CONCRETE = 2400.0
+
+#: Tm-1,0 / Tm for a single-peaked JONSWAP spectrum: Tp = 1.1 Tm-1,0 and
+#: Tp = 1.28 Tm (Goda 2010), so Tm = Tm-1,0 / 1.164. Van der Meer's damage
+#: counts and the Pedersen run-up are written in the mean period Tm.
+SPECTRAL_TO_MEAN_PERIOD = 1.28 / 1.1
 
 
 # ---------------------------------------------------------------------------
@@ -121,6 +140,11 @@ class DesignConditions:
         return cls(Hm0=Hm0, Tm10=Tp / 1.1, **kwargs)
 
     @property
+    def mean_period(self) -> float:
+        """Mean period Tm [s], from Tm-1,0 for a JONSWAP spectrum."""
+        return self.Tm10 / SPECTRAL_TO_MEAN_PERIOD
+
+    @property
     def wave_count(self) -> float:
         """Number of waves in the design storm, N = duration / Tm.
 
@@ -128,7 +152,11 @@ class DesignConditions:
         is capped there; a longer storm does not keep eroding the slope at
         the same rate.
         """
-        return min(self.storm_duration / self.Tm10, 7500.0)
+        return min(self.storm_duration / self.mean_period, 7500.0)
+
+    def mean_steepness(self) -> float:
+        """Fictitious steepness s_om = Hm0 / L_om, with L_om from Tm."""
+        return self.Hm0 / (G * self.mean_period**2 / (2 * math.pi))
 
     def deep_water_wavelength(self) -> float:
         """L0 = g T^2 / (2 pi), using Tm-1,0 [m]."""
@@ -168,18 +196,22 @@ def rock_armour_vandermeer(
     permeability: float = 0.4,
     damage: float = 2.0,
     safety_factor: float = 1.0,
+    height_ratio: float = 1.4,
 ) -> dict:
-    """Nominal rock diameter Dn50 from Van der Meer (1988).
+    """Nominal rock diameter Dn50, Van der Meer as modified by Van Gent (2003).
 
-    Two regimes, selected by the surf similarity parameter against a critical
-    value ``xi_cr``:
+    The Rock Manual (2007) form, written in the spectral period Tm-1,0 and
+    the 2 % wave height, which keeps it valid on shallow foreshores:
 
     plunging (xi < xi_cr)
-        Hs / (Delta Dn50) = 6.2 P^0.18 (S / sqrt(N))^0.2 xi^-0.5
+        Hs / (Delta Dn50) = 8.4 P^0.18 (S / sqrt(N))^0.2 (Hs / H2%) xi^-0.5
     surging (xi >= xi_cr)
-        Hs / (Delta Dn50) = 1.0 P^-0.13 (S / sqrt(N))^0.2 sqrt(cot a) xi^P
+        Hs / (Delta Dn50) = 1.3 P^-0.13 (S / sqrt(N))^0.2 (Hs / H2%)
+                            sqrt(cot a) xi^P
 
-    with xi_cr = (6.2 P^0.31 sqrt(tan a))^(1 / (P + 0.5)).
+    with xi = xi_m-1,0 and xi_cr = (8.4 / 1.3 P^0.31 sqrt(tan a))^(1 / (P + 0.5)).
+    The original 1988 coefficients (6.2 and 1.0) belong to the mean period
+    Tm, and using them with Tm-1,0 undersizes surging stone.
 
     Parameters
     ----------
@@ -198,19 +230,16 @@ def rock_armour_vandermeer(
     safety_factor : float
         Divides the stability coefficients, so values above 1 give larger
         stone. Apply your own code's partial factors here.
+    height_ratio : float
+        H2% / Hs. 1.4 is the Rayleigh value for deep water. On a shallow
+        foreshore the ratio falls (Battjes and Groenendijk 2000), so 1.4
+        is conservative there.
 
     Returns
     -------
     dict
         ``Dn50`` [m], ``M50`` [kg] for 2650 kg/m3 rock, the regime that
         governed, ``xi``, and ``xi_cr``.
-
-    Notes
-    -----
-    Valid for deep-water conditions at the toe and non-depth-limited waves.
-    For depth-limited surf, Van der Meer's shallow-water modification or the
-    Rock Manual's H2% form should be used instead; this function does not
-    apply it.
     """
     if cot_alpha <= 0:
         raise ValueError(f"cot(alpha) must be positive, got {cot_alpha}")
@@ -220,6 +249,8 @@ def rock_armour_vandermeer(
         raise ValueError(f"Damage level S must be positive, got {damage}")
     if safety_factor <= 0:
         raise ValueError(f"Safety factor must be positive, got {safety_factor}")
+    if height_ratio < 1.0:
+        raise ValueError(f"H2%/Hs must be at least 1, got {height_ratio}")
 
     P = permeability
     S = damage
@@ -227,11 +258,11 @@ def rock_armour_vandermeer(
     xi = conditions.breaker_parameter(cot_alpha)
     tan_alpha = 1.0 / cot_alpha
 
-    cp = 6.2 / safety_factor
-    cs = 1.0 / safety_factor
+    cp = 8.4 / safety_factor
+    cs = 1.3 / safety_factor
 
     xi_cr = ((cp / cs) * P**0.31 * math.sqrt(tan_alpha)) ** (1.0 / (P + 0.5))
-    damage_term = (S / math.sqrt(N)) ** 0.2
+    damage_term = (S / math.sqrt(N)) ** 0.2 / height_ratio
 
     if xi < xi_cr:
         regime = "plunging"
@@ -243,7 +274,7 @@ def rock_armour_vandermeer(
     Dn50 = conditions.Hm0 / (Delta * stability)
     return {
         "Dn50": Dn50,
-        "M50": 2650.0 * Dn50**3,
+        "M50": RHO_ROCK * Dn50**3,
         "regime": regime,
         "xi": xi,
         "xi_cr": xi_cr,
@@ -279,11 +310,12 @@ def rock_armour_hudson(
 
 
 def armour_layer(
-    Dn50: float, n_layers: int = 2, layer_coefficient: float = 1.0, porosity: float = 0.37
+    Dn50: float, n_layers: int = 2, layer_coefficient: float = 1.0,
+    porosity: float = 0.37, density: float = RHO_ROCK,
 ) -> dict:
-    """Armour layer thickness and stone count (Rock Manual, 2007).
+    """Armour layer thickness and unit count (Rock Manual, 2007).
 
-    thickness = n * k_delta * Dn50, and the number of stones per unit area is
+    thickness = n * k_delta * Dn50, and the number of units per unit area is
     n * k_delta * (1 - porosity) / Dn50^2.
     """
     if n_layers < 1:
@@ -296,8 +328,123 @@ def armour_layer(
     return {
         "thickness": thickness,
         "stones_per_m2": per_area,
-        "mass_per_m2": per_area * 2650.0 * Dn50**3,
+        "mass_per_m2": per_area * density * Dn50**3,
     }
+
+
+#: Concrete armour units: stability relation and layer geometry.
+#: ``formula`` is "cubes" or "tetrapods" for the Van der Meer (1988)
+#: relations, "Ns" for a design stability number, and "hudson" for a Hudson
+#: KD on Hs. Layer coefficients and porosities are the usual CEM / Rock
+#: Manual values and are indicative; the unit supplier's figures govern.
+CONCRETE_UNITS = {
+    "cubes_two_layer_random": {"formula": "cubes", "layers": 2,
+                               "k": 1.10, "porosity": 0.47, "cot": 1.5},
+    "cubes_one_layer_flat": {"formula": "cubes", "layers": 1,
+                             "k": 1.00, "porosity": 0.30, "cot": 1.5},
+    "antifer": {"formula": "cubes", "layers": 2,
+                "k": 1.10, "porosity": 0.46, "cot": 1.5},
+    "tetrapod": {"formula": "tetrapods", "layers": 2,
+                 "k": 1.04, "porosity": 0.50, "cot": 1.5},
+    "accropode": {"formula": "Ns", "Ns": 2.7, "layers": 1,
+                  "k": 1.51, "porosity": 0.52, "cot": 1.33},
+    "core_loc": {"formula": "Ns", "Ns": 2.8, "layers": 1,
+                 "k": 1.51, "porosity": 0.60, "cot": 1.33},
+    "xbloc": {"formula": "Ns", "Ns": 2.8, "layers": 1,
+              "k": 1.40, "porosity": 0.58, "cot": 1.33},
+    "dolos": {"formula": "hudson", "KD": 16.0, "layers": 2,
+              "k": 0.94, "porosity": 0.56, "cot": 2.0},
+}
+
+
+def concrete_armour(
+    conditions: DesignConditions,
+    unit: str,
+    cot_alpha: float,
+    damage: float = 0.5,
+    density: float = RHO_CONCRETE,
+    safety_factor: float = 1.0,
+) -> dict:
+    """Nominal size of a concrete armour unit.
+
+    cubes, two layers (Van der Meer 1988)
+        Hs / (Delta Dn) = (6.7 Nod^0.4 / N^0.3 + 1.0) s_om^-0.1
+    tetrapods, two layers (Van der Meer 1988)
+        Hs / (Delta Dn) = (3.75 Nod^0.5 / N^0.25 + 0.85) s_om^-0.2
+    single-layer interlocking units
+        Hs / (Delta Dn) = Ns, the design stability number: 2.7 for
+        Accropode, 2.8 for Core-Loc and Xbloc (CEM Table VI-5-37 and the
+        suppliers' guidance), which already carries a margin on the
+        start-of-damage value.
+    dolos
+        Hudson with KD = 16 on Hs.
+
+    Parameters
+    ----------
+    damage : float
+        Nod, units displaced per strip one Dn wide. 0.5 is the start of
+        damage and the usual design value.
+    density : float
+        Concrete density [kg/m3].
+
+    Notes
+    -----
+    The cube and tetrapod formulae were fitted on a 1:1.5 slope and the
+    single-layer design numbers assume about 3:4. The returned
+    ``slope_note`` says so when the section departs from that.
+    """
+    if unit not in CONCRETE_UNITS:
+        raise ValueError(f"Unknown concrete unit {unit!r}. Options: "
+                         f"{sorted(CONCRETE_UNITS)}")
+    if damage <= 0:
+        raise ValueError(f"Damage Nod must be positive, got {damage}")
+    if safety_factor <= 0:
+        raise ValueError(f"Safety factor must be positive, got {safety_factor}")
+
+    spec = CONCRETE_UNITS[unit]
+    Delta = density / RHO_W - 1.0
+    N = conditions.wave_count
+    s_om = conditions.mean_steepness()
+    kind = spec["formula"]
+    if kind == "cubes":
+        Ns = (6.7 * damage**0.4 / N**0.3 + 1.0) * s_om**-0.1
+        source = "Van der Meer (1988), cubes"
+    elif kind == "tetrapods":
+        Ns = (3.75 * damage**0.5 / N**0.25 + 0.85) * s_om**-0.2
+        source = "Van der Meer (1988), tetrapods"
+    elif kind == "Ns":
+        Ns = spec["Ns"]
+        source = f"design Ns = {spec['Ns']:g}"
+    else:
+        Ns = (spec["KD"] * cot_alpha) ** (1.0 / 3.0)
+        source = f"Hudson, KD = {spec['KD']:g}"
+    Ns /= safety_factor
+
+    Dn = conditions.Hm0 / (Delta * Ns)
+    note = None
+    if abs(cot_alpha - spec["cot"]) > 0.26:
+        note = (f"{unit.replace('_', ' ')} stability was established on a "
+                f"1:{spec['cot']:g} slope; this section is 1:{cot_alpha:g}.")
+    return {
+        "Dn50": Dn,
+        "M50": density * Dn**3,
+        "stability_number": Ns,
+        "source": source,
+        "Delta": Delta,
+        "density": density,
+        "slope_note": note,
+        "xi": conditions.breaker_parameter(cot_alpha),
+    }
+
+
+def layer_for(armour: str, Dn50: float, density: float) -> dict:
+    """The armour layer of an armour type, from its unit size."""
+    spec = CONCRETE_UNITS.get(armour)
+    if spec is None:
+        return armour_layer(Dn50, density=density)
+    return armour_layer(Dn50, n_layers=spec["layers"],
+                        layer_coefficient=spec["k"],
+                        porosity=spec["porosity"], density=density)
 
 
 # ---------------------------------------------------------------------------
@@ -537,6 +684,19 @@ class BreakwaterDesign:
     section: str = "trunk"
     #: KD_head / KD_trunk, set only on a head section.
     kd_ratio: float | None = None
+    #: Density of the armour units [kg/m3]: rock or concrete.
+    density: float = RHO_ROCK
+    warnings: list[str] = field(default_factory=list)
+
+    @property
+    def concrete(self) -> bool:
+        """True when the armour is a concrete unit rather than rock."""
+        return self.armour_type in CONCRETE_UNITS
+
+    @property
+    def underlayer_Dn50(self) -> float:
+        """Underlayer rock, a tenth of the armour unit mass (Rock Manual)."""
+        return (self.M50 / 10.0 / RHO_ROCK) ** (1.0 / 3.0)
 
     def summary(self) -> str:
         """A short design report."""
@@ -562,7 +722,30 @@ class BreakwaterDesign:
         if self.governing_limit:
             limit, description = TOLERABLE_DISCHARGE[self.governing_limit]
             lines.append(f"Governing limit    {limit:g} l/s/m, {description}")
+        if self.warnings:
+            lines += ["", "Warnings"] + [f"  - {w}" for w in self.warnings]
         return "\n".join(lines)
+
+
+def depth_limit_warnings(conditions: DesignConditions) -> list[str]:
+    """Flags for a wave height the toe depth cannot carry or barely can."""
+    ratio = conditions.Hm0 / conditions.depth
+    if ratio > 0.6:
+        return [
+            f"Hm0 = {conditions.Hm0:.2f} m is {ratio:.2f} of the "
+            f"{conditions.depth:.1f} m toe depth. A significant height above "
+            "about 0.6 h cannot reach the toe without breaking; the design "
+            "wave and the depth are inconsistent and the sizing is not "
+            "meaningful until one of them is corrected."
+        ]
+    if ratio > 0.2:
+        return [
+            f"Hm0/h = {ratio:.2f}: the toe is in shallow water. H2% is taken "
+            "as 1.4 Hs from the Rayleigh distribution, which overstates it "
+            "here and errs on the heavy side; Battjes and Groenendijk (2000) "
+            "with the foreshore slope gives the real ratio."
+        ]
+    return []
 
 
 def design_rubble_mound(
@@ -575,13 +758,23 @@ def design_rubble_mound(
     tolerable_use: str = "trained_staff",
     safety_factor: float = 1.0,
     scatter_factor: float = 3.0,
+    unit_damage: float = 0.5,
+    concrete_density: float = RHO_CONCRETE,
 ) -> BreakwaterDesign:
     """Size armour and crest level for a rubble-mound section.
 
-    Sizes the stone with Van der Meer, then sets the crest so that the
-    *upper* confidence bound on overtopping, not the mean, meets the limit
-    for ``tolerable_use``. Designing to the mean would be exceeded about half
-    the time.
+    Rock is sized with Van der Meer in the Van Gent (2003) form; concrete
+    units with their own relations (:func:`concrete_armour`). The crest is
+    set so that the *upper* confidence bound on overtopping, not the mean,
+    meets the limit for ``tolerable_use``. Designing to the mean would be
+    exceeded about half the time.
+
+    Parameters
+    ----------
+    damage : float
+        Damage level S for rock.
+    unit_damage : float
+        Damage number Nod for concrete units.
     """
     if armour not in ROUGHNESS_FACTORS:
         raise ValueError(
@@ -592,10 +785,23 @@ def design_rubble_mound(
             f"Unknown use {tolerable_use!r}. Options: {sorted(TOLERABLE_DISCHARGE)}"
         )
 
-    stability = rock_armour_vandermeer(
-        conditions, cot_alpha, Delta=Delta, permeability=permeability,
-        damage=damage, safety_factor=safety_factor,
-    )
+    warnings = depth_limit_warnings(conditions)
+    if armour in CONCRETE_UNITS:
+        stability = concrete_armour(conditions, armour, cot_alpha,
+                                    damage=unit_damage,
+                                    density=concrete_density,
+                                    safety_factor=safety_factor)
+        regime = stability["source"]
+        density = concrete_density
+        if stability["slope_note"]:
+            warnings.append(stability["slope_note"])
+    else:
+        stability = rock_armour_vandermeer(
+            conditions, cot_alpha, Delta=Delta, permeability=permeability,
+            damage=damage, safety_factor=safety_factor,
+        )
+        regime = stability["regime"]
+        density = RHO_W * (1.0 + Delta)
     gamma_f = ROUGHNESS_FACTORS[armour]
     q_limit = TOLERABLE_DISCHARGE[tolerable_use][0]
 
@@ -610,14 +816,16 @@ def design_rubble_mound(
         conditions=conditions,
         cot_alpha=cot_alpha,
         Dn50=stability["Dn50"],
-        M50=stability["M50"],
-        regime=stability["regime"],
+        M50=density * stability["Dn50"] ** 3,
+        regime=regime,
         crest_freeboard=Rc,
         q_mean=band["q_mean"],
         q_upper=band["q_upper"],
-        layer=armour_layer(stability["Dn50"]),
+        layer=layer_for(armour, stability["Dn50"], density),
         armour_type=armour,
         governing_limit=tolerable_use,
+        density=density,
+        warnings=warnings,
     )
 
 
@@ -812,7 +1020,7 @@ def mound_foundation(design, depth: float, bed="medium_sand",
     scour = breakwater_toe_scour(design, depth, bed=bed, permeable=permeable)
 
     # Filter stone, a tenth of the armour mass, is what the toe berm takes.
-    Dn_filter = design.Dn50 / 10.0 ** (1.0 / 3.0)
+    Dn_filter = design.underlayer_Dn50
     toe_thickness = 2.0 * Dn_filter
     toe_width = max(3.0 * Dn_filter, 0.5 * design.conditions.Hm0, 2.0)
 
@@ -822,7 +1030,7 @@ def mound_foundation(design, depth: float, bed="medium_sand",
     return {
         "scour": scour,
         "toe_Dn50": Dn_filter,
-        "toe_M50": 2650.0 * Dn_filter**3,
+        "toe_M50": RHO_ROCK * Dn_filter**3,
         "toe_width": toe_width,
         "toe_thickness": toe_thickness,
         "bedding": blanket,
@@ -833,41 +1041,157 @@ def mound_foundation(design, depth: float, bed="medium_sand",
     }
 
 
+def pedersen_crown_loads(conditions: DesignConditions, cot_alpha: float,
+                         armour_freeboard: float, berm_width: float,
+                         protected_height: float,
+                         unprotected_height: float) -> dict:
+    """Wave loads on a crown wall behind an armour berm, Pedersen (1996).
+
+    As given in the Coastal Engineering Manual, Table VI-5-61::
+
+        F_h,0.1% = 0.21 sqrt(L_om / B) (1.6 p_m y_eff + A p_m / 2 h')
+        M_0.1%   = 0.55 (h' + y_eff) F_h,0.1%
+        p_b,0.1% = 1.00 A p_m
+
+    with p_m = rho_w g (R_u,0.1% - A_c), the run-up
+    R_u,0.1% = 1.12 Hs xi_m (xi_m <= 1.5) or 1.34 Hs xi_m^0.55, xi_m on the
+    mean period, the wedge thickness
+    y = (R_u,0.1% - A_c) / sin(a) * sin(15 deg) / cos(a - 15 deg), and
+    y_eff = min(y / 2, f_c).
+
+    Parameters
+    ----------
+    armour_freeboard : float
+        A_c, armour crest above still water [m].
+    berm_width : float
+        B, width of the armour berm in front of the wall [m].
+    protected_height : float
+        h', height of the wall face below the armour crest [m].
+    unprotected_height : float
+        f_c, height of the wall face above the armour crest [m].
+
+    Notes
+    -----
+    A = min(A2 / A1, 1) compares the run-up wedge with the berm cross
+    section; it is taken as 1, its upper bound. The horizontal force and
+    the uplift do not peak together, so combining them is conservative.
+    Pedersen's tests cover xi_m 1.1 to 5.2, Hm0/Ac 0.5 to 1.5, Ac/B 1 to
+    2.6, cot a 1.5 to 3.5 and Hm0/h 0.16 to 0.35; ``outside`` lists the
+    ranges this section leaves. Norgaard et al. (2013) show the formulae
+    overpredict in shallow water, so they err on the safe side there.
+    """
+    if berm_width <= 0:
+        raise ValueError(f"Berm width must be positive, got {berm_width}")
+    Hs = conditions.Hm0
+    Lom = G * conditions.mean_period**2 / (2 * math.pi)
+    alpha = math.atan(1.0 / cot_alpha)
+    xi_m = math.tan(alpha) / math.sqrt(Hs / Lom)
+    Ru = 1.12 * Hs * xi_m if xi_m <= 1.5 else 1.34 * Hs * xi_m**0.55
+    Ac = armour_freeboard
+    p_m = max(RHO_W * G * (Ru - Ac) / 1000.0, 0.0)      # kPa
+    y = max((Ru - Ac) / math.sin(alpha) * math.sin(math.radians(15.0))
+            / math.cos(alpha - math.radians(15.0)), 0.0)
+    y_eff = min(y / 2.0, unprotected_height)
+    A = 1.0
+    scale = 0.21 * math.sqrt(Lom / berm_width)
+    Fh = scale * (1.6 * p_m * y_eff + A * p_m / 2.0 * protected_height)
+    M = 0.55 * (protected_height + y_eff) * Fh
+    pb = 1.00 * A * p_m
+
+    outside = []
+    for name, value, low, high in (
+        ("xi_m", xi_m, 1.1, 5.2),
+        ("Hm0/Ac", Hs / Ac if Ac > 0 else float("inf"), 0.5, 1.5),
+        ("Ac/B", Ac / berm_width, 1.0, 2.6),
+        ("cot a", cot_alpha, 1.5, 3.5),
+        ("Hm0/h", Hs / conditions.depth, 0.16, 0.35),
+    ):
+        if not low <= value <= high:
+            outside.append(f"{name} = {value:.2f} (tested {low:g} to {high:g})")
+    return {"Fh": Fh, "M": M, "pb": pb, "p_m": p_m, "Ru": Ru, "xi_m": xi_m,
+            "y": y, "y_eff": y_eff, "A": A, "Lom": Lom, "outside": outside}
+
+
 def crown_wall(design, still_water_level: float, deck_width: float = 7.5,
                parapet_width: float = 2.0, parapet_height: float | None = None,
-               base_below_crest: float | None = None) -> dict:
-    """A concrete crown block on the crest, in the usual stepped form.
+               base_below_crest: float | None = None,
+               berm_width: float | None = None, friction: float = 0.6,
+               target_sliding: float = 1.2, target_overturning: float = 1.5,
+               max_deck_width: float = 25.0, step: float = 0.25) -> dict:
+    """A concrete crown block on the crest, checked for stability.
 
     A parapet on the seaward side to take the run-up, a deck behind it wide
     enough to drive a lorry along for maintenance, and a base bedded into
-    the core below the armour crest.
+    the underlayer below the armour crest. The armour runs on in front of
+    the parapet as a berm ``berm_width`` wide.
+
+    The block is loaded with Pedersen's horizontal force and uplift
+    (:func:`pedersen_crown_loads`), taken together, and the deck is widened
+    until sliding and overturning about the rear heel meet their targets.
 
     Returns
     -------
     dict
-        Levels and widths for the block, and its concrete volume per metre
-        run at 2400 kg/m3.
-
-    Notes
-    -----
-    The block is proportioned here, not designed. Sliding and overturning
-    of a crown wall under wave impact are a separate calculation, and a
-    real one also has to survive the uplift that gets under it when the
-    core does not drain fast enough.
+        Levels and widths for the block, its concrete volume per metre run
+        at 2400 kg/m3, the loads, both factors of safety and any warnings.
     """
-    crest = still_water_level + design.crest_freeboard
+    armour_crest = still_water_level + design.crest_freeboard
     if parapet_height is None:
         # The parapet stands proud of the armour crest by enough to catch
         # the run-up tongue without becoming a wave-reflecting wall.
         parapet_height = max(0.3 * design.conditions.Hm0, 1.0)
     if base_below_crest is None:
         base_below_crest = design.layer["thickness"]
+    if berm_width is None:
+        berm_width = max(3.0 * design.Dn50, 2.0)
     if deck_width <= 0 or parapet_width <= 0:
         raise ValueError("Deck and parapet widths must be positive")
 
-    base_level = crest - base_below_crest
-    deck_level = crest
-    parapet_top = crest + parapet_height
+    base_level = armour_crest - base_below_crest
+    deck_level = armour_crest
+    parapet_top = armour_crest + parapet_height
+    loads = pedersen_crown_loads(design.conditions, design.cot_alpha,
+                                 design.crest_freeboard, berm_width,
+                                 base_below_crest, parapet_height)
+    gamma_c = RHO_CONCRETE * G / 1000.0
+    gamma_w = RHO_W * G / 1000.0
+
+    def weight(z0: float, z1: float, width: float) -> float:
+        """Weight of a block, buoyant below still water."""
+        wet = min(max(still_water_level - z0, 0.0), z1 - z0)
+        return (gamma_c * (z1 - z0) - gamma_w * wet) * width
+
+    warnings: list[str] = []
+    sliding = overturning = 0.0
+    while True:
+        total = parapet_width + deck_width
+        parts = [
+            (weight(base_level, parapet_top, parapet_width),
+             total - 0.5 * parapet_width),
+            (weight(base_level, deck_level, deck_width), 0.5 * deck_width),
+        ]                                             # arm from the rear heel
+        W = sum(w for w, _ in parts)
+        uplift = 0.5 * loads["pb"] * total            # triangular, peak at front
+        if loads["Fh"] > 0:
+            sliding = friction * max(W - uplift, 0.0) / loads["Fh"]
+            resisting = sum(w * x for w, x in parts) - uplift * (2.0 / 3.0) * total
+            overturning = max(resisting, 0.0) / loads["M"]
+        else:
+            sliding = overturning = float("inf")
+        if sliding >= target_sliding and overturning >= target_overturning:
+            break
+        if deck_width >= max_deck_width:
+            warnings.append(
+                f"The crown block reached a {total:.1f} m width with sliding "
+                f"{sliding:.2f} and overturning {overturning:.2f}. Lower the "
+                "parapet, widen the armour berm in front of it or key the "
+                "base into the core."
+            )
+            break
+        deck_width += step
+    if loads["outside"]:
+        warnings.append("Pedersen crown wall loads applied outside the "
+                        "tested range: " + "; ".join(loads["outside"]) + ".")
 
     area = (parapet_width * (parapet_top - base_level)
             + deck_width * (deck_level - base_level))
@@ -878,8 +1202,15 @@ def crown_wall(design, still_water_level: float, deck_width: float = 7.5,
         "parapet_width": parapet_width,
         "deck_width": deck_width,
         "total_width": parapet_width + deck_width,
+        "berm_width": berm_width,
         "concrete_m3_per_m": area,
-        "concrete_t_per_m": area * 2.4,
+        "concrete_t_per_m": area * RHO_CONCRETE / 1000.0,
+        "loads": loads,
+        "weight": W,
+        "uplift": uplift,
+        "sliding_FoS": sliding,
+        "overturning_FoS": overturning,
+        "warnings": warnings,
     }
 
 
@@ -999,8 +1330,8 @@ def roundhead(design, kd_ratio: float | None = None,
     return replace(
         design,
         Dn50=Dn50,
-        M50=2650.0 * Dn50**3,
-        layer=armour_layer(Dn50),
+        M50=design.density * Dn50**3,
+        layer=layer_for(design.armour_type, Dn50, design.density),
         crest_freeboard=design.crest_freeboard + raise_crest,
         section="head",
         kd_ratio=kd_ratio,

@@ -32,12 +32,19 @@ Sarpkaya, T. (2010), Wave Forces on Offshore Structures. Drag and inertia
 DNV-RP-C205 (2010), Environmental Conditions and Environmental Loads.
     Coefficient guidance for smooth and rough cylinders.
 
+Fenton, J. D. (1988), "The numerical solution of steady water wave
+    problems", Computers and Geosciences 14(3). The stream function wave
+    used for the design wave, which stays valid up to breaking where linear
+    theory does not.
+
 Wheeler, J. D. (1970), "Method for calculating forces produced by irregular
     waves". The stretching used to carry linear kinematics up to the
-    instantaneous free surface.
+    instantaneous free surface, when linear theory is asked for.
 
 Sumer, B. M., Fredsoe, J. and Christiansen, N. (1992), "Scour around
-    vertical pile in waves". The scour relation used here.
+    vertical pile in waves"; Sumer, B. M. and Fredsoe, J. (2001), "Scour
+    around pile in combined waves and current". The scour relations used
+    here.
 
 Conventions
 -----------
@@ -102,6 +109,60 @@ dict
     the wavelength, and a mask of which elevations are in the water.
 ```
 
+## `StreamFunctionWave`
+
+```python
+class StreamFunctionWave
+```
+
+```text
+A steady nonlinear wave by Fenton's Fourier method.
+
+Solves the full nonlinear free-surface problem for a wave of given
+height, period and depth with no Eulerian mean current, in the
+dimensionless unknowns of Fenton (1988): kd, kH, T sqrt(gk), c sqrt(k/g),
+the two mean currents, the mean fluid speed, the flux q, the Bernoulli
+constant, the surface kη at N + 1 points over half a wavelength and the
+N Fourier coefficients B_j. Newton's method, with the height raised in
+steps from a linear start.
+
+Attributes
+----------
+converged : bool
+    False when Newton did not settle, which in practice means the wave
+    is at or beyond breaking.
+```
+
+### `StreamFunctionWave.surface` (method)
+
+```python
+StreamFunctionWave.surface(self, phase: float) -> float
+```
+
+```text
+Surface elevation above still water at a phase [m].
+```
+
+### `StreamFunctionWave.kinematics` (method)
+
+```python
+StreamFunctionWave.kinematics(self, z, phase: float) -> dict
+```
+
+```text
+Horizontal velocity and local acceleration, as wave_kinematics.
+```
+
+## `stream_function_wave`
+
+```python
+def stream_function_wave(H: float, T: float, depth: float, N: int=20) -> StreamFunctionWave
+```
+
+```text
+A solved stream function wave, cached since a phase sweep reuses it.
+```
+
 ## `keulegan_carpenter`
 
 ```python
@@ -115,6 +176,21 @@ Sets which Morison term dominates. Below about 3 the load is almost all
 inertia and the drag coefficient hardly matters; above about 20 drag
 governs and the inertia coefficient hardly matters. A monopile in a
 design storm usually sits awkwardly between the two.
+```
+
+## `bed_keulegan_carpenter`
+
+```python
+def bed_keulegan_carpenter(Hs: float, T: float, depth: float, diameter: float) -> dict
+```
+
+```text
+KC at the seabed from the significant wave, as scour relations use.
+
+U_m = pi Hs / (T sinh(k h)), linear theory at the bed, and
+KC = U_m T / D (Sumer and Fredsoe 2001). Not the KC at the surface
+under the design wave, which sets the Morison coefficients and is
+several times larger.
 ```
 
 ## `reynolds_number`
@@ -198,6 +274,7 @@ class PileLoad
     regime: str
     diffraction_ratio: float
     warnings: list[str] = field(default_factory=list)
+    theory: str = 'linear'
 ```
 
 ```text
@@ -223,7 +300,7 @@ PileLoad.summary(self) -> str
 ## `morison_pile_load`
 
 ```python
-def morison_pile_load(diameter: float, H: float, T: float, depth: float, phase: float=0.0, Cd: float | None=None, Cm: float | None=None, points: int=400, stretching: str='wheeler', rough: bool=True, air_gap: float=0.0) -> PileLoad
+def morison_pile_load(diameter: float, H: float, T: float, depth: float, phase: float=0.0, Cd: float | None=None, Cm: float | None=None, points: int=400, stretching: str='wheeler', rough: bool=True, air_gap: float=0.0, theory: str='stream') -> PileLoad
 ```
 
 ```text
@@ -240,6 +317,12 @@ air_gap : float
     plotting the dry part of the pile.
 Cd, Cm : float, optional
     Taken from :func:`drag_inertia_coefficients` when not given.
+theory : str
+    "stream" (default) for Fenton's stream function wave, which is what
+    a design wave in intermediate or shallow water needs; "linear" for
+    Airy theory with the ``stretching`` given. A stream function wave
+    that does not converge is at breaking, and the load falls back to
+    linear theory with a warning.
 ```
 
 ## `phase_sweep`
@@ -260,20 +343,31 @@ arms. Designing on the crest phase alone can miss the worst moment.
 ## `scour_depth_pile`
 
 ```python
-def scour_depth_pile(diameter: float, KC: float, current_only: bool=False, live_bed: bool=True, bed=None, Hs: float | None=None, T: float | None=None, depth: float | None=None) -> dict
+def scour_depth_pile(diameter: float, KC: float, current_only: bool=False, live_bed: bool=True, bed=None, Hs: float | None=None, T: float | None=None, depth: float | None=None, current_ratio: float=0.0) -> dict
 ```
 
 ```text
 Equilibrium scour depth at a vertical pile [m].
 
-Sumer, Fredsoe and Christiansen (1992), for waves::
+Sumer and Fredsoe (2001), for combined waves and current::
 
-    S / D = 1.3 [1 - exp(-0.03 (KC - 6))]      for KC > 6
+    S / D = 1.3 [1 - exp(-A (KC - B))]      for KC > B
+    A = 0.03 + 0.75 Ucw^2.6,  B = 6 exp(-4.7 Ucw)
 
-with no scour below KC = 6, where the horseshoe vortex does not form.
-Under a steady current the same authors give S / D = 1.3 with a standard
-deviation of 0.7, which is the ``current_only`` branch and also the
-limit the wave relation tends to.
+with Ucw = Uc / (Uc + Um) the current share of the near-bed velocity.
+Ucw = 0 recovers the waves-only relation of Sumer, Fredsoe and
+Christiansen (1992), with no scour below KC = 6, where the horseshoe
+vortex does not form. Under a steady current S / D = 1.3 with a
+standard deviation of 0.7, which is the ``current_only`` branch and the
+limit the others tend to.
+
+Parameters
+----------
+KC : float
+    Keulegan-Carpenter number at the bed from the significant wave,
+    :func:`bed_keulegan_carpenter`.
+current_ratio : float
+    Ucw, between 0 (waves only) and 1 (current only).
 
 Notes
 -----
@@ -287,7 +381,7 @@ for both, since a scoured pile is a longer cantilever and a softer one.
 ## `design_monopile`
 
 ```python
-def design_monopile(diameter: float, H: float, T: float, depth: float, rough: bool=True, stretching: str='wheeler', phases: int=181, bed=None) -> dict
+def design_monopile(diameter: float, H: float, T: float, depth: float, rough: bool=True, stretching: str='wheeler', phases: int=181, bed=None, theory: str='stream', Hs: float | None=None, current: float=0.0) -> dict
 ```
 
 ```text
@@ -296,5 +390,16 @@ Worst-phase load, scour, and the numbers a foundation designer wants.
 Sweeps the phase for the worst moment rather than assuming the crest,
 returns the load at that phase, and adds the scour depth and the
 resulting increase in cantilever length.
+
+Parameters
+----------
+H, T : float
+    The design (maximum) wave, which loads the pile.
+Hs : float, optional
+    The significant wave height of the sea state, which drives scour.
+    Defaults to H / 1.86, the Rayleigh ratio for about 1000 waves.
+current : float
+    Depth-averaged current speed at the pile [m/s]. Tidal currents are
+    present at almost every monopile site and dominate its scour.
 ```
 
