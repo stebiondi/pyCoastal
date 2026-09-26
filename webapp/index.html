@@ -267,11 +267,9 @@
     margin: 0;
     flex: 1 1 auto;
     font-family: var(--display);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
+    color: var(--ink);
   }
   .theory-close {
     appearance: none;
@@ -345,23 +343,15 @@
     align-items: baseline;
     gap: 18px;
     flex-wrap: wrap;
-    padding: 16px 22px 14px;
+    padding: 8px 14px;
     border-bottom: 1px solid var(--rule);
     background: var(--panel);
   }
   h1 {
     margin: 0;
     font-family: var(--display);
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 0.055em;
-    text-transform: uppercase;
-  }
-  .lede {
-    margin: 0;
-    color: var(--ink-soft);
-    font-size: 13px;
-    max-width: 58ch;
+    font-size: 15px;
+    font-weight: 600;
   }
   .spacer { flex: 1 1 auto; }
   .verify {
@@ -396,10 +386,8 @@
     border-left: 3px solid transparent;
     color: var(--ink-soft);
     font-family: var(--display);
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 400;
     text-align: left;
     padding: 10px 14px;
     white-space: nowrap;
@@ -407,9 +395,10 @@
   }
   .rail-item:hover { color: var(--ink); background: var(--rule-soft); }
   .rail-item.active {
-    color: var(--sea);
+    color: var(--ink);
+    font-weight: 600;
     border-left-color: var(--sea);
-    background: var(--sea-wash);
+    background: var(--rule-soft);
   }
 
   .column {
@@ -419,15 +408,22 @@
     min-height: 0;
   }
 
-  .eyebrow {
-    font-family: var(--display);
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin: 0 0 8px;
+  /* Group boxes, the way a Qt form frames a set of related fields. */
+  fieldset.group {
+    margin: 0 0 14px;
+    padding: 8px 10px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--panel);
+    min-width: 0;
   }
+  fieldset.group > legend {
+    padding: 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .corpus-stat { margin: 0 0 8px; font-size: 12px; color: var(--ink-soft); }
   #module-note {
     margin: 0 0 16px;
     font-size: 12.5px;
@@ -505,7 +501,7 @@
     gap: 12px;
     margin-bottom: -6px;
   }
-  #sheet-label { margin: 0; }
+  #sheet-label { margin: 0; font-weight: 600; font-size: 12px; }
   .ghost-btn {
     appearance: none;
     font-family: var(--mono);
@@ -568,41 +564,36 @@
     padding: 10px 12px;
   }
 
-  .checks {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
-    gap: 8px;
+  .check-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
   }
-  .check {
-    border: 1px solid var(--rule);
-    border-left-width: 3px;
-    border-radius: 2px;
-    padding: 7px 10px;
-    background: var(--panel);
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
+  .check-table th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule);
+    padding: 3px 8px;
   }
-  .check-name {
-    font-size: 10.5px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
+  .check-table td {
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--rule-soft);
   }
-  .check-value {
+  .check-table tr:last-child td { border-bottom: 0; }
+  .check-table .num {
     font-family: var(--mono);
-    font-size: 15px;
-    font-weight: 500;
     font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
   }
-  .check-target { font-family: var(--mono); font-size: 10.5px; color: var(--ink-soft); }
-  .check-pass { border-left-color: var(--pass); }
-  .check-pass .check-value { color: var(--pass); }
-  .check-fail { border-left-color: var(--fail); background: var(--fail-wash); }
-  .check-fail .check-value { color: var(--fail); }
-  .check-warn { border-left-color: var(--warn); background: var(--warn-wash); }
-  .check-warn .check-value { color: var(--warn); }
-  .check-neutral { border-left-color: var(--rule); }
+  .check-table th:nth-child(2), .check-table th:nth-child(4) { text-align: right; }
+  .check-table .status { font-weight: 600; white-space: nowrap; }
+  .check-pass .status { color: var(--pass); }
+  .check-warn .status { color: var(--warn); }
+  .check-fail .status { color: var(--fail); }
+  .check-fail td { background: var(--fail-wash); }
+  .check-neutral td { color: var(--ink-soft); }
 
   /* One pane now. The literature used to sit in the second column and is
      a panel of its own; the design report gets the width back. */
@@ -756,11 +747,9 @@
   .k-section > summary {
     cursor: pointer;
     font-family: var(--display);
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--ink-soft);
     list-style: none;
   }
   .k-section > summary::-webkit-details-marker { display: none; }
@@ -826,12 +815,7 @@
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
-  .pedia-link {
-    font-size: 0.86em; padding: 0.25em 0.7em; margin-right: 0.6em;
-    border: 1px solid var(--rule); border-radius: 3px;
-    color: var(--sea); text-decoration: none; white-space: nowrap;
-  }
-  .pedia-link:hover { border-color: var(--sea); }
+  .pedia-link { margin-right: 0.8em; color: var(--sea); white-space: nowrap; }
 </style>
 
 <script>
@@ -853,12 +837,8 @@
 
 <header>
   <h1>PyCoaTools</h1>
-  <p class="lede">
-    Size a structure with the pyCoastal relations, then read what the
-    literature says about the ground they stand on.
-  </p>
   <span class="spacer"></span>
-  <a class="pedia-link" href="pedia.html" title="Browse the whole knowledge base">PyCoaPedia &#8599;</a>
+  <a class="pedia-link" href="pedia.html">PyCoaPedia</a>
   <span id="verify" class="verify" hidden></span>
 </header>
 
@@ -866,13 +846,14 @@
   <nav id="rail" aria-label="Design modules"></nav>
 
   <section class="column" aria-label="Design inputs">
-    <p class="eyebrow">Inputs</p>
-    <p id="module-note"></p>
-    <div id="inputs"></div>
+    <fieldset class="group">
+      <legend>Inputs</legend>
+      <p id="module-note"></p>
+      <div id="inputs"></div>
+    </fieldset>
     <p class="note">
-      Every relation here is the one in the Python package, transliterated
-      and then checked against it. The chip in the masthead is that check,
-      re-run in your browser.
+      Relations are ported from the pyCoastal Python package and tested
+      against it on page load (result in the top bar).
     </p>
   </section>
 
@@ -880,25 +861,28 @@
     <div class="sheet-col">
       <div id="error" hidden></div>
       <div class="sheet-head">
-        <p class="eyebrow" id="sheet-label">Section</p>
+        <span id="sheet-label">Drawing</span>
         <button id="theory-open" class="ghost-btn" type="button"
                 aria-expanded="false" aria-controls="theory">
-          Theory &amp; sources
+          Theory and sources
         </button>
         <button id="enlarge" class="ghost-btn" type="button" aria-pressed="false">
           Enlarge
         </button>
       </div>
       <div class="sheet-wrap"><div id="sheet"></div></div>
-      <div id="checks" class="checks"></div>
+      <fieldset class="group">
+        <legend>Checks</legend>
+        <div id="checks"></div>
+      </fieldset>
       <div id="warnings" hidden></div>
     </div>
 
     <div class="panes">
-      <section aria-label="Design report">
-        <p class="eyebrow">Design report</p>
+      <fieldset class="group">
+        <legend>Design report</legend>
         <div id="report"></div>
-      </section>
+      </fieldset>
     </div>
   </main>
 </div>
@@ -906,21 +890,18 @@
 <div id="theory-veil" class="theory-veil" hidden></div>
 <aside id="theory" class="theory" aria-label="Theory and sources" hidden>
   <div class="theory-bar">
-    <p class="theory-title">Theory &amp; sources</p>
+    <p class="theory-title">Theory and sources</p>
     <button id="theory-close" class="theory-close" type="button"
             aria-label="Close the theory panel">&#215;</button>
   </div>
   <div class="theory-body">
-    <p class="eyebrow" id="corpus-stat">Fetching the extract&hellip;</p>
+    <p class="corpus-stat" id="corpus-stat">Loading&hellip;</p>
     <div id="topics"></div>
     <div id="knowledge"></div>
     <p class="note">
-      Claims, equations and synthesis come from <strong><a href="pedia.html">PyCoaPedia</a></strong>,
-      a provenance-first corpus of peer-reviewed coastal engineering. Each
-      entry carries the regime it was established in, because a relation
-      quoted outside its range is the most expensive kind of mistake.
-      Coverage is uneven by design: it records what has been screened, not
-      what exists.
+      Source: <a href="pedia.html">PyCoaPedia</a>. Each claim and equation
+      lists the range of conditions it was derived for. Topics not yet
+      screened have no entries.
     </p>
   </div>
 </aside>

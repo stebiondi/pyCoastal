@@ -32,10 +32,10 @@
          display: flex; flex-direction: column; }
   a { color: var(--sea); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  header { display: flex; align-items: baseline; gap: 1em; padding: 0.7em 1.2em;
+  header { display: flex; align-items: baseline; gap: 1em; padding: 0.5em 1em;
            border-bottom: 1px solid var(--rule); background: var(--panel); flex-wrap: wrap; }
-  header h1 { font-size: 1.25em; margin: 0; color: var(--sea-deep); }
-  header .lede { color: var(--soft); margin: 0; flex: 1 1 20em; }
+  header h1 { font-size: 1.07em; font-weight: 600; margin: 0; color: var(--ink); }
+  header .spacer { flex: 1 1 auto; }
   header .stats { color: var(--faint); font-size: 0.9em; }
   .shell { flex: 1 1 auto; display: flex; min-height: 0; }
   aside { width: 22em; min-width: 16em; border-right: 1px solid var(--rule);
@@ -43,9 +43,12 @@
   .searchbox { padding: 0.8em; border-bottom: 1px solid var(--rule-soft); }
   .searchbox input { width: 100%; padding: 0.5em 0.6em; font: inherit; color: var(--ink);
                      background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px; }
-  .modules { display: flex; flex-wrap: wrap; gap: 0.3em; margin-top: 0.6em; }
+  .modules { display: flex; align-items: center; gap: 0.5em; margin-top: 0.6em;
+             font-size: 0.9em; color: var(--soft); }
+  .modules select { flex: 1 1 auto; font: inherit; color: var(--ink); background: var(--sheet);
+                    border: 1px solid var(--rule); border-radius: 3px; padding: 0.2em 0.3em; }
   .chip { font-size: 0.8em; padding: 0.15em 0.55em; border: 1px solid var(--rule);
-          border-radius: 99px; cursor: pointer; background: var(--sheet); color: var(--soft); }
+          border-radius: 3px; cursor: pointer; background: var(--sheet); color: var(--soft); }
   .chip.on { background: var(--sea-wash); border-color: var(--sea); color: var(--sea-deep); }
   #tree { overflow: auto; padding: 0.4em 0.4em 2em; flex: 1 1 auto; }
   .node { display: flex; align-items: baseline; gap: 0.3em; padding: 0.1em 0.3em;
@@ -58,9 +61,8 @@
   main { flex: 1 1 auto; overflow: auto; padding: 1.4em 2em 4em; min-width: 0; }
   .wrap { max-width: 60em; }
   .crumbs { color: var(--faint); font-size: 0.9em; }
-  h2 { margin: 0.2em 0 0.2em; color: var(--sea-deep); font-size: 1.6em; }
-  h3 { margin: 1.6em 0 0.5em; font-size: 1.05em; text-transform: uppercase;
-       letter-spacing: 0.04em; color: var(--soft); border-bottom: 1px solid var(--rule-soft);
+  h2 { margin: 0.2em 0 0.2em; color: var(--ink); font-size: 1.5em; font-weight: 600; }
+  h3 { margin: 1.6em 0 0.5em; font-size: 1.1em; color: var(--ink); border-bottom: 1px solid var(--rule-soft);
        padding-bottom: 0.2em; }
   .meta { color: var(--soft); }
   .tid { font-family: var(--mono); font-size: 0.9em; color: var(--faint); }
@@ -81,8 +83,7 @@
   .regime { font-style: italic; color: var(--soft); }
   .results li { margin: 0.7em 0; list-style: none; }
   .results { padding: 0; }
-  .results .kind { font-size: 0.75em; text-transform: uppercase; color: var(--faint);
-                   letter-spacing: 0.05em; }
+  .results .kind { font-size: 0.85em; color: var(--faint); }
   mark { background: var(--mark); color: inherit; padding: 0 0.1em; }
   .empty { color: var(--faint); }
   .kids a { margin-right: 0.8em; }
@@ -96,17 +97,17 @@
 <body>
 <header>
   <h1>PyCoaPedia</h1>
-  <p class="lede">The coastal and ocean engineering literature, distilled: topics,
-     synthesis, claims with the regime each holds in, equations. Every piece has a DOI.</p>
+  <span class="spacer"></span>
   <span class="stats" id="stats">loading&hellip;</span>
-  <a href="index.html">PyCoaTools &#8599;</a>
+  <a href="index.html">PyCoaTools</a>
 </header>
 <div class="shell">
   <aside>
     <div class="searchbox">
       <input id="q" type="search" placeholder="Search topics, claims, equations&hellip;"
              autocomplete="off" aria-label="Search PyCoaPedia">
-      <div class="modules" id="modules" aria-label="Filter by pyCoastal design module"></div>
+      <label class="modules">pyCoastal module
+        <select id="modules"><option value="">All topics</option></select></label>
     </div>
     <nav id="tree" aria-label="Topic tree"></nav>
   </aside>
@@ -275,16 +276,15 @@ function showTopic(tid, flashClaim) {
 function showHome() {
   renderTree(null);
   var roots = KIDS[""] || [];
-  var h = ["<h2>Coastal and ocean engineering knowledge</h2>",
-    '<p class="meta">Pick a branch on the left, search, or start from a pyCoastal design module. ' +
-    "Each topic carries a curated synthesis, its claims with the regime each was established in, " +
-    "and its equations, and every claim links to its paper.</p><h3>Branches</h3><ul>"];
+  var h = ["<h2>Contents</h2>",
+    '<p class="meta">Each topic page has a synthesis, a list of claims with the conditions ' +
+    "they were derived for, and the equations, each cited to its source paper.</p><h3>Topics</h3><ul>"];
   roots.forEach(function (r) {
     var t = K.topics[r];
     h.push('<li><a href="#topic=' + esc(r) + '">' + esc(t.label) + "</a> " +
            '<span class="small">' + esc(t.description) + "</span></li>");
   });
-  h.push("</ul><h3>By design module</h3><ul>");
+  h.push("</ul><h3>Topics by pyCoastal module</h3><ul>");
   Object.keys(K.modules).forEach(function (m) {
     var mod = K.modules[m];
     h.push("<li><strong>" + esc(mod.label) + "</strong> <span class=\"small\">" + esc(mod.blurb) + "</span><br>" +
@@ -366,14 +366,11 @@ function init(k) {
   Object.keys(K.topics).forEach(function (t) { nClaims += K.topics[t].claims.length; });
   el("stats").textContent = Object.keys(K.topics).length + " topics · " + nClaims + " claims · " +
     Object.keys(K.papers).length + " papers · " + K.generated;
-  el("modules").innerHTML = Object.keys(K.modules).map(function (m) {
-    return '<span class="chip" data-m="' + esc(m) + '">' + esc(K.modules[m].label) + "</span>";
+  el("modules").innerHTML += Object.keys(K.modules).map(function (m) {
+    return '<option value="' + esc(m) + '">' + esc(K.modules[m].label) + "</option>";
   }).join("");
-  el("modules").onclick = function (e) {
-    var m = e.target.dataset && e.target.dataset.m;
-    if (!m) return;
-    MODULE = MODULE === m ? null : m;
-    el("modules").querySelectorAll(".chip").forEach(function (c) { c.classList.toggle("on", c.dataset.m === MODULE); });
+  el("modules").onchange = function () {
+    MODULE = el("modules").value || null;
     if (el("q").value.trim()) runSearch(el("q").value); else route();
   };
   el("tree").onclick = function (e) {
