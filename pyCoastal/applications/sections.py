@@ -321,6 +321,11 @@ def draw_seawall(dwg: Section, design, sea_extent: float = 22.0,
     return (x0, x1), (depth_below, d.crest_level + 4.0)
 
 
+def _fos(value: float) -> str:
+    """A factor of safety for a note; infinite means the case has no demand."""
+    return "no demand" if math.isinf(value) else f"{value:.2f}"
+
+
 def seawall_notes(design) -> list[str]:
     """Specification notes generated from a seawall design.
 
@@ -349,10 +354,20 @@ def seawall_notes(design) -> list[str]:
         f"Founding level {d.founding_level:+.2f} m CD allows "
         f"{d.embedment:.2f} m of embedment against a predicted equilibrium "
         f"scour of {d.scour_depth:.2f} m. Confirm against a scour survey.",
-        f"Stability under the design wave: sliding {d.sliding_FoS:.2f}, "
-        f"overturning {d.overturning_FoS:.2f}, bearing "
-        f"{d.bearing['p_max']:.0f} kPa peak. Bearing capacity to be confirmed "
-        "by the geotechnical designer.",
+        f"Stability under the wave crest: sliding {_fos(d.sliding_FoS)}, "
+        f"overturning {_fos(d.overturning_FoS)}, bearing "
+        f"{d.bearing['p_max']:.0f} kPa peak. At the trough with the backfill "
+        f"pushing seaward: sliding {_fos(d.drawdown['sliding_FoS'])}, "
+        f"overturning {_fos(d.drawdown['overturning_FoS'])}, bearing "
+        f"{d.drawdown['bearing']['p_max']:.0f} kPa peak. Allowable bearing "
+        + ("not checked" if d.allowable_bearing is None
+           else f"taken as {d.allowable_bearing:.0f} kPa")
+        + ", to be confirmed by the geotechnical designer.",
+        f"Stem {d.stem_thickness:.2f} m and base {d.base_thickness:.2f} m "
+        f"thick for M_Ed = {d.stem['moment']:.0f} kNm/m and V_Ed = "
+        f"{d.stem['shear']:.0f} kN/m at the foot of the stem (C35/45, "
+        "B500, 1 % steel, no shear links). Reinforcement detailing by the "
+        "structural designer.",
         "Levels in metres to chart datum. Dimensions in metres unless noted.",
     ]
     notes += [f"WARNING: {w}" for w in d.warnings]
@@ -398,11 +413,16 @@ def seawall_section(
             ("Overtopping q", f"{d.q_mean:.3g} l/s/m (mean)"),
             ("  upper bound", f"{d.q_upper:.3g} l/s/m"),
             ("  limit", d.governing_limit.replace("_", " ")),
-            ("Sliding FoS", f"{d.sliding_FoS:.2f}"),
-            ("Overturning FoS", f"{d.overturning_FoS:.2f}"),
-            ("Bearing p_max", f"{d.bearing['p_max']:.0f} kPa"),
-            ("Resultant e", f"{d.bearing['e']:+.2f} m"
-             + ("" if d.bearing["middle_third"] else "  OUT")),
+            ("Sliding FoS", f"{_fos(d.sliding_FoS)} / "
+             f"{_fos(d.drawdown['sliding_FoS'])}"),
+            ("Overturning FoS", f"{_fos(d.overturning_FoS)} / "
+             f"{_fos(d.drawdown['overturning_FoS'])}"),
+            ("Bearing p_max", f"{d.bearing['p_max']:.0f} / "
+             f"{d.drawdown['bearing']['p_max']:.0f} kPa"),
+            ("Resultant e", f"{d.bearing['e']:+.2f} / "
+             f"{d.drawdown['bearing']['e']:+.2f} m"
+             + ("" if d.bearing["middle_third"]
+                and d.drawdown["bearing"]["middle_third"] else "  OUT")),
             ("", ""),
             ("Concrete", f"{q['concrete_total_m3_per_m']:.1f} m3/m"),
             ("Toe rock", f"{q['toe_rock_t_per_m']:.1f} t/m"),
@@ -488,7 +508,7 @@ def _mound_geometry(design, still_water_level, seabed_level, cot_land,
     cot_sea = d.cot_alpha
     cot_land = max(cot_sea - 0.5, 1.5) if cot_land is None else cot_land
     t_armour = d.layer["thickness"]
-    Dn_under = d.Dn50 / 10.0 ** (1.0 / 3.0)
+    Dn_under = d.underlayer_Dn50
     t_under = 2.0 * Dn_under
     crest_width = max(3.0 * d.Dn50, 4.0) if crest_width is None else crest_width
 
@@ -540,7 +560,7 @@ def draw_rubble_mound(dwg: Section, design, still_water_level: float,
     base = seabed_level + blanket
 
     if crest_width is None:
-        needed = crown["total_width"] + 1.0 if crown else 0.0
+        needed = crown["total_width"] + crown["berm_width"] + 1.0 if crown else 0.0
         crest_width = max(3.0 * d.Dn50, 4.0, needed)
 
     outer, under, core, crest, cot_land, Dn_under, crest_width = _mound_geometry(
@@ -604,7 +624,9 @@ def draw_rubble_mound(dwg: Section, design, still_water_level: float,
 
     # -- crown block and its infill ---------------------------------------
     if crown:
-        px0 = outer.x_sea
+        # The armour runs on across the crest as a berm in front of the
+        # parapet, which is what Pedersen's loads assume.
+        px0 = outer.x_sea + crown["berm_width"]
         px1 = px0 + crown["parapet_width"]
         dx1 = px1 + crown["deck_width"]
         dwg.material(
@@ -626,9 +648,10 @@ def draw_rubble_mound(dwg: Section, design, still_water_level: float,
     # -- levels ------------------------------------------------------------
     dwg.level(x0 + 2, swl, f"SWL {fmt(swl)} m CD", side="right", symbol="water")
     if crown:
-        dwg.level(outer.x_sea, crown["parapet_top"],
+        dwg.level(outer.x_sea + crown["berm_width"], crown["parapet_top"],
                   f"Parapet {fmt(crown['parapet_top'])}", side="left")
-        dwg.level(outer.x_sea + crown["total_width"], crown["deck_level"],
+        dwg.level(outer.x_sea + crown["berm_width"] + crown["total_width"],
+                  crown["deck_level"],
                   f"Deck {fmt(crown['deck_level'])}", side="right")
     else:
         dwg.level(0.0, crest, f"Crest {fmt(crest)} m CD", side="left")
@@ -695,10 +718,15 @@ def rubble_mound_notes(design, still_water_level, seabed_level,
         f"Design condition: Hm0 = {d.conditions.Hm0:.2f} m and "
         f"Tm-1,0 = {d.conditions.Tm10:.2f} s at the toe, "
         f"{d.conditions.wave_count:.0f} waves in the design storm.",
-        f"Primary armour: Dn50 = {d.Dn50:.2f} m, M50 = {d.M50 / 1000:.1f} t, "
-        f"two layers {d.layer['thickness']:.2f} m thick, "
-        f"{d.layer['stones_per_m2']:.2f} stones per m2. Sized by Van der Meer "
-        f"(1988), {d.regime} regime, damage level S = 2.",
+        (f"Primary armour: {d.armour_type.replace('_', ' ')}, Dn = "
+         f"{d.Dn50:.2f} m, {d.M50 / 1000:.1f} t units at "
+         f"{d.density:.0f} kg/m3, layer {d.layer['thickness']:.2f} m thick, "
+         f"{d.layer['stones_per_m2']:.2f} units per m2. Sized by {d.regime}."
+         if d.concrete else
+         f"Primary armour: Dn50 = {d.Dn50:.2f} m, M50 = {d.M50 / 1000:.1f} t, "
+         f"two layers {d.layer['thickness']:.2f} m thick, "
+         f"{d.layer['stones_per_m2']:.2f} stones per m2. Sized by Van der Meer "
+         f"as modified by Van Gent et al. (2003), {d.regime} regime."),
         f"Underlayer: Dn50 = {Dn_under:.2f} m, nominally a tenth of the armour "
         "mass, two layers. Filter compatibility with the core to be checked "
         "against the actual gradings.",
@@ -735,10 +763,16 @@ def rubble_mound_notes(design, still_water_level, seabed_level,
             f"Crown block: parapet to {crown['parapet_top']:+.2f} m CD, deck "
             f"at {crown['deck_level']:+.2f} m CD, founded at "
             f"{crown['base_level']:+.2f} m CD, "
-            f"{crown['concrete_m3_per_m']:.1f} m3/m. Proportioned only: "
-            "sliding, overturning and uplift under wave impact are a separate "
-            "calculation.",
+            f"{crown['concrete_m3_per_m']:.1f} m3/m, behind a "
+            f"{crown['berm_width']:.1f} m armour berm. Under Pedersen (1996) "
+            f"loads, F_h = {crown['loads']['Fh']:.0f} kN/m with uplift "
+            f"p_b = {crown['loads']['pb']:.0f} kPa taken together: sliding "
+            f"{crown['sliding_FoS']:.2f}, overturning "
+            f"{crown['overturning_FoS']:.2f}.",
         ]
+    notes += [f"WARNING: {w}" for w in d.warnings]
+    if crown:
+        notes += [f"WARNING: {w}" for w in crown["warnings"]]
     return notes
 
 

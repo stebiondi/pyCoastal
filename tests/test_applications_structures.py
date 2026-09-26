@@ -42,9 +42,13 @@ def test_peak_period_converts_with_the_standard_ratio():
     assert c.Tm10 == pytest.approx(10.0)
 
 
-def test_wave_count_is_duration_over_period():
+def test_wave_count_is_duration_over_the_mean_period():
+    """N counts waves of the mean period Tm, not Tm-1,0."""
+    from pyCoastal.applications.structures import SPECTRAL_TO_MEAN_PERIOD
+
     c = DesignConditions(Hm0=2.0, Tm10=8.0, storm_duration=4 * 3600.0)
-    assert c.wave_count == pytest.approx(1800.0)
+    assert c.mean_period == pytest.approx(8.0 / SPECTRAL_TO_MEAN_PERIOD)
+    assert c.wave_count == pytest.approx(4 * 3600.0 / c.mean_period)
 
 
 def test_wave_count_saturates_at_the_van_der_meer_limit():
@@ -80,7 +84,7 @@ def test_invalid_conditions_are_rejected(kwargs):
 # --------------------------------------------------------------------------
 
 def test_vandermeer_plunging_matches_the_published_form(conditions):
-    """Hs/(D Dn50) = 6.2 P^0.18 (S/sqrt(N))^0.2 xi^-0.5."""
+    """Van Gent (2003): 8.4 P^0.18 (S/sqrt(N))^0.2 (Hs/H2%) xi^-0.5."""
     P, S, cot_a = 0.4, 2.0, 2.0
     out = rock_armour_vandermeer(conditions, cot_a, permeability=P, damage=S)
     if out["regime"] != "plunging":
@@ -88,7 +92,7 @@ def test_vandermeer_plunging_matches_the_published_form(conditions):
 
     N = conditions.wave_count
     xi = conditions.breaker_parameter(cot_a)
-    expected = 6.2 * P**0.18 * (S / math.sqrt(N)) ** 0.2 * xi**-0.5
+    expected = 8.4 * P**0.18 * (S / math.sqrt(N)) ** 0.2 / 1.4 * xi**-0.5
     assert out["stability_number"] == pytest.approx(expected)
     assert out["Dn50"] == pytest.approx(conditions.Hm0 / (1.585 * expected))
 
@@ -102,7 +106,8 @@ def test_vandermeer_surging_matches_the_published_form():
 
     N = c.wave_count
     xi = c.breaker_parameter(cot_a)
-    expected = 1.0 * P**-0.13 * (S / math.sqrt(N)) ** 0.2 * math.sqrt(cot_a) * xi**P
+    expected = (1.3 * P**-0.13 * (S / math.sqrt(N)) ** 0.2 / 1.4
+                * math.sqrt(cot_a) * xi**P)
     assert out["stability_number"] == pytest.approx(expected)
 
 
@@ -618,3 +623,85 @@ def test_a_head_foundation_is_wider_than_the_trunk_one():
     head = roundhead(trunk)
     assert (mound_foundation(head, 10.0)["toe_Dn50"]
             > mound_foundation(trunk, 10.0)["toe_Dn50"])
+
+
+
+# --------------------------------------------------------------------------
+# Concrete units, depth limit and the crown wall
+# --------------------------------------------------------------------------
+
+def test_cube_formula_matches_van_der_meer(conditions):
+    from pyCoastal.applications.structures import concrete_armour
+
+    out = concrete_armour(conditions, "cubes_two_layer_random", 1.5)
+    N = conditions.wave_count
+    s_om = conditions.mean_steepness()
+    Ns = (6.7 * 0.5**0.4 / N**0.3 + 1.0) * s_om**-0.1
+    assert out["stability_number"] == pytest.approx(Ns)
+    assert out["Dn50"] == pytest.approx(conditions.Hm0 / ((2400 / 1025 - 1) * Ns))
+
+
+def test_tetrapod_formula_matches_van_der_meer(conditions):
+    from pyCoastal.applications.structures import concrete_armour
+
+    out = concrete_armour(conditions, "tetrapod", 1.5)
+    N = conditions.wave_count
+    s_om = conditions.mean_steepness()
+    Ns = (3.75 * 0.5**0.5 / N**0.25 + 0.85) * s_om**-0.2
+    assert out["stability_number"] == pytest.approx(Ns)
+
+
+def test_single_layer_units_use_their_design_number(conditions):
+    from pyCoastal.applications.structures import concrete_armour
+
+    assert concrete_armour(conditions, "accropode", 1.33)["stability_number"] == 2.7
+    assert concrete_armour(conditions, "xbloc", 1.33)["stability_number"] == 2.8
+
+
+def test_concrete_armour_is_not_sized_as_rock(conditions):
+    rock = design_rubble_mound(conditions, cot_alpha=1.5)
+    acc = design_rubble_mound(conditions, cot_alpha=1.5, armour="accropode")
+    assert acc.density == 2400.0
+    assert acc.M50 == pytest.approx(2400.0 * acc.Dn50**3)
+    assert acc.M50 < rock.M50
+    assert acc.layer["thickness"] == pytest.approx(1.51 * acc.Dn50)
+
+
+def test_underlayer_is_a_tenth_of_the_unit_mass(conditions):
+    acc = design_rubble_mound(conditions, cot_alpha=1.5, armour="accropode")
+    assert 2650.0 * acc.underlayer_Dn50**3 == pytest.approx(acc.M50 / 10.0)
+
+
+def test_an_impossible_wave_is_flagged():
+    c = DesignConditions.from_peak_period(Hm0=6.0, Tp=11.0, depth=5.0)
+    d = design_rubble_mound(c)
+    assert any("cannot reach the toe" in w for w in d.warnings)
+
+
+def test_pedersen_loads_match_the_cem_table(conditions):
+    from pyCoastal.applications.structures import pedersen_crown_loads
+
+    cot, Ac, B, hp, fc = 2.0, 4.0, 5.0, 2.0, 1.5
+    got = pedersen_crown_loads(conditions, cot, Ac, B, hp, fc)
+    Hs = conditions.Hm0
+    Lom = 9.81 * conditions.mean_period**2 / (2 * math.pi)
+    a = math.atan(1 / cot)
+    xi = math.tan(a) / math.sqrt(Hs / Lom)
+    Ru = 1.12 * Hs * xi if xi <= 1.5 else 1.34 * Hs * xi**0.55
+    pm = 1025 * 9.81 * (Ru - Ac) / 1000
+    y = (Ru - Ac) / math.sin(a) * math.sin(math.radians(15)) / math.cos(a - math.radians(15))
+    ye = min(y / 2, fc)
+    Fh = 0.21 * math.sqrt(Lom / B) * (1.6 * pm * ye + pm / 2 * hp)
+    assert got["Fh"] == pytest.approx(Fh)
+    assert got["M"] == pytest.approx(0.55 * (hp + ye) * Fh)
+    assert got["pb"] == pytest.approx(pm)
+
+
+def test_crown_wall_meets_its_stability_targets(conditions):
+    from pyCoastal.applications.structures import crown_wall
+
+    d = design_rubble_mound(conditions, cot_alpha=1.5, armour="xbloc")
+    cw = crown_wall(d, 0.0)
+    assert cw["sliding_FoS"] >= 1.2 - 1e-9
+    assert cw["overturning_FoS"] >= 1.5 - 1e-9
+    assert cw["berm_width"] > 0
