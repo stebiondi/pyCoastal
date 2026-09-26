@@ -112,7 +112,7 @@ def main() -> int:
     context = quickjs.Context()
     context.eval("var globalThis = this;")
     context.eval(DOM_STUB)
-    for name in ("engine.js", "draw.js", "app.js"):
+    for name in ("i18n.js", "engine.js", "draw.js", "app.js"):
         source = (HERE / name).read_text(encoding="utf-8")
         try:
             context.eval(source)

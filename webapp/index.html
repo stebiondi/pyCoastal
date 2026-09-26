@@ -816,6 +816,8 @@
     * { transition: none !important; animation: none !important; }
   }
   .pedia-link { margin-right: 0.8em; color: var(--sea); white-space: nowrap; }
+  .lang { margin-right: 0.8em; }
+  .lang-picker { font: inherit; font-size: 0.85em; padding: 0.1em 0.3em; }
 </style>
 
 <script>
@@ -839,19 +841,20 @@
   <h1>PyCoaTools</h1>
   <span class="spacer"></span>
   <a class="pedia-link" href="pedia.html">PyCoaPedia</a>
+  <span id="lang" class="lang"></span>
   <span id="verify" class="verify" hidden></span>
 </header>
 
 <div class="shell">
-  <nav id="rail" aria-label="Design modules"></nav>
+  <nav id="rail" aria-label="Design modules" data-i18n-aria="Design modules"></nav>
 
-  <section class="column" aria-label="Design inputs">
+  <section class="column" aria-label="Design inputs" data-i18n-aria="Design inputs">
     <fieldset class="group">
-      <legend>Inputs</legend>
+      <legend data-i18n>Inputs</legend>
       <p id="module-note"></p>
       <div id="inputs"></div>
     </fieldset>
-    <p class="note">
+    <p class="note" data-i18n>
       Relations are ported from the pyCoastal Python package and tested
       against it on page load (result in the top bar).
     </p>
@@ -861,18 +864,18 @@
     <div class="sheet-col">
       <div id="error" hidden></div>
       <div class="sheet-head">
-        <span id="sheet-label">Drawing</span>
+        <span id="sheet-label" data-i18n>Drawing</span>
         <button id="theory-open" class="ghost-btn" type="button"
-                aria-expanded="false" aria-controls="theory">
+                aria-expanded="false" aria-controls="theory" data-i18n>
           Theory and sources
         </button>
-        <button id="enlarge" class="ghost-btn" type="button" aria-pressed="false">
+        <button id="enlarge" class="ghost-btn" type="button" aria-pressed="false" data-i18n>
           Enlarge
         </button>
       </div>
       <div class="sheet-wrap"><div id="sheet"></div></div>
       <fieldset class="group">
-        <legend>Checks</legend>
+        <legend data-i18n>Checks</legend>
         <div id="checks"></div>
       </fieldset>
       <div id="warnings" hidden></div>
@@ -880,7 +883,7 @@
 
     <div class="panes">
       <fieldset class="group">
-        <legend>Design report</legend>
+        <legend data-i18n>Design report</legend>
         <div id="report"></div>
       </fieldset>
     </div>
@@ -888,24 +891,30 @@
 </div>
 
 <div id="theory-veil" class="theory-veil" hidden></div>
-<aside id="theory" class="theory" aria-label="Theory and sources" hidden>
+<aside id="theory" class="theory" aria-label="Theory and sources"
+       data-i18n-aria="Theory and sources" hidden>
   <div class="theory-bar">
-    <p class="theory-title">Theory and sources</p>
+    <p class="theory-title" data-i18n>Theory and sources</p>
     <button id="theory-close" class="theory-close" type="button"
-            aria-label="Close the theory panel">&#215;</button>
+            aria-label="Close the theory panel"
+            data-i18n-aria="Close the theory panel">&#215;</button>
   </div>
   <div class="theory-body">
     <p class="corpus-stat" id="corpus-stat">Loading&hellip;</p>
     <div id="topics"></div>
     <div id="knowledge"></div>
     <p class="note">
-      Source: <a href="pedia.html">PyCoaPedia</a>. Each claim and equation
-      lists the range of conditions it was derived for. Topics not yet
-      screened have no entries.
+      <span data-i18n>Source:</span> <a href="pedia.html">PyCoaPedia</a>.
+      <span data-i18n>Each claim and equation lists the range of conditions it
+      was derived for. Topics not yet screened have no entries.</span>
+      <span data-i18n>The literature is quoted in English.</span>
     </p>
   </div>
 </aside>
 
+<script src="i18n.js"></script>
+<script src="lang/es.js"></script>
+<script src="lang/zh.js"></script>
 <script src="engine.js"></script>
 <script src="draw.js"></script>
 <script src="app.js"></script>

@@ -757,7 +757,7 @@ function label(g, x, y, text, fill, weight) {
     "font-weight": weight || 400,
     "font-family": "'IBM Plex Mono', ui-monospace, monospace"
   }, g);
-  t.textContent = text;
+  t.textContent = T(text);
   return t;
 }
 
@@ -767,7 +767,7 @@ function title(svg, x, y, text) {
     "letter-spacing": "0.03em",
     "font-family": "'Archivo', system-ui, sans-serif"
   }, svg);
-  t.textContent = text.toUpperCase();
+  t.textContent = T(text).toUpperCase();
   return t;
 }
 
@@ -800,7 +800,7 @@ function renderInputs() {
     var lab = document.createElement("label");
     lab.className = "field-label";
     lab.setAttribute("for", "in-" + input.key);
-    lab.textContent = input.label;
+    lab.textContent = T(input.label);
     row.appendChild(lab);
 
     if (input.type === "select") {
@@ -809,7 +809,7 @@ function renderInputs() {
       input.options.forEach(function (option) {
         var o = document.createElement("option");
         o.value = option;
-        o.textContent = option.replace(/_/g, " ");
+        o.textContent = T(option.replace(/_/g, " "));
         if (option === input.value) o.selected = true;
         sel.appendChild(o);
       });
@@ -826,12 +826,12 @@ function renderInputs() {
       btn.type = "button";
       btn.className = "toggle-btn" + (input.value ? " on" : "");
       btn.setAttribute("aria-pressed", String(!!input.value));
-      btn.textContent = input.value ? "Yes" : "No";
+      btn.textContent = T(input.value ? "Yes" : "No");
       btn.addEventListener("click", function () {
         input.value = !input.value;
         btn.className = "toggle-btn" + (input.value ? " on" : "");
         btn.setAttribute("aria-pressed", String(!!input.value));
-        btn.textContent = input.value ? "Yes" : "No";
+        btn.textContent = T(input.value ? "Yes" : "No");
         run();
       });
       wrap.appendChild(btn);
@@ -884,7 +884,7 @@ function run() {
     errorHost.hidden = true;
   } catch (err) {
     errorHost.hidden = false;
-    errorHost.textContent = "Could not draw this section: " +
+    errorHost.textContent = T("Could not draw this section") + ": " +
       String(err && err.message ? err.message : err);
     host.innerHTML = "";
     document.getElementById("checks").innerHTML = "";
@@ -900,8 +900,8 @@ function renderChecks(checks) {
   var head = table.createTHead().insertRow();
   ["Check", "Result", "Criterion", "η", ""].forEach(function (text, i) {
     var th = document.createElement("th");
-    th.textContent = text;
-    if (i === 3) th.title = "Utilization, demand over capacity";
+    th.textContent = T(text);
+    if (i === 3) th.title = T("Utilization, demand over capacity");
     head.appendChild(th);
   });
   var body = table.createTBody();
@@ -915,11 +915,11 @@ function renderChecks(checks) {
       check.value,
       check.target,
       eta == null ? "" : (isFinite(eta) ? eta.toFixed(2) : "–"),
-      { pass: "OK", warn: "Check", fail: "Fails", neutral: "" }[tone]
+      { pass: "OK", warn: "Review", fail: "Fails", neutral: "" }[tone]
     ];
     cells.forEach(function (text, i) {
       var td = row.insertCell();
-      td.textContent = text;
+      td.textContent = T(text);
       if (i === 1 || i === 3) td.className = "num";
       if (i === 4) td.className = "status";
     });
@@ -938,10 +938,10 @@ function renderReport(rows) {
     var line = document.createElement("div");
     line.className = "report-row";
     var k = document.createElement("span");
-    k.textContent = row[0];
+    k.textContent = T(row[0]);
     var val = document.createElement("span");
     val.className = "report-value";
-    val.textContent = row[1];
+    val.textContent = T(row[1]);
     line.appendChild(k);
     line.appendChild(val);
     host.appendChild(line);
@@ -958,7 +958,7 @@ function renderWarnings(result) {
   list.forEach(function (text) {
     var item = document.createElement("p");
     item.className = "warning";
-    item.textContent = text;
+    item.textContent = T(text);
     host.appendChild(item);
   });
 }
@@ -1034,8 +1034,8 @@ function renderKnowledge() {
   h.textContent = topic.label;
   var meta = document.createElement("p");
   meta.className = "k-meta";
-  meta.textContent = topic.papers + " papers · " + topic.claims.length +
-    " claims · " + topic.equations.length + " equations";
+  meta.textContent = T(topic.papers + " papers · " + topic.claims.length +
+    " claims · " + topic.equations.length + " equations");
   head.appendChild(h);
   head.appendChild(meta);
   if (topic.description) {
@@ -1053,7 +1053,7 @@ function renderKnowledge() {
     block.className = "k-section";
     if (pair[0] === "validated_ranges" || pair[0] === "limitations") block.open = true;
     var summary = document.createElement("summary");
-    summary.textContent = pair[1];
+    summary.textContent = T(pair[1]);
     var body = document.createElement("p");
     body.textContent = text;
     block.appendChild(summary);
@@ -1065,7 +1065,7 @@ function renderKnowledge() {
     var eqWrap = document.createElement("details");
     eqWrap.className = "k-section";
     var eqSum = document.createElement("summary");
-    eqSum.textContent = "Equations (" + topic.equations.length + ")";
+    eqSum.textContent = T("Equations (" + topic.equations.length + ")");
     eqWrap.appendChild(eqSum);
     topic.equations.forEach(function (eq) {
       var card = document.createElement("div");
@@ -1095,7 +1095,7 @@ function renderKnowledge() {
     clWrap.className = "k-section";
     clWrap.open = true;
     var clSum = document.createElement("summary");
-    clSum.textContent = "Claims (" + topic.claims.length + ")";
+    clSum.textContent = T("Claims (" + topic.claims.length + ")");
     clWrap.appendChild(clSum);
     topic.claims.forEach(function (claim) {
       var card = document.createElement("div");
@@ -1107,7 +1107,7 @@ function renderKnowledge() {
       if (claim.regime) {
         var regime = document.createElement("p");
         regime.className = "regime";
-        regime.textContent = "Applies: " + claim.regime;
+        regime.textContent = T("Applies") + ": " + claim.regime;
         card.appendChild(regime);
       }
       card.appendChild(citation(claim.paper));
@@ -1122,7 +1122,7 @@ function citation(paperId) {
   wrap.className = "cite";
   var paper = STATE.knowledge.papers[String(paperId)];
   if (!paper) {
-    wrap.textContent = "source not in the extract";
+    wrap.textContent = T("source not in the extract");
     return wrap;
   }
   var lead = (paper.a ? paper.a : "Anon") + (paper.y ? " (" + paper.y + ")" : "");
@@ -1155,10 +1155,10 @@ function citation(paperId) {
     open.href = paper.oa;
     open.target = "_blank";
     open.rel = "noopener noreferrer";
-    open.textContent = "open copy";
-    open.title = ({ vor: "published version", am: "accepted manuscript",
-                    sm: "submitted manuscript", pp: "preprint" }[paper.v] || "open copy") +
-                 ", " + paper.l;
+    open.textContent = T("open copy");
+    open.title = T({ vor: "published version", am: "accepted manuscript",
+                     sm: "submitted manuscript", pp: "preprint" }[paper.v] || "open copy") +
+                 ", " + T(paper.l);
     wrap.appendChild(open);
   }
   return wrap;
@@ -1285,11 +1285,11 @@ function renderVerification() {
   var v = STATE.verified;
   chip.hidden = false;
   chip.className = "verify " + (v.failed ? "verify-fail" : "verify-pass");
-  chip.textContent = v.failed
+  chip.textContent = T(v.failed
     ? v.failed + " of " + v.total + " values differ from pyCoastal"
-    : "Engine checked: " + v.total + " values match pyCoastal";
-  chip.title = v.first || "Every reference value produced by pyCoastal is " +
-    "reproduced by this page to within 1e-9 relative.";
+    : "Engine checked: " + v.total + " values match pyCoastal");
+  chip.title = v.first || T("Every reference value produced by pyCoastal is " +
+    "reproduced by this page to within 1e-9 relative.");
 }
 
 /* ------------------------------------------------------------------ */
@@ -1305,9 +1305,9 @@ function selectModule(name) {
     b.classList.toggle("active", active);
     b.setAttribute("aria-current", active ? "true" : "false");
   });
-  document.getElementById("module-note").textContent = MODULES[name].note;
+  document.getElementById("module-note").textContent = T(MODULES[name].note);
   var sheetLabel = document.getElementById("sheet-label");
-  if (sheetLabel) sheetLabel.textContent = "Drawing";
+  if (sheetLabel) sheetLabel.textContent = T("Drawing");
   renderInputs();
   run();
   renderTopics();
@@ -1322,7 +1322,7 @@ function buildRail() {
     btn.type = "button";
     btn.className = "rail-item";
     btn.dataset.module = name;
-    btn.textContent = MODULES[name].label;
+    btn.textContent = T(MODULES[name].label);
     btn.addEventListener("click", function () { selectModule(name); });
     host.appendChild(btn);
   });
@@ -1334,18 +1334,29 @@ function wireEnlarge() {
   button.addEventListener("click", function () {
     var on = document.body.classList.toggle("focus");
     button.setAttribute("aria-pressed", String(on));
-    button.textContent = on ? "Exit" : "Enlarge";
+    button.textContent = T(on ? "Exit" : "Enlarge");
   });
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && document.body.classList.contains("focus")) {
       document.body.classList.remove("focus");
       button.setAttribute("aria-pressed", "false");
-      button.textContent = "Enlarge";
+      button.textContent = T("Enlarge");
     }
   });
 }
 
 function boot() {
+  var langHost = document.getElementById("lang");
+  if (langHost) I18N.picker(langHost);
+  I18N.apply();
+  I18N.onChange(function () {
+    buildRail();
+    selectModule(STATE.module);
+    renderVerification();
+    showCorpusStat();
+    var enlarge = document.getElementById("enlarge");
+    if (enlarge) enlarge.textContent = T(document.body.classList.contains("focus") ? "Exit" : "Enlarge");
+  });
   buildRail();
   wireEnlarge();
   /* A module can be linked to directly, as index.html#breakwater. */
@@ -1371,22 +1382,26 @@ function loadKnowledge() {
   if (STATE.knowledge || STATE.knowledgePending) return;
   STATE.knowledgePending = true;
   var stat = document.getElementById("corpus-stat");
-  if (stat) stat.textContent = "Loading\u2026";
+  if (stat) stat.textContent = T("Loading\u2026");
 
   fetch("knowledge.json").then(function (r) { return r.json(); }).then(function (k) {
     STATE.knowledge = k;
     STATE.knowledgePending = false;
-    if (stat) {
-      stat.textContent = k.corpus.papers.toLocaleString() + " papers \u00b7 " +
-        k.corpus.knowledge_claims.toLocaleString() + " claims \u00b7 " +
-        k.corpus.topics + " topics";
-    }
+    showCorpusStat();
     renderTopics();
     renderKnowledge();
   }).catch(function () {
     STATE.knowledgePending = false;
-    if (stat) stat.textContent = "Literature extract did not load";
+    if (stat) stat.textContent = T("Literature extract did not load");
   });
+}
+
+function showCorpusStat() {
+  var stat = document.getElementById("corpus-stat");
+  var k = STATE.knowledge;
+  if (!stat || !k) return;
+  stat.textContent = T(k.corpus.papers + " papers \u00b7 " +
+    k.corpus.knowledge_claims + " claims \u00b7 " + k.corpus.topics + " topics");
 }
 
 function wireTheory() {
