@@ -155,12 +155,12 @@ else:
 # The design wave at the toe is the offshore value reduced by nearshore
 # transformation. Here the toe is taken as depth limited at 0.55 h, a common
 # screening rule for a wave that has already broken once.
-DEPTH_AT_TOE = 8.5
+DEPTH_AT_TOE = 3.5
 Hm0_toe = min(Hs100, 0.55 * DEPTH_AT_TOE)
 conditions = DesignConditions.from_peak_period(
     Hm0=Hm0_toe, Tp=9.5, depth=DEPTH_AT_TOE, storm_duration=6 * 3600.0
 )
-wall = design_seawall(conditions, still_water_level=2.9, seabed_level=-5.6,
+wall = design_seawall(conditions, still_water_level=2.5, seabed_level=-1.0,
                       tolerable_use="trained_staff")
 print(f"\nDesign wave at the toe {Hm0_toe:.2f} m "
       + ("(depth limited)" if Hm0_toe < Hs100 else "(offshore value carried in)"))

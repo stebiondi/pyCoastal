@@ -6,16 +6,18 @@ Vertical seawall design: wave pressures, stability, scour and toe protection.
 
 This is the design half of the seawall product. Give it a design condition
 and a set of choices, and it returns a fully dimensioned section: crest
-level set by overtopping, base width set by sliding and overturning under
-Goda pressures, toe level set by scour, and toe stone sized for stability.
+level set by overtopping, base width set by sliding, overturning and bearing
+in two load cases, stem and base thickness set by bending and shear, toe
+level set by scour, and toe stone sized for stability.
 :mod:`pyCoastal.applications.sections` turns the result into a drawing and a
 bill of quantities.
 
 Sources
 -------
 Goda, Y. (1974, 2010), Random Seas and Design of Maritime Structures.
-    Wave pressure distribution on a vertical wall, and the extension to
-    impulsive conditions by Takahashi et al. (1994).
+    Wave pressure distribution on a vertical wall, the breaker index used to
+    cap the design wave, and the extension to impulsive conditions by
+    Takahashi et al. (1994).
 
 EurOtop (2018), Manual on wave overtopping of sea defences, 2nd ed.
     Crest level for a tolerable mean discharge.
@@ -23,14 +25,24 @@ EurOtop (2018), Manual on wave overtopping of sea defences, 2nd ed.
 Xie, S. L. (1981), Scouring patterns in front of vertical breakwaters,
     Delft University of Technology. Scour depth at a vertical wall.
 
-Van der Meer, J. W. (1998), in Rock Manual (CIRIA/CUR/CETMEF, 2007).
-    Toe berm stone stability.
+Tanimoto, K., Yagyu, T. and Goda, Y. (1982), Irregular wave tests for
+    composite breakwater foundations, Proc. 18th ICCE, with the extension
+    by Takahashi (2002). Toe berm stone in front of a vertical wall.
+
+EN 1992-1-1 (2004), Eurocode 2. Bending and shear resistance of the stem.
 
 Conventions
 -----------
 Levels are metres above chart datum and increase upward, matching the
-package's z convention. Distances are metres seaward-positive from the wall
-face unless stated. Forces are kN per metre run of wall.
+package's z convention. Distances are metres landward from the seaward face
+of the wall unless stated. Forces are kN per metre run of wall.
+
+Stability is computed on a free body of the wall and the fill standing on
+its heel, with total unit weights and every water pressure applied
+explicitly: on the seaward face, on the virtual back plane through the rear
+of the heel, and under the base. Buoyant weights are not used, because they
+assume one water level on both sides of the wall, which is exactly the
+condition a seawall does not see.
 
 ## `G`
 
@@ -56,16 +68,74 @@ RHO_C = 2400.0
 RHO_S = 2650.0
 ```
 
-## `RHO_FILL`
+## `GAMMA_W`
 
 ```python
-RHO_FILL = 1900.0
+GAMMA_W = RHO_W * G / 1000.0
+```
+
+## `GAMMA_C`
+
+```python
+GAMMA_C = RHO_C * G / 1000.0
+```
+
+## `F_CK`
+
+```python
+F_CK = 35.0
+```
+
+## `F_YK`
+
+```python
+F_YK = 500.0
+```
+
+## `REINFORCEMENT_RATIO`
+
+```python
+REINFORCEMENT_RATIO = 0.01
+```
+
+## `COVER_TO_STEEL`
+
+```python
+COVER_TO_STEEL = 0.1
+```
+
+## `ULS_FACTOR`
+
+```python
+ULS_FACTOR = 1.35
+```
+
+## `L_WALL_PRACTICAL_HEIGHT`
+
+```python
+L_WALL_PRACTICAL_HEIGHT = 8.0
+```
+
+## `goda_breaking_height`
+
+```python
+def goda_breaking_height(T: float, depth: float, slope: float, coefficient: float=0.17) -> float
+```
+
+```text
+Height of the largest wave a depth can carry, Goda's breaker index.
+
+    Hb = A L0 [1 - exp(-1.5 pi h / L0 (1 + 15 tan^(4/3) theta))]
+
+with L0 = g T^2 / (2 pi) and A = 0.17 (Goda 2010). Used to cap Hmax at
+the depth five significant wave heights seaward of the wall, where Goda
+sets the breaking point for the design wave.
 ```
 
 ## `goda_pressures`
 
 ```python
-def goda_pressures(Hm0: float, T: float, depth: float, wall_toe_depth: float, berm_depth: float | None=None, crest_freeboard: float=5.0, beta_degrees: float=0.0, slope: float=1 / 30, Hmax_factor: float=1.8, breaker_index: float=0.78) -> dict
+def goda_pressures(Hm0: float, T: float, depth: float, wall_toe_depth: float, berm_depth: float | None=None, crest_freeboard: float=5.0, beta_degrees: float=0.0, slope: float=1 / 30, Hmax_factor: float=1.8, depth_limit: bool=True) -> dict
 ```
 
 ```text
@@ -94,14 +164,13 @@ beta_degrees : float
     Angle of wave attack from the wall normal [deg].
 slope : float
     Seabed slope in front of the structure, used for the depth at five
-    wave heights seaward.
+    wave heights seaward and for the breaker index.
 Hmax_factor : float
     Hmax / Hm0 for the design wave. Goda uses 1.8 for non-breaking
     conditions.
-breaker_index : float
-    Depth limit on the design wave, Hmax <= breaker_index * d. Without
-    it, 1.8 Hm0 in shallow water asks the wall to survive a wave the
-    site cannot deliver. Set it to zero to disable the limit.
+depth_limit : bool
+    Cap Hmax at the breaking height from :func:`goda_breaking_height`,
+    evaluated at the depth h_b five significant wave heights seaward.
 
 Returns
 -------
@@ -109,15 +178,18 @@ dict
     Pressures p1, p3, p4 and uplift pu [kPa], the elevation of the
     pressure distribution above the still water level ``eta_star`` [m],
     the horizontal force ``F`` and its lever arm ``arm`` about the
-    heel, and the uplift force ``U`` per metre of base width.
+    underside of the wall, and the uplift force ``U`` per metre of base
+    width.
 
 Notes
 -----
-This is the standard (non-impulsive) Goda distribution. Takahashi's
-impulsive pressure coefficient alpha_I, which governs when a steep
-mound throws a breaking wave at the wall, is not applied: check the
-mound geometry independently before relying on these numbers for a wall
-on a high berm.
+These are the pressures in excess of hydrostatic about the still water
+level. The still-water pressure on the face and under the base is added
+by the caller. This is the standard (non-impulsive) Goda distribution.
+Takahashi's impulsive pressure coefficient alpha_I, which governs when a
+steep mound throws a breaking wave at the wall, is not applied: check
+the mound geometry independently before relying on these numbers for a
+wall on a high berm.
 ```
 
 ## `scour_depth_vertical_wall`
@@ -139,6 +211,8 @@ standing-wave node drives the largest near-bed velocity.
 
 Parameters
 ----------
+T : float
+    Peak period [s], which sets the standing-wave pattern.
 coefficient : float
     0.4 is Xie's value for regular waves on fine sand, and is the usual
     design value. Irregular waves smear the nodal structure and give a
@@ -165,6 +239,10 @@ Toe berm stone size from the Van der Meer toe formula.
 
     Hs / (Delta Dn50) = (2 + 6.2 (ht/h)^2.7) Nod^0.15
 
+This is the toe of a *sloping* rubble structure. For the berm in front
+of a vertical wall use :func:`toe_stone_tanimoto`, which is what
+:func:`design_seawall` does.
+
 Parameters
 ----------
 toe_depth : float
@@ -180,6 +258,45 @@ Notes
 The formula is calibrated for 0.4 < ht/h < 0.9. A toe set very deep or
 very shallow relative to the water depth falls outside it, and the
 returned dict says so rather than silently extrapolating.
+```
+
+## `toe_stone_tanimoto`
+
+```python
+def toe_stone_tanimoto(Hs: float, T: float, berm_depth: float, berm_width: float, Delta: float=1.585, beta_degrees: float=0.0, alpha_s: float=0.45) -> dict
+```
+
+```text
+Stone on the toe berm in front of a vertical wall.
+
+Tanimoto et al. (1982) as extended by Takahashi (2002)::
+
+    Dn50 = Hs / (Delta Ns)
+    Ns = max{1.8, 1.3 (1 - kappa) / kappa^(1/3) h'/Hs
+                  + 1.8 exp[-1.5 (1 - kappa)^2 / kappa^(1/3) h'/Hs]}
+    kappa  = kappa1 kappa2
+    kappa1 = (4 pi h'/L') / sinh(4 pi h'/L')
+    kappa2 = max{alpha_s sin^2(beta) cos^2(2 pi B/L' cos beta),
+                 cos^2(beta) sin^2(2 pi B/L' cos beta)}
+
+Parameters
+----------
+Hs : float
+    Significant wave height at the wall [m].
+T : float
+    Significant wave period [s]; Tp is a close enough stand-in.
+berm_depth : float
+    Water depth over the top of the berm armour, h' [m].
+berm_width : float
+    Width of the berm in front of the wall, B_M [m].
+alpha_s : float
+    0.45, Takahashi's coefficient for oblique attack.
+
+Notes
+-----
+Unlike the Van der Meer toe formula this one knows it is in front of a
+wall: kappa2 carries the standing-wave velocity at the berm, which is
+why the berm width appears.
 ```
 
 ## `sliding_safety`
@@ -236,8 +353,10 @@ normal : float
 base_width : float
     Base width B [m].
 net_moment : float
-    Net moment about the rear heel, restoring less overturning
-    [kNm/m]. Its ratio to the normal force locates the resultant.
+    Net moment about one edge of the base, restoring less overturning
+    [kNm/m]. Its ratio to the normal force locates the resultant from
+    that edge. Either edge works: the distribution is symmetric in the
+    eccentricity.
 
 Returns
 -------
@@ -252,15 +371,45 @@ dict
 ## `hydrostatic_force`
 
 ```python
-def hydrostatic_force(depth: float, unit_weight: float=RHO_W * G / 1000.0) -> dict
+def hydrostatic_force(depth: float, unit_weight: float=GAMMA_W) -> dict
 ```
 
 ```text
 Hydrostatic force on a vertical face and its lever arm [kN/m, m].
 
-F = 0.5 gamma h^2, acting at h/3 above the bottom of the face. Used for
-the water still standing in front of the wall when the trough passes,
-which is the only thing resisting the backfill at that instant.
+F = 0.5 gamma h^2, acting at h/3 above the bottom of the face.
+```
+
+## `stem_section`
+
+```python
+def stem_section(moment: float, shear: float, fck: float=F_CK, fyk: float=F_YK, rho: float=REINFORCEMENT_RATIO, cover: float=COVER_TO_STEEL) -> dict
+```
+
+```text
+Thickness a reinforced concrete cantilever needs for M and V.
+
+Concept design to EN 1992-1-1, per metre width:
+
+bending
+    M_Ed <= 0.9 d rho d f_yd, so d_M = sqrt(M_Ed / (0.9 rho f_yd))
+shear, no links
+    V_Ed <= v_Rd,c d with v_Rd,c = max(0.12 k (100 rho f_ck)^(1/3),
+    0.035 k^1.5 f_ck^0.5), k = min(1 + sqrt(200 / d[mm]), 2)
+
+Parameters
+----------
+moment, shear : float
+    Design (factored) values at the critical section [kNm/m, kN/m].
+rho : float
+    Tension reinforcement ratio. 1 % is a practical ceiling for a wall
+    that has to be built and to crack acceptably.
+
+Returns
+-------
+dict
+    Effective depths for bending and shear and the ``thickness`` that
+    satisfies both, rounded up to 50 mm.
 ```
 
 ## `SeawallDesign`
@@ -283,23 +432,27 @@ class SeawallDesign
     toe_berm_thickness: float
     toe_Dn50: float
     toe_M50: float
-    toe_within_range: bool
+    toe_stability_number: float
     pressures: dict
     wave_force: float
     wave_arm: float
     weight: float
     uplift: float
+    static_uplift: float
     sliding_FoS: float
     overturning_FoS: float
     bearing: dict
+    allowable_bearing: float | None
     backfill: Sediment
     retained_height: float
     water_table: float
+    back_water_level: float
     surcharge: float
     earth_driving: dict
     earth_resisting: dict
     drawdown: dict
     governing_case: str
+    stem: dict
     q_mean: float
     q_upper: float
     governing_limit: str
@@ -372,7 +525,7 @@ A short design report, in the order an engineer checks it.
 ## `design_seawall`
 
 ```python
-def design_seawall(conditions: DesignConditions, still_water_level: float, seabed_level: float, tolerable_use: str='pedestrians_aware', beta_degrees: float=0.0, friction: float=0.6, target_sliding: float=1.2, target_overturning: float=1.5, require_middle_third: bool=True, scour_coefficient: float=0.4, minimum_embedment: float=1.0, maximum_embedment: float=3.0, stem_thickness: float=1.0, base_thickness: float=1.2, promenade_freeboard: float=1.0, toe_berm_width: float | None=None, toe_damage: float=0.5, seabed_slope: float=1 / 30, scatter_factor: float=3.0, max_base_width: float=30.0, step: float=0.1, backfill: 'Sediment | str'='medium_sand', water_table: float=0.0, surcharge: float=10.0, earth_pressure_driving: str='at_rest', earth_pressure_resisting: str='active', credit_earth_pressure: bool=True, drawdown_level: float | None=None) -> SeawallDesign
+def design_seawall(conditions: DesignConditions, still_water_level: float, seabed_level: float, tolerable_use: str='pedestrians_aware', beta_degrees: float=0.0, friction: float=0.6, target_sliding: float=1.2, target_overturning: float=1.5, require_middle_third: bool=True, allowable_bearing: float | None=300.0, scour_coefficient: float=0.4, minimum_embedment: float=1.0, maximum_embedment: float=3.0, stem_thickness: float=0.5, base_thickness: float=0.6, promenade_freeboard: float=1.0, toe_berm_width: float | None=None, seabed_slope: float=1 / 30, scatter_factor: float=3.0, max_base_width: float=30.0, step: float=0.1, backfill: 'Sediment | str'='medium_sand', water_table: float=0.0, surcharge: float=10.0, earth_pressure_driving: str='at_rest', earth_pressure_resisting: str='active', credit_earth_pressure: bool=True, drawdown_level: float | None=None) -> SeawallDesign
 ```
 
 ```text
@@ -385,26 +538,44 @@ The chain is the one a design office follows.
 2. Founding level from the scour allowance, bracketed by
    ``minimum_embedment`` and ``maximum_embedment``. Deeper embedment is
    a piling question, not a gravity-wall one.
-3. Goda pressures on the wetted face, from the still water level down to
-   the seabed.
-4. Base width grown in ``step`` increments until sliding, overturning
-   and, if ``require_middle_third``, the base pressure check all pass.
-   Keeping the resultant in the middle third stops the heel lifting off
-   the bedding, which is what turns a wide safe base into a rocking one. The backfill over the landward heel is counted as
-   restoring weight; passive resistance on the buried front face and
-   active earth pressure from the fill are both ignored, which is
-   conservative for the wave-loading case.
-5. Toe stone from the Van der Meer toe formula, iterated because the
-   berm thickness changes the depth over the berm.
+3. Toe stone from Tanimoto's formula for a berm in front of a vertical
+   wall, iterated because the berm thickness changes the depth over it.
+4. Goda pressures on the wetted face, from the still water level down to
+   the seabed, with Hmax capped by Goda's breaker index.
+5. Stem and base thickness from the bending and shear at the foot of the
+   stem, as a reinforced concrete cantilever. The inputs are minimums.
+6. Base width grown in ``step`` increments until both load cases pass
+   sliding, overturning, the middle third (if ``require_middle_third``)
+   and the ``allowable_bearing`` pressure:
+
+   * wave crest: Goda pressure and uplift plus the still water in
+     front, against the active backfill behind;
+   * drawdown: the at-rest backfill and its pore water pushing seaward,
+     with the sea down at the trough in front.
+
+Every water pressure is applied explicitly: on the face, on the virtual
+back plane through the rear of the heel, and under the base, where it
+varies linearly from the sea level in front to the water table behind.
+Weights are total weights. The backfill water table is never taken
+below the still water level, since the sea feeds it.
+
+Parameters
+----------
+allowable_bearing : float or None
+    Allowable base pressure [kPa]. 300 kPa is a presumptive value for a
+    medium dense sand bearing stratum and must be replaced by the
+    geotechnical designer's figure. None skips the check.
+stem_thickness, base_thickness : float
+    Minimum thicknesses [m]. Both grow if the stem needs more; the base
+    is never thinner than the stem.
 
 Notes
 -----
 Full Goda uplift is applied under the base even when the base is
 embedded, where wave pressure would in reality be attenuated through
-the soil. That is deliberately on the safe side. It is also what makes
-the base come out wide: uplift grows with the base width just as the
-restoring weight does, so a wall in shallow water with a large wave is
-driven by flotation as much as by sliding.
+the soil. That is deliberately on the safe side. Passive resistance in
+front of the embedment and the vertical component of wall friction are
+both ignored, also on the safe side.
 
 Returns
 -------

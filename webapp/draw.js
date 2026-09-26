@@ -501,8 +501,9 @@ function drawBreakwater(host, d, swl, seabedLevel, w, h) {
   var cotSea = d.cot_alpha;
   var cotLand = Math.max(cotSea - 0.5, 1.5);
   var tArmour = d.layer.thickness;
-  var DnUnder = d.Dn50 / Math.pow(10, 1 / 3);
-  var needed = crown ? crown.total_width + 1.0 : 0;
+  var DnUnder = d.underlayer_Dn50 !== undefined ? d.underlayer_Dn50
+                                                 : d.Dn50 / Math.pow(10, 1 / 3);
+  var needed = crown ? crown.total_width + crown.berm_width + 1.0 : 0;
   var crestWidth = Math.max(3 * d.Dn50, 4, needed);
 
   var crest = swl + d.crest_freeboard;
@@ -562,7 +563,9 @@ function drawBreakwater(host, d, swl, seabedLevel, w, h) {
   }
 
   if (crown) {
-    var px0 = outer.xSea, px1 = px0 + crown.parapet_width;
+    /* The armour runs on across the crest as a berm in front of the
+       parapet, which is what the Pedersen loads assume. */
+    var px0 = outer.xSea + crown.berm_width, px1 = px0 + crown.parapet_width;
     var dx1 = px1 + crown.deck_width;
     keys.push(view.poly(body, [
       [px0, crown.base_level], [dx1, crown.base_level],
@@ -579,9 +582,9 @@ function drawBreakwater(host, d, swl, seabedLevel, w, h) {
 
   view.level(body, x0 + 2, swl, "SWL " + fmt(swl) + " m CD", "water");
   if (crown) {
-    view.level(body, outer.xSea, crown.parapet_top,
+    view.level(body, outer.xSea + crown.berm_width, crown.parapet_top,
                "Parapet " + fmt(crown.parapet_top), "left");
-    view.level(body, outer.xSea + crown.total_width, crown.deck_level,
+    view.level(body, outer.xSea + crown.berm_width + crown.total_width, crown.deck_level,
                "Deck " + fmt(crown.deck_level));
   } else {
     view.level(body, 0, crest, "Crest " + fmt(crest) + " m CD");

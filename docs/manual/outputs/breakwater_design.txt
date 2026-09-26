@@ -1,12 +1,15 @@
 Design condition   Hm0 = 4.00 m, Tm-1,0 = 10.00 s, depth = 12.0 m
-Storm              6.0 h, N = 2160 waves
+Storm              6.0 h, N = 2513 waves
 Section            trunk
 Slope              1 : 2
-Armour             rock_two_layer_permeable, Dn50 = 1.59 m, M50 = 10.7 t (plunging)
-Layer              3.18 m thick, 0.50 stones/m2
+Armour             rock_two_layer_permeable, Dn50 = 1.67 m, M50 = 12.3 t (plunging)
+Layer              3.34 m thick, 0.45 stones/m2
 Crest freeboard    Rc = 5.69 m (Rc/Hm0 = 1.42)
 Overtopping        mean 0.333 l/s/m, upper bound 1 l/s/m
 Governing limit    1 l/s/m, Trained staff, well shod and protected, wide walkway
+
+Warnings
+  - Hm0/h = 0.33: the toe is in shallow water. H2% is taken as 1.4 Hs from the Rayleigh distribution, which overstates it here and errs on the heavy side; Battjes and Groenendijk (2000) with the foreshore slope gives the real ratio.
 
 Tolerability of the mean discharge:
   NO    0.03 l/s/m  pedestrians_unaware
