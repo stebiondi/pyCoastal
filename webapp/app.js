@@ -54,20 +54,23 @@ var MODULES = {
     draw: function (host, d, w, h) { D.drawSeawall(host, d, w, h); },
     checks: function (d) {
       return [
-        { name: "Sliding", value: d.sliding_FoS.toFixed(2), target: "≥ 1.20",
-          ok: d.sliding_FoS >= 1.2 },
-        { name: "Overturning", value: d.overturning_FoS.toFixed(2), target: "≥ 1.50",
-          ok: d.overturning_FoS >= 1.5 },
+        { name: "Sliding", value: fos(d.sliding_FoS), target: "FoS ≥ 1.20",
+          eta: 1.2 / d.sliding_FoS, ok: d.sliding_FoS >= 1.2 },
+        { name: "Overturning", value: fos(d.overturning_FoS), target: "FoS ≥ 1.50",
+          eta: 1.5 / d.overturning_FoS, ok: d.overturning_FoS >= 1.5 },
         { name: "Resultant", value: (d.bearing.e >= 0 ? "+" : "") + d.bearing.e.toFixed(2) + " m",
           target: "middle third", ok: d.bearing.middle_third },
         { name: "Overtopping", value: d.q_upper.toPrecision(3) + " l/s/m",
           target: "≤ " + P.TOLERABLE_DISCHARGE[d.governing_limit][0] + " l/s/m",
+          eta: d.q_upper / P.TOLERABLE_DISCHARGE[d.governing_limit][0],
           ok: d.q_upper <= P.TOLERABLE_DISCHARGE[d.governing_limit][0] * 1.001 },
         { name: "Drawdown sliding",
-          value: fos(d.drawdown.sliding_FoS), target: "≥ 1.20",
+          value: fos(d.drawdown.sliding_FoS), target: "FoS ≥ 1.20",
+          eta: 1.2 / d.drawdown.sliding_FoS,
           ok: d.drawdown.sliding_FoS >= 1.2 },
         { name: "Drawdown overturning",
-          value: fos(d.drawdown.overturning_FoS), target: "≥ 1.50",
+          value: fos(d.drawdown.overturning_FoS), target: "FoS ≥ 1.50",
+          eta: 1.5 / d.drawdown.overturning_FoS,
           ok: d.drawdown.overturning_FoS >= 1.5 },
         { name: "Governs", value: d.governing_case,
           target: d.governing_case === "drawdown" ? "backfill, not wave" : "wave, not backfill",
@@ -162,9 +165,10 @@ var MODULES = {
           neutral: true },
         { name: "Overtopping", value: d.q_upper.toPrecision(3) + " l/s/m",
           target: "≤ " + P.TOLERABLE_DISCHARGE[d.governing_limit][0] + " l/s/m",
+          eta: d.q_upper / P.TOLERABLE_DISCHARGE[d.governing_limit][0],
           ok: d.q_upper <= P.TOLERABLE_DISCHARGE[d.governing_limit][0] * 1.001 },
         { name: "Stone mass", value: (d.M50 / 1000).toFixed(1) + " t",
-          target: (d.M50 / 1000 > 15 ? "quarry limit" : "quarriable"),
+          target: "≤ 15 t, quarry limit", eta: d.M50 / 1000 / 15,
           ok: d.M50 / 1000 <= 15 },
         { name: "Surf similarity", value: d.xi.toFixed(2), target: "ξ m-1,0",
           ok: true, neutral: true },
@@ -172,10 +176,11 @@ var MODULES = {
           target: "Kr, Seelig and Ahrens", ok: true, neutral: true },
         { name: "Toe scour", value: d._scour.depth.toFixed(2) + " m",
           target: d._scour.mobility.regime || "screening",
-          ok: d._scour.depth < d.Dn50,
+          eta: d._scour.depth / d.Dn50, ok: d._scour.depth < d.Dn50,
           warn: d._scour.depth >= d.Dn50 },
         { name: "Blanket reach", value: d._foundation.bedding_extension.toFixed(1) + " m",
-          target: "past each toe",
+          target: "≥ 2 x scour depth",
+          eta: 2 * d._scour.depth / d._foundation.bedding_extension,
           ok: d._foundation.bedding_extension >= 2 * d._scour.depth },
         { name: "Toe berm stone",
           value: (d._foundation.toe_M50 / 1000).toFixed(1) + " t",
@@ -269,9 +274,9 @@ var MODULES = {
       var ratio = d.required_depth / d.vessel.draught;
       return [
         { name: "Depth / draught", value: ratio.toFixed(2), target: "≥ 1.10",
-          ok: ratio >= 1.1 },
+          eta: 1.1 / ratio, ok: ratio >= 1.1 },
         { name: "Froude number", value: d.squat.froude.toFixed(2), target: "< 0.70",
-          ok: d.squat.froude < 0.7 },
+          eta: d.squat.froude / 0.7, ok: d.squat.froude < 0.7 },
         { name: "Width", value: d.width_result.width_in_beams.toFixed(1) + " B",
           target: d.width_result.lanes + "-way", ok: true, neutral: true },
         { name: "Assumed classes", value: String(d.width_result.assumed.length),
@@ -332,20 +337,23 @@ var MODULES = {
       var d = r.load;
       return [
         { name: "Morison valid", value: "D/L = " + d.diffraction_ratio.toFixed(3),
-          target: "< 0.20", ok: d.diffraction_ratio < 0.2 },
+          target: "< 0.20",
+          eta: d.diffraction_ratio / 0.2, ok: d.diffraction_ratio < 0.2 },
         { name: "Not breaking", value: "H/h = " + (d.H / d.depth).toFixed(2),
-          target: "< 0.78", ok: d.H / d.depth < 0.78 },
+          target: "< 0.78",
+          eta: d.H / d.depth / 0.78, ok: d.H / d.depth < 0.78 },
         { name: "Regime", value: d.regime, target: "KC = " + d.KC.toFixed(1),
           ok: true, neutral: true },
         { name: "Crest phase", value: (100 * r.crest_underestimate).toFixed(0) + "% low",
-          target: "sweep the phase", ok: r.crest_underestimate <= 0.02,
+          target: "≤ 2%, else sweep the phase",
+          eta: r.crest_underestimate / 0.02, ok: r.crest_underestimate <= 0.02,
           warn: r.crest_underestimate > 0.02 },
         { name: "Bed regime",
           value: (r.scour.mobility && r.scour.mobility.regime) || "not set",
           target: "gates the scour", ok: true, neutral: true },
         { name: "Scour", value: r.scour.depth.toFixed(2) + " m",
-          target: (r.scour.ratio).toFixed(2) + " D",
-          ok: r.scour.depth < 0.5 * d.diameter,
+          target: "< 0.5 D (" + (r.scour.ratio).toFixed(2) + " D)",
+          eta: r.scour.depth / (0.5 * d.diameter), ok: r.scour.depth < 0.5 * d.diameter,
           warn: r.scour.depth >= 0.5 * d.diameter }
       ];
     },
@@ -435,8 +443,8 @@ var MODULES = {
           target: r.kind === "submerged" ? "no dry beach" : "Dean (1991)",
           ok: r.kind !== "submerged", neutral: r.kind !== "submerged" },
         { name: "Overfill factor", value: r.overfill.factor.toFixed(2),
-          target: "x native volume",
-          ok: r.overfill.factor <= 1.05, warn: r.overfill.factor > 1.05 },
+          target: "≤ 1.05 x native volume",
+          eta: r.overfill.factor / 1.05, ok: r.overfill.factor <= 1.05, warn: r.overfill.factor > 1.05 },
         { name: "Grain match",
           value: (r.match.delta >= 0 ? "+" : "") + r.match.delta.toFixed(2),
           target: "native sigma-phi",
@@ -519,13 +527,14 @@ var MODULES = {
       var reach = v.period / v.record;
       return [
         { name: "Extrapolation", value: reach.toFixed(1) + "x record",
-          target: "≤ 3x", ok: reach <= 3, warn: reach > 3 },
+          target: "≤ 3x", eta: reach / 3, ok: reach <= 3, warn: reach > 3 },
         { name: "Tail", value: v.shape >= 0 ? "unbounded" : "bounded",
           target: "shape " + (v.shape >= 0 ? "≥ 0" : "< 0"), ok: true, neutral: true },
         { name: "Peaks in record", value: Math.round(v.rate * v.record) + "",
-          target: "≥ 30", ok: v.rate * v.record >= 30 },
+          target: "≥ 30",
+          eta: 30 / (v.rate * v.record), ok: v.rate * v.record >= 30 },
         { name: "Rate", value: v.rate.toFixed(1) + "/yr", target: "≥ 1/yr",
-          ok: v.rate >= 1 }
+          eta: 1 / v.rate, ok: v.rate >= 1 }
       ];
     },
     report: function (r) {
@@ -826,24 +835,36 @@ function run() {
 function renderChecks(checks) {
   var host = document.getElementById("checks");
   host.innerHTML = "";
-  checks.forEach(function (check) {
-    var chip = document.createElement("div");
-    var tone = check.neutral ? "neutral" : (check.ok ? "pass" : (check.warn ? "warn" : "fail"));
-    chip.className = "check check-" + tone;
-    var name = document.createElement("span");
-    name.className = "check-name";
-    name.textContent = check.name;
-    var value = document.createElement("span");
-    value.className = "check-value";
-    value.textContent = check.value;
-    var target = document.createElement("span");
-    target.className = "check-target";
-    target.textContent = check.target;
-    chip.appendChild(name);
-    chip.appendChild(value);
-    chip.appendChild(target);
-    host.appendChild(chip);
+  var table = document.createElement("table");
+  table.className = "check-table";
+  var head = table.createTHead().insertRow();
+  ["Check", "Result", "Criterion", "η", ""].forEach(function (text, i) {
+    var th = document.createElement("th");
+    th.textContent = text;
+    if (i === 3) th.title = "Utilization, demand over capacity";
+    head.appendChild(th);
   });
+  var body = table.createTBody();
+  checks.forEach(function (check) {
+    var tone = check.neutral ? "neutral" : (check.ok ? "pass" : (check.warn ? "warn" : "fail"));
+    var row = body.insertRow();
+    row.className = "check-" + tone;
+    var eta = check.eta;
+    var cells = [
+      check.name,
+      check.value,
+      check.target,
+      eta == null ? "" : (isFinite(eta) ? eta.toFixed(2) : "–"),
+      { pass: "OK", warn: "Check", fail: "Fails", neutral: "" }[tone]
+    ];
+    cells.forEach(function (text, i) {
+      var td = row.insertCell();
+      td.textContent = text;
+      if (i === 1 || i === 3) td.className = "num";
+      if (i === 4) td.className = "status";
+    });
+  });
+  host.appendChild(table);
 }
 
 function renderReport(rows) {
@@ -1205,7 +1226,7 @@ function selectModule(name) {
   });
   document.getElementById("module-note").textContent = MODULES[name].note;
   var sheetLabel = document.getElementById("sheet-label");
-  if (sheetLabel) sheetLabel.textContent = MODULES[name].label + " · drawing";
+  if (sheetLabel) sheetLabel.textContent = "Drawing";
   renderInputs();
   run();
   renderTopics();
@@ -1267,7 +1288,7 @@ function loadKnowledge() {
   if (STATE.knowledge || STATE.knowledgePending) return;
   STATE.knowledgePending = true;
   var stat = document.getElementById("corpus-stat");
-  if (stat) stat.textContent = "Fetching the extract\u2026";
+  if (stat) stat.textContent = "Loading\u2026";
 
   fetch("knowledge.json").then(function (r) { return r.json(); }).then(function (k) {
     STATE.knowledge = k;
