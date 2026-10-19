@@ -7,7 +7,7 @@ name = "pyCoastal"
 version = "0.2.0"
 description = "A Python toolbox for coastal engineering"
 authors = [
-  { name = "Stefano Biondi", email = "stefano.biondi@ufl.edu" }
+  { name = "Stefano Biondi" }
 ]
 license = { text = "MIT" }
 readme = "README.md"
